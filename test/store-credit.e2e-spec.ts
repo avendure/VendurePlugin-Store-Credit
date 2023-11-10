@@ -1,43 +1,43 @@
 import {
   PostgresInitializer,
+  SqljsInitializer,
   registerInitializer,
   createTestEnvironment,
   testConfig,
-} from '@vendure/testing';
-import { it, describe, afterAll, expect } from 'vitest';
-import { StoreCreditPlugin } from '../index';
-import { Logger, Order } from '@vendure/core';
-import gql from 'graphql-tag';
-import { Customer } from '@vendure/common/lib/generated-shop-types';
-import randombytes from 'randombytes';
+} from "@vendure/testing";
+import { it, describe, afterAll, expect } from "vitest";
+import { StoreCreditPlugin } from "../src/index";
+import { Logger, Order } from "@vendure/core";
+import gql from "graphql-tag";
+import { Customer } from "@vendure/common/lib/generated-shop-types";
+import randombytes from "randombytes";
 
-registerInitializer('postgres', new PostgresInitializer());
-
+registerInitializer("sqljs", new SqljsInitializer("__data__"));
 // Edit following constants to test
-const customerUsername = 'hero@zero.com';
-const customerPassword = 'superadmin';
-const sellerId = '3';
-const key = randombytes(6).toString('hex');
+const customerUsername = "hero@zero.com";
+const customerPassword = "newPass123";
+const sellerId = "T_2";
+const key = randombytes(6).toString("hex");
 const value = 100;
 
 // provide product variant id and quantity when testing
-const variantId = '3';
+const variantId = "T_1";
 const quantity = 1;
 const addressInput = {
-  streetLine1: 'test',
-  countryCode: 'US',
+  streetLine1: "test",
+  countryCode: "US",
 };
 // the code you have set while creating payment method
-const creditPaymentCode = 'credit';
+const creditPaymentCode = "credit";
 
-describe('store-credits plugin', () => {
+describe("store-credits plugin", () => {
   const { server, adminClient, shopClient } = createTestEnvironment({
     ...testConfig,
     plugins: [StoreCreditPlugin],
   });
 
   // Query account balance from admin ui
-  it('returns Seller and Customer StoreCredits', async () => {
+  it("returns Seller and Customer StoreCredits", async () => {
     await adminClient.asSuperAdmin(); // log in as the SuperAdmin user
 
     const query = gql`
@@ -55,18 +55,18 @@ describe('store-credits plugin', () => {
     Logger.info(result);
     expect(result).toEqual({
       customerAccountBalance:
-        typeof result.customerAccountBalance === 'number'
+        typeof result.customerAccountBalance === "number"
           ? result.customerAccountBalance
           : 0,
       sellerAccountBalance:
-        typeof result.sellerAccountBalance === 'number'
+        typeof result.sellerAccountBalance === "number"
           ? result.sellerAccountBalance
           : 0,
     });
   });
 
   // create store credit mutation
-  it('creates a store credit', async () => {
+  it("creates a store credit", async () => {
     await adminClient.asSuperAdmin(); // log in as the SuperAdmin user
 
     const mutation = gql`
@@ -85,7 +85,7 @@ describe('store-credits plugin', () => {
       },
     });
     Logger.info(result.createStoreCredit);
-    expect(result.createStoreCredit).toBeTypeOf('object');
+    expect(result.createStoreCredit).toBeTypeOf("object");
     expect(result.createStoreCredit).toEqual({
       key: key,
       value: value,
@@ -94,7 +94,7 @@ describe('store-credits plugin', () => {
   });
 
   // claim store credit mutation
-  it('claims a store credit', async () => {
+  it("claims a store credit", async () => {
     await shopClient.asUserWithCredentials(customerUsername, customerPassword); // log in as the SuperAdmin user
 
     const mutation = gql`
@@ -111,7 +111,7 @@ describe('store-credits plugin', () => {
       key: key,
     });
     Logger.info(result.claim);
-    expect(result.claim).toBeTypeOf('object');
+    expect(result.claim).toBeTypeOf("object");
     expect(result.claim).toEqual({
       isClaimed: true,
       key: key,
@@ -120,7 +120,7 @@ describe('store-credits plugin', () => {
   });
 
   // Transfer credit Query, provide value and sellerId when testing
-  it('transfers Credit from Seller To Customer', async () => {
+  it("transfers Credit from Seller To Customer", async () => {
     await adminClient.asSuperAdmin(); // log in as the customer user
 
     const query = gql`
@@ -138,18 +138,18 @@ describe('store-credits plugin', () => {
     result = result.transferCreditfromSellerToCustomer;
     expect(result).toEqual({
       customerAccountBalance:
-        typeof result.customerAccountBalance === 'number'
+        typeof result.customerAccountBalance === "number"
           ? result.customerAccountBalance
           : 0,
       sellerAccountBalance:
-        typeof result.sellerAccountBalance === 'number'
+        typeof result.sellerAccountBalance === "number"
           ? result.sellerAccountBalance
           : 0,
     });
   });
 
   // customer credit less than total amount purchase fails
-  it('fails/pass to purchase product with in/sufficient credit', async () => {
+  it("fails/pass to purchase product with in/sufficient credit", async () => {
     await shopClient.asUserWithCredentials(customerUsername, customerPassword); // log in as the customer user
 
     const mutation = gql`
@@ -167,10 +167,10 @@ describe('store-credits plugin', () => {
       quantity,
     });
     Logger.info(result.addItemToOrder);
-    expect(result.addItemToOrder).toBeTypeOf('object');
-    if (result.addItemToOrder.__typename !== 'OrderModificationError') {
+    expect(result.addItemToOrder).toBeTypeOf("object");
+    if (result.addItemToOrder.__typename !== "OrderModificationError") {
       expect(result.addItemToOrder).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
       const mutation2 = gql`
         mutation SetOrderShippingAddress($input: CreateAddressInput!) {
@@ -183,9 +183,9 @@ describe('store-credits plugin', () => {
         input: addressInput,
       });
       Logger.info(result2.setOrderShippingAddress);
-      expect(result2.setOrderShippingAddress).toBeTypeOf('object');
+      expect(result2.setOrderShippingAddress).toBeTypeOf("object");
       expect(result2.setOrderShippingAddress).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
 
       const mutation3 = gql`
@@ -199,9 +199,9 @@ describe('store-credits plugin', () => {
         input: addressInput,
       });
       Logger.info(result3.setOrderBillingAddress);
-      expect(result3.setOrderBillingAddress).toBeTypeOf('object');
+      expect(result3.setOrderBillingAddress).toBeTypeOf("object");
       expect(result3.setOrderBillingAddress).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
 
       const query1 = gql`
@@ -214,7 +214,7 @@ describe('store-credits plugin', () => {
       `;
       const result4 = await shopClient.query(query1);
       console.log(result4.eligibleShippingMethods[0].id);
-      expect(result4.eligibleShippingMethods).toBeTypeOf('object');
+      expect(result4.eligibleShippingMethods).toBeTypeOf("object");
 
       const mutation4 = gql`
         mutation SetOrderShippingMethod($shippingMethodId: [ID!]!) {
@@ -226,9 +226,9 @@ describe('store-credits plugin', () => {
       const result5 = await shopClient.query(mutation4, {
         shippingMethodId: [result4.eligibleShippingMethods[0].id as string],
       });
-      expect(result5.setOrderShippingMethod).toBeTypeOf('object');
+      expect(result5.setOrderShippingMethod).toBeTypeOf("object");
       expect(result5.setOrderShippingMethod).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
 
       const mutation5 = gql`
@@ -239,11 +239,11 @@ describe('store-credits plugin', () => {
         }
       `;
       const result6 = await shopClient.query(mutation5, {
-        state: 'ArrangingPayment',
+        state: "ArrangingPayment",
       });
-      expect(result6.transitionOrderToState).toBeTypeOf('object');
+      expect(result6.transitionOrderToState).toBeTypeOf("object");
       expect(result6.transitionOrderToState).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
     }
 
@@ -256,9 +256,9 @@ describe('store-credits plugin', () => {
       }
     `;
     const result7 = await shopClient.query(query2);
-    expect(result7.eligiblePaymentMethods).toBeTypeOf('object');
+    expect(result7.eligiblePaymentMethods).toBeTypeOf("object");
     expect(result7.eligiblePaymentMethods).toContainEqual({
-      code: 'credit',
+      code: "credit",
       isEligible: true,
     });
 
@@ -328,23 +328,23 @@ describe('store-credits plugin', () => {
         metadata: {},
       },
     });
-    expect(result8.addPaymentToOrder).toBeTypeOf('object');
+    expect(result8.addPaymentToOrder).toBeTypeOf("object");
 
     if (customerAccountBalance && customerAccountBalance < totalAmount) {
       expect(result8.addPaymentToOrder).toEqual({
-        __typename: 'PaymentDeclinedError',
-        message: 'The payment was declined',
-        paymentErrorMessage: 'Insufficient Balance',
-        errorCode: 'PAYMENT_DECLINED_ERROR',
+        __typename: "PaymentDeclinedError",
+        message: "The payment was declined",
+        paymentErrorMessage: "Insufficient Balance",
+        errorCode: "PAYMENT_DECLINED_ERROR",
       });
     } else {
       expect(result8.addPaymentToOrder).toEqual({
-        __typename: 'Order',
+        __typename: "Order",
       });
     }
 
-    if (result8.addPaymentToOrder.__typename !== 'Order') {
-      console.log(result8.addPaymentToOrder);
+    if (result8.addPaymentToOrder.__typename !== "Order") {
+      console.log("Setup Seller correctly.", result8.addPaymentToOrder);
     }
   });
 

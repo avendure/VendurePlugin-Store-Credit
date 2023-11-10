@@ -35,17 +35,16 @@ deleteSingleStoreCredit(id: ID!): DeletionResponse!
 
 ## Installation
 
-Add the plugin in `vendure-config.ts` file and uiExtensions in `compile-admin-ui.ts` file.
+- Server should run on port `3050`, so the endpoints are
 
-### Run tests
+  ```graphql
+  http://localhost:3050/admin
+  http://localhost:3050/shop-api
+  http://localhost:3050/admin-api
+  ```
 
-- Server should run on port `3050`, edit `vendure-config.ts` files api config option,
-  ```
-  apiOptions: {
-    ...otherOptions,
-    port: 3050
-  }
-  ```
-- `yarn add @vendure/testing vitest graphql-tag @swc/core unplugin-swc randombytes`
-- `yarn add -D @types/randombytes`
+- `yarn`
+- Edit the `.env` file to add the required environment variables.
+- `yarn start`
+- Edit `test/store-credit.e2e-spec.ts` with required constants.
 - `yarn test`

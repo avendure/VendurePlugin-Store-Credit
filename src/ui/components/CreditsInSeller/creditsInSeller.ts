@@ -3,25 +3,25 @@ import {
   OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-} from '@angular/core';
+} from "@angular/core";
 import {
   CustomDetailComponent,
   DataService,
   NotificationService,
-} from '@vendure/admin-ui/core';
-import { Observable } from 'rxjs';
-import { FormGroup, FormControl, FormBuilder } from '@angular/forms';
+} from "@vendure/admin-ui/core";
+import { Observable } from "rxjs";
+import { FormGroup, FormControl, FormBuilder } from "@angular/forms";
 import {
   GET_SELLER_AND_CUSTOMER_STORE_CREDITS,
   TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER,
-} from './creditsInSeller.graphql';
-import { StoreCredit } from './generated-types';
-import { ActivatedRoute } from '@angular/router';
+} from "./creditsInSeller.graphql";
+import { StoreCredit } from "./generated-types";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
-  selector: 'creditsInSeller-component',
-  templateUrl: './creditsInSeller.html',
-  styleUrls: ['./creditsInSeller.scss'],
+  selector: "creditsInSeller-component",
+  templateUrl: "./creditsInSeller.html",
+  styleUrls: ["./creditsInSeller.scss"],
   // changeDetection: ChangeDetectionStrategy.OnPush,
   // standalone: true,
 })
@@ -31,18 +31,17 @@ export class CreditsInSellerComponent implements OnInit, CustomDetailComponent {
   id: string;
   // customerAccountBalance: number = 0;
   // sellerAccountBalance: number = 0;
-  refresh;
 
   constructor(
     private dataService: DataService,
     private route: ActivatedRoute,
     private formBuilder: FormBuilder,
     private notificationService: NotificationService,
-    private changeDetectorRef: ChangeDetectorRef,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.id = '';
+    this.id = "";
     this.route.params.forEach((v) => (this.id = v.id));
 
     this.entity$ = this.dataService
@@ -73,12 +72,12 @@ export class CreditsInSellerComponent implements OnInit, CustomDetailComponent {
           customerAccountBalance: data.customerAccountBalance,
           sellerAccountBalance: data.sellerAccountBalance,
         });
-        this.notificationService.success('Transfer Successful!');
+        this.notificationService.success("Transfer Successful!");
 
         location.reload();
         return data;
       });
-    this.notificationService.success('Transfer Successful!');
+    this.notificationService.success("Transfer Successful!");
     this.changeDetectorRef.detectChanges();
     this.ngOnInit();
   }
