@@ -26,6 +26,7 @@
     "@vendure/admin-ui-plugin": "^2.0.7",
     "@vendure/asset-server-plugin": "^2.0.7",
     "@vendure/core": "^2.0.7",
+    "@vendure/create": "^2.1.2",
     "@vendure/testing": "^2.1.2",
     "@vendure/ui-devkit": "^2.0.7",
     "apollo-server-core": "^3.12.1",
