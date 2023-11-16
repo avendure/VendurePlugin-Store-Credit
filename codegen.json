@@ -13,52 +13,9 @@
     "maybeValue": "T"
   },
   "generates": {
-    "src/plugins/store-credit-plugin/types/credits-admin-types.ts": {
+    "src/ui/generated-types.ts": {
       "schema": "http://localhost:3050/admin-api",
-      "plugins": [
-        {
-          "add": {
-            "content": "/* eslint-disable */"
-          }
-        },
-        "typescript"
-      ]
-    },
-    "src/plugins/store-credit-plugin/types/credits-shop-types.ts": {
-      "schema": "http://localhost:3050/shop-api",
-      "plugins": [
-        {
-          "add": {
-            "content": "/* eslint-disable */"
-          }
-        },
-        "typescript"
-      ]
-    },
-
-    "src/plugins/store-credit-plugin/ui/generated-types.ts": {
-      "schema": "http://localhost:3050/admin-api",
-      "documents": "src/plugins/store-credit-plugin/ui/**/*.graphql.ts",
-      "plugins": [
-        {
-          "add": {
-            "content": "/* eslint-disable */"
-          }
-        },
-        "typescript",
-        "typescript-operations",
-        "typed-document-node"
-      ],
-      "config": {
-        "scalars": {
-          "ID": "string"
-        }
-      }
-    },
-
-    "src/plugins/store-credit-plugin/ui/components/CreditsInSeller/generated-types.ts": {
-      "schema": "http://localhost:3050/admin-api",
-      "documents": "src/plugins/store-credit-plugin/ui/**/*.graphql.ts",
+      "documents": "src/ui/**/*.graphql.ts",
       "plugins": [
         {
           "add": {
