@@ -36,9 +36,6 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 
   async createPayment(ctx, order, amount, args, metadata) {
     const customer = order.customer;
-    console.log(amount);
-    console.log('customer: ' + JSON.stringify(customer, null, 2));
-    console.log('here');
     if (!customer) {
       return {
         amount: amount,
@@ -57,15 +54,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
     const totalAmtToBePaidToSeller = amount;
     const realCustomerAccountBalance = customerAccountBalance * 100;
 
-    console.log(
-      'Customer account balance: ',
-      realCustomerAccountBalance,
-      ' - totalAmtToBePaidToSeller: ',
-      totalAmtToBePaidToSeller,
-    );
-
     if (realCustomerAccountBalance < totalAmtToBePaidToSeller) {
-      console.log('Hit error...');
       return {
         amount: amount,
         state: 'Declined',
