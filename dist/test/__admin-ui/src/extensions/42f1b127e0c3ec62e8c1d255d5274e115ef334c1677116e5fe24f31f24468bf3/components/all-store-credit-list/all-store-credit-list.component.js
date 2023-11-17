@@ -18,7 +18,7 @@ const generated_types_1 = require("../../generated-types");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const all_store_credit_list_graphql_1 = require("./all-store-credit-list.graphql");
-let AllStoreCreditListComponent = class AllStoreCreditListComponent extends core_2.TypedBaseListComponent {
+let AllStoreCreditListComponent = exports.AllStoreCreditListComponent = class AllStoreCreditListComponent extends core_2.TypedBaseListComponent {
     constructor(modalService, notificationService) {
         super();
         this.modalService = modalService;
@@ -105,7 +105,7 @@ let AllStoreCreditListComponent = class AllStoreCreditListComponent extends core
         });
     }
 };
-AllStoreCreditListComponent = __decorate([
+exports.AllStoreCreditListComponent = AllStoreCreditListComponent = __decorate([
     (0, core_1.Component)({
         selector: 'vdr-all-store-credit-list',
         templateUrl: './all-store-credit-list.component.html',
@@ -115,4 +115,3 @@ AllStoreCreditListComponent = __decorate([
     __metadata("design:paramtypes", [core_2.ModalService,
         core_2.NotificationService])
 ], AllStoreCreditListComponent);
-exports.AllStoreCreditListComponent = AllStoreCreditListComponent;

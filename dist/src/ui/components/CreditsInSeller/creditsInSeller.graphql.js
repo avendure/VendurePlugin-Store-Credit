@@ -15,7 +15,7 @@ const fragment_graphql_1 = require("./common/fragment.graphql");
 //   ${STORE_CREDIT_FRAGMENT}
 // `;
 exports.TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER = (0, graphql_tag_1.default) `
-  query transferCreditfromSellerToCustomer($value: Int!, $sellerId: ID!) {
+  mutation transferCreditfromSellerToCustomer($value: Int!, $sellerId: ID!) {
     transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
       ...AccountBalance
     }

@@ -12,7 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoreCredit = void 0;
 const core_1 = require("@vendure/core");
 const typeorm_1 = require("typeorm");
-let StoreCredit = class StoreCredit extends core_1.VendureEntity {
+let StoreCredit = exports.StoreCredit = class StoreCredit extends core_1.VendureEntity {
     constructor(input) {
         super(input);
     }
@@ -33,9 +33,8 @@ __decorate([
     (0, typeorm_1.Column)({ default: false }),
     __metadata("design:type", Boolean)
 ], StoreCredit.prototype, "isClaimed", void 0);
-StoreCredit = __decorate([
+exports.StoreCredit = StoreCredit = __decorate([
     (0, typeorm_1.Entity)(),
     (0, typeorm_1.Unique)(['key']),
     __metadata("design:paramtypes", [Object])
 ], StoreCredit);
-exports.StoreCredit = StoreCredit;

@@ -32,6 +32,16 @@
           "ID": "string"
         }
       }
+    },
+    "src/ui/generated-types.ts": {
+      "schema": "http://localhost:3050/admin-api",
+      "documents": "src/ui/**/*.graphql.ts",
+      "plugins": ["typescript", "typescript-operations", "typed-document-node"],
+      "config": {
+        "scalars": {
+          "ID": "string"
+        }
+      }
     }
   }
 }

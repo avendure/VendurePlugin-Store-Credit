@@ -3,6 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.initialData = void 0;
 const generated_types_1 = require("@vendure/common/lib/generated-types");
 exports.initialData = {
+    paymentMethods: [
+        {
+            name: "store-credit",
+            handler: {
+                code: "credit-store-payment",
+                arguments: [{ name: "automaticSettle", value: "false" }],
+            },
+        },
+    ],
     defaultLanguage: generated_types_1.LanguageCode.en,
     defaultZone: "Europe",
     taxRates: [
@@ -35,5 +44,4 @@ exports.initialData = {
             ],
         },
     ],
-    paymentMethods: [],
 };

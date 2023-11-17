@@ -16,7 +16,7 @@ exports.ShopStoreCreditResolver = void 0;
 const graphql_1 = require("@nestjs/graphql");
 const core_1 = require("@vendure/core");
 const store_credit_service_1 = require("../service/store-credit.service");
-let ShopStoreCreditResolver = class ShopStoreCreditResolver {
+let ShopStoreCreditResolver = exports.ShopStoreCreditResolver = class ShopStoreCreditResolver {
     constructor(storeCreditService) {
         this.storeCreditService = storeCreditService;
     }
@@ -33,8 +33,7 @@ __decorate([
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", Promise)
 ], ShopStoreCreditResolver.prototype, "claim", null);
-ShopStoreCreditResolver = __decorate([
+exports.ShopStoreCreditResolver = ShopStoreCreditResolver = __decorate([
     (0, graphql_1.Resolver)(),
     __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService])
 ], ShopStoreCreditResolver);
-exports.ShopStoreCreditResolver = ShopStoreCreditResolver;

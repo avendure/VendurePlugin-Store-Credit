@@ -15,9 +15,9 @@ const store_credit_detail_component_1 = require("./components/store-credit-detai
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const all_store_credit_list_graphql_1 = require("./components/all-store-credit-list/all-store-credit-list.graphql");
-let StoreCreditUIModule = class StoreCreditUIModule {
+let StoreCreditUIModule = exports.StoreCreditUIModule = class StoreCreditUIModule {
 };
-StoreCreditUIModule = __decorate([
+exports.StoreCreditUIModule = StoreCreditUIModule = __decorate([
     (0, core_1.NgModule)({
         imports: [
             core_2.SharedModule,
@@ -63,7 +63,6 @@ StoreCreditUIModule = __decorate([
         declarations: [all_store_credit_list_component_1.AllStoreCreditListComponent, store_credit_detail_component_1.StoreCreditDetailComponent]
     })
 ], StoreCreditUIModule);
-exports.StoreCreditUIModule = StoreCreditUIModule;
 function storeCreditDetailBreadcrumb(resolved) {
     return resolved.detail.entity.pipe((0, operators_1.map)((entity) => [
         {

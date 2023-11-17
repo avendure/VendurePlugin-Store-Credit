@@ -24,23 +24,23 @@ const addressInput = {
     countryCode: "US",
 };
 // the code you have set while creating payment method
-const creditPaymentCode = "credit";
+const creditPaymentCode = "store-credit";
 (0, vitest_1.describe)("store-credits plugin", () => {
     const { server, adminClient, shopClient } = (0, testing_1.createTestEnvironment)({
         ...testing_1.testConfig,
         plugins: [index_1.StoreCreditPlugin],
     });
     // Query account balance from admin ui
-    (0, vitest_1.it)("returns Seller and Customer StoreCredits", async () => {
+    (0, vitest_1.it)("Superadmin: Returns Seller and Customer StoreCredits", async () => {
         await adminClient.asSuperAdmin(); // log in as the SuperAdmin user
         const query = (0, graphql_tag_1.default) `
-      query getSellerANDCustomerStoreCredits($sellerId: ID!) {
-        getSellerANDCustomerStoreCredits(sellerId: $sellerId) {
-          customerAccountBalance
-          sellerAccountBalance
-        }
-      }
-    `;
+			query getSellerANDCustomerStoreCredits($sellerId: ID!) {
+				getSellerANDCustomerStoreCredits(sellerId: $sellerId) {
+					customerAccountBalance
+					sellerAccountBalance
+				}
+			}
+		`;
         let result = await adminClient.query(query, {
             sellerId: sellerId,
         });
@@ -56,17 +56,17 @@ const creditPaymentCode = "credit";
         });
     });
     // create store credit mutation
-    (0, vitest_1.it)("creates a store credit", async () => {
+    (0, vitest_1.it)("Superadmin: creates a store credit", async () => {
         await adminClient.asSuperAdmin(); // log in as the SuperAdmin user
         const mutation = (0, graphql_tag_1.default) `
-      mutation createStoreCredit($input: StoreCreditAddInput!) {
-        createStoreCredit(input: $input) {
-          key
-          value
-          isClaimed
-        }
-      }
-    `;
+			mutation createStoreCredit($input: StoreCreditAddInput!) {
+				createStoreCredit(input: $input) {
+					key
+					value
+					isClaimed
+				}
+			}
+		`;
         const result = await adminClient.query(mutation, {
             input: {
                 key: key,
@@ -82,17 +82,17 @@ const creditPaymentCode = "credit";
         });
     });
     // claim store credit mutation
-    (0, vitest_1.it)("claims a store credit", async () => {
+    (0, vitest_1.it)("Buyer: claims a store credit", async () => {
         await shopClient.asUserWithCredentials(customerUsername, customerPassword); // log in as the SuperAdmin user
         const mutation = (0, graphql_tag_1.default) `
-      mutation claim($key: String!) {
-        claim(key: $key) {
-          key
-          value
-          isClaimed
-        }
-      }
-    `;
+			mutation claim($key: String!) {
+				claim(key: $key) {
+					key
+					value
+					isClaimed
+				}
+			}
+		`;
         const result = await shopClient.query(mutation, {
             key: key,
         });
@@ -105,16 +105,16 @@ const creditPaymentCode = "credit";
         });
     });
     // Transfer credit Query, provide value and sellerId when testing
-    (0, vitest_1.it)("transfers Credit from Seller To Customer", async () => {
+    (0, vitest_1.it)("Superadmin: transfers Credit from Seller To Customer", async () => {
         await adminClient.asSuperAdmin(); // log in as the customer user
         const query = (0, graphql_tag_1.default) `
-      query transferCreditfromSellerToCustomer($value: Int!, $sellerId: ID!) {
-        transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
-          customerAccountBalance
-          sellerAccountBalance
-        }
-      }
-    `;
+			query transferCreditfromSellerToCustomer($value: Int!, $sellerId: ID!) {
+				transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
+					customerAccountBalance
+					sellerAccountBalance
+				}
+			}
+		`;
         let result = await adminClient.query(query, {
             value: 10,
             sellerId: sellerId,
@@ -130,19 +130,19 @@ const creditPaymentCode = "credit";
         });
     });
     // customer credit less than total amount purchase fails
-    (0, vitest_1.it)("fails/pass to purchase product with in/sufficient credit", async () => {
+    (0, vitest_1.it)("Buyer: fails/pass to purchase product with in/sufficient credit", async () => {
         var _a;
         await shopClient.asUserWithCredentials(customerUsername, customerPassword); // log in as the customer user
         const mutation = (0, graphql_tag_1.default) `
-      mutation addProductToOrder($productVariantId: ID!, $quantity: Int!) {
-        addItemToOrder(
-          productVariantId: $productVariantId
-          quantity: $quantity
-        ) {
-          __typename
-        }
-      }
-    `;
+			mutation addProductToOrder($productVariantId: ID!, $quantity: Int!) {
+				addItemToOrder(
+					productVariantId: $productVariantId
+					quantity: $quantity
+				) {
+					__typename
+				}
+			}
+		`;
         const result = await shopClient.query(mutation, {
             productVariantId: variantId,
             quantity,
@@ -154,12 +154,12 @@ const creditPaymentCode = "credit";
                 __typename: "Order",
             });
             const mutation2 = (0, graphql_tag_1.default) `
-        mutation SetOrderShippingAddress($input: CreateAddressInput!) {
-          setOrderShippingAddress(input: $input) {
-            __typename
-          }
-        }
-      `;
+				mutation SetOrderShippingAddress($input: CreateAddressInput!) {
+					setOrderShippingAddress(input: $input) {
+						__typename
+					}
+				}
+			`;
             const result2 = await shopClient.query(mutation2, {
                 input: addressInput,
             });
@@ -169,12 +169,12 @@ const creditPaymentCode = "credit";
                 __typename: "Order",
             });
             const mutation3 = (0, graphql_tag_1.default) `
-        mutation SetOrderBillingAddress($input: CreateAddressInput!) {
-          setOrderBillingAddress(input: $input) {
-            __typename
-          }
-        }
-      `;
+				mutation SetOrderBillingAddress($input: CreateAddressInput!) {
+					setOrderBillingAddress(input: $input) {
+						__typename
+					}
+				}
+			`;
             const result3 = await shopClient.query(mutation3, {
                 input: addressInput,
             });
@@ -184,23 +184,23 @@ const creditPaymentCode = "credit";
                 __typename: "Order",
             });
             const query1 = (0, graphql_tag_1.default) `
-        query EligibleShippingMethods {
-          eligibleShippingMethods {
-            id
-            name
-          }
-        }
-      `;
+				query EligibleShippingMethods {
+					eligibleShippingMethods {
+						id
+						name
+					}
+				}
+			`;
             const result4 = await shopClient.query(query1);
             console.log(result4.eligibleShippingMethods[0].id);
             (0, vitest_1.expect)(result4.eligibleShippingMethods).toBeTypeOf("object");
             const mutation4 = (0, graphql_tag_1.default) `
-        mutation SetOrderShippingMethod($shippingMethodId: [ID!]!) {
-          setOrderShippingMethod(shippingMethodId: $shippingMethodId) {
-            __typename
-          }
-        }
-      `;
+				mutation SetOrderShippingMethod($shippingMethodId: [ID!]!) {
+					setOrderShippingMethod(shippingMethodId: $shippingMethodId) {
+						__typename
+					}
+				}
+			`;
             const result5 = await shopClient.query(mutation4, {
                 shippingMethodId: [result4.eligibleShippingMethods[0].id],
             });
@@ -209,12 +209,12 @@ const creditPaymentCode = "credit";
                 __typename: "Order",
             });
             const mutation5 = (0, graphql_tag_1.default) `
-        mutation TransitionOrderToState($state: String!) {
-          transitionOrderToState(state: $state) {
-            __typename
-          }
-        }
-      `;
+				mutation TransitionOrderToState($state: String!) {
+					transitionOrderToState(state: $state) {
+						__typename
+					}
+				}
+			`;
             const result6 = await shopClient.query(mutation5, {
                 state: "ArrangingPayment",
             });
@@ -224,13 +224,13 @@ const creditPaymentCode = "credit";
             });
         }
         const query2 = (0, graphql_tag_1.default) `
-      query EligiblePaymentMethods {
-        eligiblePaymentMethods {
-          code
-          isEligible
-        }
-      }
-    `;
+			query EligiblePaymentMethods {
+				eligiblePaymentMethods {
+					code
+					isEligible
+				}
+			}
+		`;
         const result7 = await shopClient.query(query2);
         (0, vitest_1.expect)(result7.eligiblePaymentMethods).toBeTypeOf("object");
         (0, vitest_1.expect)(result7.eligiblePaymentMethods).toContainEqual({
@@ -239,62 +239,62 @@ const creditPaymentCode = "credit";
         });
         // query for total amount
         const query3 = (0, graphql_tag_1.default) `
-      query ActiveOrder {
-        activeOrder {
-          id
-          state
-          total
-          shippingWithTax
-          subTotal
-          subTotalWithTax
-          totalWithTax
-        }
-      }
-    `;
+			query ActiveOrder {
+				activeOrder {
+					id
+					state
+					total
+					shippingWithTax
+					subTotal
+					subTotalWithTax
+					totalWithTax
+				}
+			}
+		`;
         const result9 = await shopClient
             .query(query3)
             .then((res) => res.activeOrder);
         const totalAmount = result9.totalWithTax / 100;
         // query for customer account balance
         const query4 = (0, graphql_tag_1.default) `
-      query ActiveCustomer {
-        activeCustomer {
-          customFields {
-            accountBalance
-          }
-        }
-      }
-    `;
+			query ActiveCustomer {
+				activeCustomer {
+					customFields {
+						accountBalance
+					}
+				}
+			}
+		`;
         const result10 = await shopClient
             .query(query4)
             .then((res) => res.activeCustomer);
         const customerAccountBalance = (_a = result10.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance;
         // console.log(customerAccountBalance, totalAmount);
         const mutation6 = (0, graphql_tag_1.default) `
-      mutation AddPaymentToOrder($input: PaymentInput!) {
-        addPaymentToOrder(input: $input) {
-          __typename
-          ... on PaymentFailedError {
-            message
-            paymentErrorMessage
-            errorCode
-          }
-          ... on PaymentDeclinedError {
-            message
-            paymentErrorMessage
-            errorCode
-          }
-          ... on OrderPaymentStateError {
-            message
-            errorCode
-          }
-          ... on IneligiblePaymentMethodError {
-            message
-            eligibilityCheckerMessage
-          }
-        }
-      }
-    `;
+			mutation AddPaymentToOrder($input: PaymentInput!) {
+				addPaymentToOrder(input: $input) {
+					__typename
+					... on PaymentFailedError {
+						message
+						paymentErrorMessage
+						errorCode
+					}
+					... on PaymentDeclinedError {
+						message
+						paymentErrorMessage
+						errorCode
+					}
+					... on OrderPaymentStateError {
+						message
+						errorCode
+					}
+					... on IneligiblePaymentMethodError {
+						message
+						eligibilityCheckerMessage
+					}
+				}
+			}
+		`;
         const result8 = await shopClient.query(mutation6, {
             input: {
                 method: creditPaymentCode,

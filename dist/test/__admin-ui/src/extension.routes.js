@@ -26,5 +26,5 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.extensionRoutes = void 0;
 exports.extensionRoutes = [{
         path: 'extensions/store-credit',
-        loadChildren: () => Promise.resolve().then(() => __importStar(require('./extensions/14e4c3a64aa05d67bdf089b8b654f05ff266fdfb1f50781e5ac3ee8d5ae837c7/store-credit-ui-lazy.module'))).then(m => m.StoreCreditUIModule),
+        loadChildren: () => Promise.resolve().then(() => __importStar(require('./extensions/42f1b127e0c3ec62e8c1d255d5274e115ef334c1677116e5fe24f31f24468bf3/store-credit-ui-lazy.module'))).then(m => m.StoreCreditUIModule),
     }];
