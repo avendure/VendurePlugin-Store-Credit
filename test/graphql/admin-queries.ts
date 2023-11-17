@@ -44,7 +44,7 @@ export const CREATE_STORE_CREDIT = gql`
 `;
 
 export const TRANSFER_FROM_SELLER_TO_CUSTOMER = gql`
-  query TransferFromSellerToCustomer($value: Int!, $sellerId: ID!) {
+  mutation TransferFromSellerToCustomer($value: Int!, $sellerId: ID!) {
     transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
       customerAccountBalance
       sellerAccountBalance
