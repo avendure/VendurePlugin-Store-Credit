@@ -19,7 +19,7 @@ const store_credit_service_1 = require("./service/store-credit.service");
 const path_1 = __importDefault(require("path"));
 const store_credit_payment_handler_1 = require("./handler/store-credit-payment.handler");
 const store_credit_comm_resolver_1 = require("./resolvers/store-credit-comm.resolver");
-let StoreCreditPlugin = class StoreCreditPlugin {
+let StoreCreditPlugin = exports.StoreCreditPlugin = class StoreCreditPlugin {
 };
 StoreCreditPlugin.uiExtensions = {
     extensionPath: path_1.default.join(__dirname, 'ui'),
@@ -37,7 +37,7 @@ StoreCreditPlugin.uiExtensions = {
         },
     ],
 };
-StoreCreditPlugin = __decorate([
+exports.StoreCreditPlugin = StoreCreditPlugin = __decorate([
     (0, core_1.VendurePlugin)({
         imports: [core_1.PluginCommonModule],
         entities: [store_credit_entity_1.StoreCredit],
@@ -87,4 +87,3 @@ StoreCreditPlugin = __decorate([
         compatibility: '>0.0.0',
     })
 ], StoreCreditPlugin);
-exports.StoreCreditPlugin = StoreCreditPlugin;

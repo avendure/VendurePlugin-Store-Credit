@@ -6,13 +6,13 @@ var AdjustmentType;
     AdjustmentType["DISTRIBUTED_ORDER_PROMOTION"] = "DISTRIBUTED_ORDER_PROMOTION";
     AdjustmentType["OTHER"] = "OTHER";
     AdjustmentType["PROMOTION"] = "PROMOTION";
-})(AdjustmentType = exports.AdjustmentType || (exports.AdjustmentType = {}));
+})(AdjustmentType || (exports.AdjustmentType = AdjustmentType = {}));
 var AssetType;
 (function (AssetType) {
     AssetType["BINARY"] = "BINARY";
     AssetType["IMAGE"] = "IMAGE";
     AssetType["VIDEO"] = "VIDEO";
-})(AssetType = exports.AssetType || (exports.AssetType = {}));
+})(AssetType || (exports.AssetType = AssetType = {}));
 /**
  * @description
  * ISO 4217 currency code
@@ -335,14 +335,14 @@ var CurrencyCode;
     CurrencyCode["ZMW"] = "ZMW";
     /** Zimbabwean dollar */
     CurrencyCode["ZWL"] = "ZWL";
-})(CurrencyCode = exports.CurrencyCode || (exports.CurrencyCode = {}));
+})(CurrencyCode || (exports.CurrencyCode = CurrencyCode = {}));
 var DeletionResult;
 (function (DeletionResult) {
     /** The entity was successfully deleted */
     DeletionResult["DELETED"] = "DELETED";
     /** Deletion did not take place, reason given in message */
     DeletionResult["NOT_DELETED"] = "NOT_DELETED";
-})(DeletionResult = exports.DeletionResult || (exports.DeletionResult = {}));
+})(DeletionResult || (exports.DeletionResult = DeletionResult = {}));
 var ErrorCode;
 (function (ErrorCode) {
     ErrorCode["ALREADY_LOGGED_IN_ERROR"] = "ALREADY_LOGGED_IN_ERROR";
@@ -375,13 +375,13 @@ var ErrorCode;
     ErrorCode["UNKNOWN_ERROR"] = "UNKNOWN_ERROR";
     ErrorCode["VERIFICATION_TOKEN_EXPIRED_ERROR"] = "VERIFICATION_TOKEN_EXPIRED_ERROR";
     ErrorCode["VERIFICATION_TOKEN_INVALID_ERROR"] = "VERIFICATION_TOKEN_INVALID_ERROR";
-})(ErrorCode = exports.ErrorCode || (exports.ErrorCode = {}));
+})(ErrorCode || (exports.ErrorCode = ErrorCode = {}));
 var GlobalFlag;
 (function (GlobalFlag) {
     GlobalFlag["FALSE"] = "FALSE";
     GlobalFlag["INHERIT"] = "INHERIT";
     GlobalFlag["TRUE"] = "TRUE";
-})(GlobalFlag = exports.GlobalFlag || (exports.GlobalFlag = {}));
+})(GlobalFlag || (exports.GlobalFlag = GlobalFlag = {}));
 var HistoryEntryType;
 (function (HistoryEntryType) {
     HistoryEntryType["CUSTOMER_ADDED_TO_GROUP"] = "CUSTOMER_ADDED_TO_GROUP";
@@ -408,7 +408,7 @@ var HistoryEntryType;
     HistoryEntryType["ORDER_PAYMENT_TRANSITION"] = "ORDER_PAYMENT_TRANSITION";
     HistoryEntryType["ORDER_REFUND_TRANSITION"] = "ORDER_REFUND_TRANSITION";
     HistoryEntryType["ORDER_STATE_TRANSITION"] = "ORDER_STATE_TRANSITION";
-})(HistoryEntryType = exports.HistoryEntryType || (exports.HistoryEntryType = {}));
+})(HistoryEntryType || (exports.HistoryEntryType = HistoryEntryType = {}));
 /**
  * @description
  * Languages in the form of a ISO 639-1 language code with optional
@@ -734,18 +734,18 @@ var LanguageCode;
     LanguageCode["zh_Hant"] = "zh_Hant";
     /** Zulu */
     LanguageCode["zu"] = "zu";
-})(LanguageCode = exports.LanguageCode || (exports.LanguageCode = {}));
+})(LanguageCode || (exports.LanguageCode = LanguageCode = {}));
 var LogicalOperator;
 (function (LogicalOperator) {
     LogicalOperator["AND"] = "AND";
     LogicalOperator["OR"] = "OR";
-})(LogicalOperator = exports.LogicalOperator || (exports.LogicalOperator = {}));
+})(LogicalOperator || (exports.LogicalOperator = LogicalOperator = {}));
 var OrderType;
 (function (OrderType) {
     OrderType["Aggregate"] = "Aggregate";
     OrderType["Regular"] = "Regular";
     OrderType["Seller"] = "Seller";
-})(OrderType = exports.OrderType || (exports.OrderType = {}));
+})(OrderType || (exports.OrderType = OrderType = {}));
 /**
  * @description
  * Permissions for administrators and customers. Used to control access to
@@ -966,9 +966,9 @@ var Permission;
     Permission["UpdateTaxRate"] = "UpdateTaxRate";
     /** Grants permission to update Zone */
     Permission["UpdateZone"] = "UpdateZone";
-})(Permission = exports.Permission || (exports.Permission = {}));
+})(Permission || (exports.Permission = Permission = {}));
 var SortOrder;
 (function (SortOrder) {
     SortOrder["ASC"] = "ASC";
     SortOrder["DESC"] = "DESC";
-})(SortOrder = exports.SortOrder || (exports.SortOrder = {}));
+})(SortOrder || (exports.SortOrder = SortOrder = {}));

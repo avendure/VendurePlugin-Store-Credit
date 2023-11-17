@@ -15,7 +15,8 @@ const core_2 = require("@vendure/admin-ui/core");
 const forms_1 = require("@angular/forms");
 const creditsInSeller_graphql_1 = require("./creditsInSeller.graphql");
 const router_1 = require("@angular/router");
-let CreditsInSellerComponent = class CreditsInSellerComponent {
+const operators_1 = require("rxjs/operators");
+let CreditsInSellerComponent = exports.CreditsInSellerComponent = class CreditsInSellerComponent {
     // customerAccountBalance: number = 0;
     // sellerAccountBalance: number = 0;
     constructor(dataService, route, formBuilder, notificationService, changeDetectorRef) {
@@ -44,26 +45,26 @@ let CreditsInSellerComponent = class CreditsInSellerComponent {
     transfer() {
         const sellerId = this.id;
         const value = Number(this.detailForm.value.sellerAccountBalance);
-        // console.log(value, sellerId);
+        console.log(value, sellerId);
         this.dataService
-            .query(creditsInSeller_graphql_1.TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER, { value, sellerId })
-            .mapSingle((data) => data.transferCreditfromSellerToCustomer)
+            .mutate(creditsInSeller_graphql_1.TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER, {
+            value,
+            sellerId,
+        })
+            .pipe((0, operators_1.map)((d) => d.transferCreditfromSellerToCustomer))
             .subscribe((data) => {
-            console.log(data);
             this.detailForm.patchValue({
                 customerAccountBalance: data.customerAccountBalance,
                 sellerAccountBalance: data.sellerAccountBalance,
             });
             this.notificationService.success("Transfer Successful!");
             location.reload();
-            return data;
         });
         this.notificationService.success("Transfer Successful!");
         this.changeDetectorRef.detectChanges();
-        this.ngOnInit();
     }
 };
-CreditsInSellerComponent = __decorate([
+exports.CreditsInSellerComponent = CreditsInSellerComponent = __decorate([
     (0, core_1.Component)({
         selector: "creditsInSeller-component",
         templateUrl: "./creditsInSeller.html",
@@ -77,4 +78,3 @@ CreditsInSellerComponent = __decorate([
         core_2.NotificationService,
         core_1.ChangeDetectorRef])
 ], CreditsInSellerComponent);
-exports.CreditsInSellerComponent = CreditsInSellerComponent;

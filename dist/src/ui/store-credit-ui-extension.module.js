@@ -10,9 +10,9 @@ exports.StoreCreditExtensionModule = void 0;
 const core_1 = require("@angular/core");
 const core_2 = require("@vendure/admin-ui/core");
 const creditsInSeller_1 = require("./components/CreditsInSeller/creditsInSeller");
-let StoreCreditExtensionModule = class StoreCreditExtensionModule {
+let StoreCreditExtensionModule = exports.StoreCreditExtensionModule = class StoreCreditExtensionModule {
 };
-StoreCreditExtensionModule = __decorate([
+exports.StoreCreditExtensionModule = StoreCreditExtensionModule = __decorate([
     (0, core_1.NgModule)({
         imports: [core_2.SharedModule],
         providers: [
@@ -40,4 +40,3 @@ StoreCreditExtensionModule = __decorate([
         declarations: [creditsInSeller_1.CreditsInSellerComponent],
     })
 ], StoreCreditExtensionModule);
-exports.StoreCreditExtensionModule = StoreCreditExtensionModule;

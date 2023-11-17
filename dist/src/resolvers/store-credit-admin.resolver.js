@@ -16,7 +16,7 @@ exports.AdminStoreCreditResolver = void 0;
 const graphql_1 = require("@nestjs/graphql");
 const core_1 = require("@vendure/core");
 const store_credit_service_1 = require("../service/store-credit.service");
-let AdminStoreCreditResolver = class AdminStoreCreditResolver {
+let AdminStoreCreditResolver = exports.AdminStoreCreditResolver = class AdminStoreCreditResolver {
     constructor(storeCreditService) {
         this.storeCreditService = storeCreditService;
     }
@@ -67,7 +67,7 @@ __decorate([
     (0, graphql_1.Mutation)(),
     (0, core_1.Allow)(core_1.Permission.SuperAdmin),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)('id')),
+    __param(1, (0, graphql_1.Args)("id")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [core_1.RequestContext, String]),
     __metadata("design:returntype", Promise)
@@ -81,10 +81,10 @@ __decorate([
     __metadata("design:returntype", void 0)
 ], AdminStoreCreditResolver.prototype, "storeCredits", null);
 __decorate([
-    (0, graphql_1.Query)(),
+    (0, graphql_1.Mutation)(),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)('sellerId')),
-    __param(2, (0, graphql_1.Args)('value')),
+    __param(1, (0, graphql_1.Args)("sellerId")),
+    __param(2, (0, graphql_1.Args)("value")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [core_1.RequestContext, Object, Number]),
     __metadata("design:returntype", void 0)
@@ -92,13 +92,12 @@ __decorate([
 __decorate([
     (0, graphql_1.Query)(),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)('sellerId')),
+    __param(1, (0, graphql_1.Args)("sellerId")),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", void 0)
 ], AdminStoreCreditResolver.prototype, "getSellerANDCustomerStoreCredits", null);
-AdminStoreCreditResolver = __decorate([
+exports.AdminStoreCreditResolver = AdminStoreCreditResolver = __decorate([
     (0, graphql_1.Resolver)(),
     __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService])
 ], AdminStoreCreditResolver);
-exports.AdminStoreCreditResolver = AdminStoreCreditResolver;

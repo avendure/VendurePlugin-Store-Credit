@@ -12,9 +12,9 @@ const router_1 = require("@angular/router");
 const core_2 = require("@vendure/admin-ui/core");
 const app_routes_1 = require("./app.routes");
 const shared_extensions_module_1 = require("./shared-extensions.module");
-let AppModule = class AppModule {
+let AppModule = exports.AppModule = class AppModule {
 };
-AppModule = __decorate([
+exports.AppModule = AppModule = __decorate([
     (0, core_1.NgModule)({
         declarations: [],
         imports: [
@@ -26,4 +26,3 @@ AppModule = __decorate([
         bootstrap: [core_2.AppComponent],
     })
 ], AppModule);
-exports.AppModule = AppModule;

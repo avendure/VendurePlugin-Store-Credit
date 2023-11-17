@@ -41,6 +41,7 @@ require("dotenv").config();
     const { server, adminClient, shopClient } = (0, testing_1.createTestEnvironment)(devConfig);
     await server.init({
         initialData: initial_data_1.initialData,
-        // productsCsvPath: path.join(__dirname, "./product-import.csv"),
+        customerCount: 5,
+        productsCsvPath: "./products.csv",
     });
 })();

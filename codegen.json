@@ -16,16 +16,7 @@
     "src/ui/generated-types.ts": {
       "schema": "http://localhost:3050/admin-api",
       "documents": "src/ui/**/*.graphql.ts",
-      "plugins": [
-        {
-          "add": {
-            "content": "/* eslint-disable */"
-          }
-        },
-        "typescript",
-        "typescript-operations",
-        "typed-document-node"
-      ],
+      "plugins": ["typescript", "typescript-operations", "typed-document-node"],
       "config": {
         "scalars": {
           "ID": "string"
