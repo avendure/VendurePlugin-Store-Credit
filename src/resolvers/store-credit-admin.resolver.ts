@@ -1,5 +1,5 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { StoreCredit } from '../entity/store-credit.entity';
+import { Resolver, Query, Mutation, Args } from "@nestjs/graphql";
+import { StoreCredit } from "../entity/store-credit.entity";
 import {
   Allow,
   Ctx,
@@ -7,14 +7,14 @@ import {
   Permission,
   RequestContext,
   Transaction,
-} from '@vendure/core';
-import { StoreCreditService } from '../service/store-credit.service';
+} from "@vendure/core";
+import { StoreCreditService } from "../service/store-credit.service";
 import {
   MutationCreateStoreCreditArgs,
   MutationUpdateStoreCreditArgs,
   QueryStoreCreditArgs,
   QueryStoreCreditsArgs,
-} from '../types/credits-admin-types';
+} from "../types/credits-admin-types";
 
 @Resolver()
 export class AdminStoreCreditResolver {
@@ -25,7 +25,7 @@ export class AdminStoreCreditResolver {
   @Allow(Permission.SuperAdmin)
   async createStoreCredit(
     @Ctx() ctx: RequestContext,
-    @Args() args: MutationCreateStoreCreditArgs,
+    @Args() args: MutationCreateStoreCreditArgs
   ): Promise<StoreCredit> {
     const { input } = args;
     return this.storeCreditService.createStoreCredit(ctx, input);
@@ -36,7 +36,7 @@ export class AdminStoreCreditResolver {
   @Allow(Permission.SuperAdmin)
   async updateStoreCredit(
     @Ctx() ctx: RequestContext,
-    @Args() args: MutationUpdateStoreCreditArgs,
+    @Args() args: MutationUpdateStoreCreditArgs
   ): Promise<StoreCredit | null> {
     const { input } = args;
     return this.storeCreditService.updateStoreCredit(ctx, input);
@@ -47,7 +47,7 @@ export class AdminStoreCreditResolver {
   @Allow(Permission.SuperAdmin)
   async deleteSingleStoreCredit(
     @Ctx() ctx: RequestContext,
-    @Args('id') id: string,
+    @Args("id") id: string
   ) {
     return this.storeCreditService.deleteStoreCredit(ctx, id);
   }
@@ -59,27 +59,27 @@ export class AdminStoreCreditResolver {
     return this.storeCreditService.getAllStoreCredit(options);
   }
 
-  @Query()
+  @Mutation()
   transferCreditfromSellerToCustomer(
     @Ctx() ctx: RequestContext,
-    @Args('sellerId') sellerId: ID,
-    @Args('value') value: Number,
+    @Args("sellerId") sellerId: ID,
+    @Args("value") value: Number
   ) {
     return this.storeCreditService.transferCreditfromSellerToCustomerWithSameEmail(
       ctx,
       value,
-      sellerId,
+      sellerId
     );
   }
 
   @Query()
   getSellerANDCustomerStoreCredits(
     @Ctx() ctx: RequestContext,
-    @Args('sellerId') sellerId: ID,
+    @Args("sellerId") sellerId: ID
   ) {
     return this.storeCreditService.getSellerANDCustomerStoreCredits(
       ctx,
-      sellerId,
+      sellerId
     );
   }
 }

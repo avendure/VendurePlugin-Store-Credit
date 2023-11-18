@@ -15,8 +15,10 @@ import {
   GET_SELLER_AND_CUSTOMER_STORE_CREDITS,
   TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER,
 } from "./creditsInSeller.graphql";
-import { StoreCredit } from "./generated-types";
+
 import { ActivatedRoute } from "@angular/router";
+import { map } from "rxjs/operators";
+import { TransferCreditfromSellerToCustomerMutation } from "../../generated-types";
 
 @Component({
   selector: "creditsInSeller-component",
@@ -61,24 +63,27 @@ export class CreditsInSellerComponent implements OnInit, CustomDetailComponent {
   transfer() {
     const sellerId = this.id;
     const value = Number(this.detailForm.value.sellerAccountBalance);
-    // console.log(value, sellerId);
+    console.log(value, sellerId);
 
     this.dataService
-      .query(TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER, { value, sellerId })
-      .mapSingle((data: any) => data.transferCreditfromSellerToCustomer)
+      .mutate<TransferCreditfromSellerToCustomerMutation>(
+        TRANSFER_CREDIT_FROM_SELLER_TO_CUSTOMER,
+        {
+          value,
+          sellerId,
+        }
+      )
+      .pipe(map((d) => d.transferCreditfromSellerToCustomer))
       .subscribe((data) => {
-        console.log(data);
         this.detailForm.patchValue({
           customerAccountBalance: data.customerAccountBalance,
           sellerAccountBalance: data.sellerAccountBalance,
         });
         this.notificationService.success("Transfer Successful!");
-
         location.reload();
-        return data;
       });
+
     this.notificationService.success("Transfer Successful!");
     this.changeDetectorRef.detectChanges();
-    this.ngOnInit();
   }
 }

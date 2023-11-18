@@ -54,14 +54,15 @@ exports.adminApiExtensions = (0, apollo_server_core_1.gql) `
 
   extend type Query {
     storeCredits(options: StoreCreditListOptions): StoreCreditList!
-    transferCreditfromSellerToCustomer(
-      value: Int!
-      sellerId: ID!
-    ): AccountBalance!
+
     getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
   }
 
   extend type Mutation {
+    transferCreditfromSellerToCustomer(
+      value: Int!
+      sellerId: ID!
+    ): AccountBalance!
     createStoreCredit(input: StoreCreditAddInput!): StoreCredit!
     updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
     deleteSingleStoreCredit(id: ID!): DeletionResponse!

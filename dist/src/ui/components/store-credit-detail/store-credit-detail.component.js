@@ -16,7 +16,7 @@ const core_2 = require("@vendure/admin-ui/core");
 const rxjs_1 = require("rxjs");
 const operators_1 = require("rxjs/operators");
 const store_credit_detail_graphql_1 = require("./store-credit-detail.graphql");
-let StoreCreditDetailComponent = class StoreCreditDetailComponent extends core_2.TypedBaseDetailComponent {
+let StoreCreditDetailComponent = exports.StoreCreditDetailComponent = class StoreCreditDetailComponent extends core_2.TypedBaseDetailComponent {
     constructor(formBuilder, changeDetector, notificationService) {
         super();
         this.formBuilder = formBuilder;
@@ -136,7 +136,7 @@ let StoreCreditDetailComponent = class StoreCreditDetailComponent extends core_2
         });
     }
 };
-StoreCreditDetailComponent = __decorate([
+exports.StoreCreditDetailComponent = StoreCreditDetailComponent = __decorate([
     (0, core_1.Component)({
         selector: 'vdr-store-credit-detail',
         templateUrl: './store-credit-detail.component.html',
@@ -147,4 +147,3 @@ StoreCreditDetailComponent = __decorate([
         core_1.ChangeDetectorRef,
         core_2.NotificationService])
 ], StoreCreditDetailComponent);
-exports.StoreCreditDetailComponent = StoreCreditDetailComponent;

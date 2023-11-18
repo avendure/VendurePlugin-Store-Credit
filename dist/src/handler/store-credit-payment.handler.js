@@ -25,9 +25,6 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
     },
     async createPayment(ctx, order, amount, args, metadata) {
         const customer = order.customer;
-        console.log(amount);
-        console.log('customer: ' + JSON.stringify(customer, null, 2));
-        console.log('here');
         if (!customer) {
             return {
                 amount: amount,
@@ -43,9 +40,7 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         const customerAccountBalance = (customerCustomFields === null || customerCustomFields === void 0 ? void 0 : customerCustomFields.accountBalance) || 0;
         const totalAmtToBePaidToSeller = amount;
         const realCustomerAccountBalance = customerAccountBalance * 100;
-        console.log('Customer account balance: ', realCustomerAccountBalance, ' - totalAmtToBePaidToSeller: ', totalAmtToBePaidToSeller);
         if (realCustomerAccountBalance < totalAmtToBePaidToSeller) {
-            console.log('Hit error...');
             return {
                 amount: amount,
                 state: 'Declined',

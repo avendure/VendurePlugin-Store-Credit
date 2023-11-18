@@ -1,4 +1,4 @@
-import { gql } from 'apollo-server-core';
+import { gql } from "apollo-server-core";
 
 const commonExtensions = gql`
   type StoreCredit implements Node {
@@ -54,14 +54,15 @@ export const adminApiExtensions = gql`
 
   extend type Query {
     storeCredits(options: StoreCreditListOptions): StoreCreditList!
-    transferCreditfromSellerToCustomer(
-      value: Int!
-      sellerId: ID!
-    ): AccountBalance!
+
     getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
   }
 
   extend type Mutation {
+    transferCreditfromSellerToCustomer(
+      value: Int!
+      sellerId: ID!
+    ): AccountBalance!
     createStoreCredit(input: StoreCreditAddInput!): StoreCredit!
     updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
     deleteSingleStoreCredit(id: ID!): DeletionResponse!

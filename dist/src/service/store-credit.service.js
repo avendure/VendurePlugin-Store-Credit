@@ -14,7 +14,7 @@ const common_1 = require("@nestjs/common");
 const core_1 = require("@vendure/core");
 const store_credit_entity_1 = require("../entity/store-credit.entity");
 const credits_admin_types_1 = require("../types/credits-admin-types");
-let StoreCreditService = class StoreCreditService {
+let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
     constructor(connection, listQueryBuilder, customerService, sellerService, channelService, userService, administratorService) {
         this.connection = connection;
         this.listQueryBuilder = listQueryBuilder;
@@ -27,8 +27,8 @@ let StoreCreditService = class StoreCreditService {
     async claim(ctx, key) {
         const userId = ctx.activeUserId;
         if (!userId) {
-            core_1.Logger.error('Not a valid User');
-            throw new Error('Not a valid User');
+            core_1.Logger.error("Not a valid User");
+            throw new Error("Not a valid User");
         }
         const storeCredit = await this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
@@ -39,13 +39,13 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!storeCredit) {
-            core_1.Logger.error('Invalid store credit key or credit already claimed.');
-            throw new Error('Invalid store credit key or credit already claimed.');
+            core_1.Logger.error("Invalid store credit key or credit already claimed.");
+            throw new Error("Invalid store credit key or credit already claimed.");
         }
         const customer = await this.customerService.findOneByUserId(ctx, userId);
         if (!customer) {
-            core_1.Logger.error('Invalid customer');
-            throw new Error('Invalid customer');
+            core_1.Logger.error("Invalid customer");
+            throw new Error("Invalid customer");
         }
         const customFields = customer.customFields;
         const accountBalance = customFields.accountBalance || 0;
@@ -68,7 +68,7 @@ let StoreCreditService = class StoreCreditService {
             key: input.key,
             value: input.value || 0,
         });
-        core_1.Logger.info('Store Credit Created');
+        core_1.Logger.info("Store Credit Created");
         return this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
             .save(storeCreditEntry);
@@ -89,11 +89,11 @@ let StoreCreditService = class StoreCreditService {
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
             .delete(id);
         if (deleteResult.affected === 0) {
-            throw new common_1.NotFoundException('Store Credit not found.');
+            throw new common_1.NotFoundException("Store Credit not found.");
         }
-        core_1.Logger.info('Store Credit Deleted');
+        core_1.Logger.info("Store Credit Deleted");
         return {
-            message: 'Store Credit successfully deleted.',
+            message: "Store Credit successfully deleted.",
             result: credits_admin_types_1.DeletionResult.DELETED,
         };
     }
@@ -119,11 +119,11 @@ let StoreCreditService = class StoreCreditService {
     async getCustomerStoreCredits(ctx) {
         const userId = ctx.activeUserId;
         if (!userId) {
-            throw new Error('Not a valid User');
+            throw new Error("Not a valid User");
         }
         const customer = await this.customerService.findOneByUserId(ctx, userId);
         if (!customer) {
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
         const allcredits = await this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
@@ -137,11 +137,11 @@ let StoreCreditService = class StoreCreditService {
     async getStoreCreditByCustomerId(ctx, input) {
         const userId = ctx.activeUserId;
         if (!userId) {
-            throw new Error('Not a valid User');
+            throw new Error("Not a valid User");
         }
         const customer = await this.customerService.findOneByUserId(ctx, userId);
         if (!customer || customer.id !== input.customerId) {
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
         const credit = await this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
@@ -152,7 +152,7 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!credit) {
-            throw new Error('Invalid store credit');
+            throw new Error("Invalid store credit");
         }
         return credit;
     }
@@ -162,15 +162,15 @@ let StoreCreditService = class StoreCreditService {
             where: {
                 id: sellerId,
             },
-            relations: ['customFields', 'customFields.user'],
+            relations: ["customFields", "customFields.user"],
         });
         if (!seller) {
-            throw new Error('Invalid seller');
+            throw new Error("Invalid seller");
         }
         const sellerCustomFields = seller.customFields;
         const user = seller.customFields.user;
         if (!user) {
-            throw new Error('Please set your User.');
+            throw new Error("Please set your User.");
         }
         const getcustomer = await this.connection
             .getRepository(ctx, core_1.Customer)
@@ -180,12 +180,12 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!getcustomer) {
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
         const customerCustomFields = getcustomer.customFields;
         // transaction
         if (sellerCustomFields.accountBalance < value) {
-            throw new Error('Insufficient balance');
+            throw new Error("Insufficient balance");
         }
         const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
@@ -195,7 +195,7 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!updateSeller) {
-            throw new Error('Invalid seller');
+            throw new Error("Invalid seller");
         }
         const updateCustomer = await this.customerService.update(ctx, {
             id: getcustomer.id,
@@ -212,7 +212,7 @@ let StoreCreditService = class StoreCreditService {
                     accountBalance: sellerCustomFields.accountBalance + Number(value),
                 },
             });
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
         return true;
     }
@@ -223,10 +223,10 @@ let StoreCreditService = class StoreCreditService {
             where: {
                 id: sellerId,
             },
-            relations: ['customFields', 'customFields.user'],
+            relations: ["customFields", "customFields.user"],
         });
         if (!seller) {
-            throw new Error('Invalid seller');
+            throw new Error("Invalid seller");
         }
         const sellerEmail = (_a = seller.customFields.user) === null || _a === void 0 ? void 0 : _a.identifier;
         const customerWithSameEmail = await this.connection
@@ -237,14 +237,14 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!customerWithSameEmail) {
-            throw new Error('Customer with same email as seller not found');
+            throw new Error("Customer with same email as seller not found");
         }
         const sellerCustomFields = seller.customFields;
         const getcustomer = customerWithSameEmail;
         const customerCustomFields = getcustomer.customFields;
         // transaction
         if (sellerCustomFields.accountBalance < value) {
-            throw new Error('Insufficient balance');
+            throw new Error("Insufficient balance");
         }
         const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
@@ -254,7 +254,7 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!updateSeller) {
-            throw new Error('Invalid seller');
+            throw new Error("Invalid seller");
         }
         const updateCustomer = await this.customerService.update(ctx, {
             id: getcustomer.id,
@@ -271,9 +271,9 @@ let StoreCreditService = class StoreCreditService {
                     accountBalance: sellerCustomFields.accountBalance + Number(value),
                 },
             });
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
-        core_1.Logger.info('Store Credit Transfered');
+        core_1.Logger.info("Store Credit Transfered");
         return {
             customerAccountBalance: updateCustomer.customFields.accountBalance,
             sellerAccountBalance: updateSeller.customFields.accountBalance,
@@ -282,9 +282,9 @@ let StoreCreditService = class StoreCreditService {
     async getStoreCreditForSameCustomer(ctx, id, sellerId) {
         const user = await this.userService.getUserById(ctx, ctx.activeUserId);
         if (!user) {
-            throw new Error('Invalid user');
+            throw new Error("Invalid user");
         }
-        console.log('user: ', user);
+        console.log("user: ", user);
         const getcustomer = await this.connection
             .getRepository(ctx, core_1.Customer)
             .findOne({
@@ -293,9 +293,9 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!getcustomer) {
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
-        console.log('getcustomer: ', getcustomer);
+        console.log("getcustomer: ", getcustomer);
         const storeCredit = await this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
             .find({
@@ -305,16 +305,16 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!storeCredit) {
-            throw new Error('Invalid store credit');
+            throw new Error("Invalid store credit");
         }
         return storeCredit;
     }
     async getStoreCreditsForSameCustomerWithSellerID(ctx, sellerId) {
         const user = await this.userService.getUserById(ctx, ctx.activeUserId);
         if (!user) {
-            throw new Error('Invalid user');
+            throw new Error("Invalid user");
         }
-        console.log('user: ', user);
+        console.log("user: ", user);
         const getcustomer = await this.connection
             .getRepository(ctx, core_1.Customer)
             .findOne({
@@ -323,9 +323,9 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!getcustomer) {
-            throw new Error('Invalid customer');
+            throw new Error("Invalid customer");
         }
-        console.log('getcustomer: ', getcustomer);
+        console.log("getcustomer: ", getcustomer);
         const storeCredit = await this.connection
             .getRepository(ctx, store_credit_entity_1.StoreCredit)
             .find({
@@ -335,7 +335,7 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!storeCredit) {
-            throw new Error('Invalid store credit');
+            throw new Error("Invalid store credit");
         }
         return storeCredit;
     }
@@ -346,16 +346,16 @@ let StoreCreditService = class StoreCreditService {
             where: {
                 id: sellerId,
             },
-            relations: ['customFields', 'customFields.user'],
+            relations: ["customFields", "customFields.user"],
         });
         if (!seller) {
-            throw new Error('Invalid seller');
+            throw new Error("Invalid seller");
         }
         const sellerEmail = (_a = seller.customFields.user) === null || _a === void 0 ? void 0 : _a.identifier;
         if (!sellerEmail) {
-            throw new Error('Please set your User.');
+            throw new Error("Please set your User.");
         }
-        // console.log('sellerEmail: ', sellerEmail);
+        console.log("sellerEmail: ", sellerEmail);
         const customerWithSameEmail = await this.connection
             .getRepository(ctx, core_1.Customer)
             .findOne({
@@ -364,7 +364,7 @@ let StoreCreditService = class StoreCreditService {
             },
         });
         if (!customerWithSameEmail) {
-            throw new Error('Customer with same email as seller not found');
+            throw new Error("Customer with same email as seller not found");
         }
         // console.log('customerWithSameEmail: ', customerWithSameEmail);
         const sellerCustomFields = seller.customFields;
@@ -379,7 +379,7 @@ let StoreCreditService = class StoreCreditService {
         return balance;
     }
 };
-StoreCreditService = __decorate([
+exports.StoreCreditService = StoreCreditService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [core_1.TransactionalConnection,
         core_1.ListQueryBuilder,
@@ -389,4 +389,3 @@ StoreCreditService = __decorate([
         core_1.UserService,
         core_1.AdministratorService])
 ], StoreCreditService);
-exports.StoreCreditService = StoreCreditService;
