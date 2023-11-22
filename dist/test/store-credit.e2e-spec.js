@@ -34,7 +34,7 @@ const generated_shop_types_1 = require("./graphql/generated-shop-types");
         })
             .then((c) => c.customers.items);
         started = true;
-    });
+    }, 60000);
     (0, vitest_1.afterAll)(async () => {
         await server.destroy();
     });

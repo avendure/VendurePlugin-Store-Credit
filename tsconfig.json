@@ -16,7 +16,7 @@
 	"exclude": [
 		"node_modules",
 		"migration.ts",
-		"src/plugins/**/ui/*",
+		"src/ui",
 		"**/admin-ui"
 	],
 	"ts-node": {
