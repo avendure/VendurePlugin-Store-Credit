@@ -1,70 +1,86 @@
-import { gql } from "apollo-server-core";
+import { gql } from 'apollo-server-core';
 
 const commonExtensions = gql`
-  type StoreCredit implements Node {
-    id: ID!
-    key: String
-    value: Int
-    customerId: String
-    isClaimed: Boolean
-    createdAt: DateTime
-    updatedAt: DateTime
-  }
+    type StoreCredit implements Node {
+        id: ID!
+        value: Int
+        perUserLimit: Int!
+        createdAt: DateTime
+        updatedAt: DateTime
+    }
 
-  input StoreCreditAddInput {
-    key: String
-    value: Int
-  }
+    input StoreCreditListOptions
 
-  type AccountBalance {
-    customerAccountBalance: Int
-    sellerAccountBalance: Int
-  }
+    type StoreCreditList implements PaginatedList {
+        items: [StoreCredit!]!
+        totalItems: Int!
+    }
 
-  extend type Query {
-    storeCredit(id: ID!): StoreCredit!
-    customerStoreCredit(id: ID!, customerId: ID!): StoreCredit!
-    customerStoreCredits: [StoreCredit!]!
-  }
+    extend type Query {
+        storeCredits(options: StoreCreditListOptions): StoreCreditList!
+        storeCredit(id: ID!): StoreCredit
+    }
 `;
 
 export const shopApiExtensions = gql`
-  ${commonExtensions}
+    ${commonExtensions}
 
-  extend type Mutation {
-    claim(key: String!): StoreCredit!
-  }
+    extend type StoreCredit {
+        variantId: ID!
+        variant: ProductVariant!
+    }
+
+    type ClaimResult {
+        success: Boolean!
+        message: String!
+        addedCredit: Int
+        currentBalance: Int
+    }
+
+    extend type Mutation {
+        addCreditToOrder(creditId: ID!, quantity: Int!): UpdateOrderItemsResult
+        claim(key: String!): ClaimResult!
+    }
 `;
 
 export const adminApiExtensions = gql`
-  ${commonExtensions}
+    ${commonExtensions}
 
-  input StoreCreditUpdateInput {
-    id: ID!
-    key: String
-    value: Int
-  }
+    extend type StoreCredit {
+        variantId: ID
+        variant: ProductVariant
+        key: String
+        customer: Customer
+        customerId: ID
+    }
 
-  type StoreCreditList implements PaginatedList {
-    items: [StoreCredit!]!
-    totalItems: Int!
-  }
+    input StoreCreditAddInput {
+        name: String
+        value: Int!
+        price: Int
+        perUserLimit: Int!
+    }
 
-  input StoreCreditListOptions
+    input StoreCreditUpdateInput {
+        id: ID!
+        name: String
+        value: Int
+        perUserLimit: Int
+    }
 
-  extend type Query {
-    storeCredits(options: StoreCreditListOptions): StoreCreditList!
+    type AccountBalance {
+        customerAccountBalance: Int
+        sellerAccountBalance: Int
+    }
 
-    getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
-  }
+    extend type Query {
+        getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
+    }
 
-  extend type Mutation {
-    transferCreditfromSellerToCustomer(
-      value: Int!
-      sellerId: ID!
-    ): AccountBalance!
-    createStoreCredit(input: StoreCreditAddInput!): StoreCredit!
-    updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
-    deleteSingleStoreCredit(id: ID!): DeletionResponse!
-  }
+    extend type Mutation {
+        transferCreditfromSellerToCustomer(value: Int!, sellerId: ID!): AccountBalance!
+        createStoreCredit(input: StoreCreditAddInput!): StoreCredit!
+        updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
+        deleteSingleStoreCredit(id: ID!): DeletionResponse!
+    }
 `;

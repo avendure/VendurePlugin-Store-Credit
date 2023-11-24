@@ -1,11 +1,5 @@
-<div class="b2b-top-card">
-  <!-- <input #sellerAccount value="{{detailForm.value.sellerAccountBalance}}" /> -->
-  <vdr-card>
-    <label class="form-grid">User's Balance: </label>
-    <input
-      [value]="detailForm.value.customerAccountBalance? detailForm.value.customerAccountBalance: 0"
-      readonly="true"
-    />
+<vdr-card>
+    <label class="form-grid">User's Balance:</label>
+    <input [value]="customerBalance" readonly="true" />
     <button (click)="transfer()" type="button" class="btn">Transfer</button>
-  </vdr-card>
-</div>
+</vdr-card>

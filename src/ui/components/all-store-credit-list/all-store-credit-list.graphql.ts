@@ -1,6 +1,6 @@
-import gql from 'graphql-tag';
+import gql from "graphql-tag";
 
-import { STORE_CREDIT_FRAGMENT } from '../../common/fragments.graphql';
+import { STORE_CREDIT_FRAGMENT } from "../../common/fragments.graphql";
 
 export const GET_ALL_STORE_CREDITS = gql`
   query GetAllStoreCredits($options: StoreCreditListOptions) {
