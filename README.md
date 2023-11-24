@@ -5,6 +5,7 @@ Plugin to enable payments through store credits system. This plugin can be used 
 Buyers and sellers can transact with store-credit. Platform Fee will diminish credit supply.
 
 ##Creating store credit
+
 This plugin extends the admin-ui and adds a "store-credit" section to the side-nav menu. This should be only accessible by users with superadmin permissions
 
 ## Shop APIs
