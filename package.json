@@ -18,7 +18,7 @@
 	"scripts": {
 		"start": "ts-node test/dev-server.ts",
 		"build": "rimraf dist && tsc",
-		"test": "vitest",
+		"test": "rimraf __data__ && vitest",
 		"codegen": "graphql-codegen --config ./codegen.json"
 	},
 	"devDependencies": {

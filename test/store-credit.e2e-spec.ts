@@ -82,6 +82,8 @@ describe("store-credits plugin", () => {
 		sellerId = createSellerResult.createSeller.id;
 	});
 
+	// we are already setting the seller's user in other test,
+	//  so it's not necessary to re-set the user:
 	// it("Should set seller's user", async () => {
 	//   const user = customers[0].user!;
 	//   const setSellerResult = await adminClient.query(SetSellerUserDocument, {
@@ -127,7 +129,26 @@ describe("store-credits plugin", () => {
 		expect(assignResult.assignProductsToChannel[0].id).toEqual("T_1");
 	});
 
-	it("Should create store credit", async () => {
+	it("Should create store credit for purchase", async () => {
+		const createResult = await adminClient.query(CreateStoreCreditDocument, {
+			input: {
+				name: "100 Store Credits",
+				value: 100,
+				price: 90,
+				perUserLimit: 200,
+			},
+		});
+
+		expect(createResult.createStoreCredit.key).toBeTruthy();
+		expect(createResult.createStoreCredit).toEqual({
+			key: createResult.createStoreCredit.key,
+			value: 100,
+			customerId: null,
+			perUserLimit: 200,
+		});
+	});
+
+	it("Should create store credit for claim by key", async () => {
 		const createResult = await adminClient.query(CreateStoreCreditDocument, {
 			input: {
 				key: "abcdef",

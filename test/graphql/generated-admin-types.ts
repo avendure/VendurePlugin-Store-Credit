@@ -1841,12 +1841,17 @@ export type GlobalSettings = {
   __typename?: 'GlobalSettings';
   availableLanguages: Array<LanguageCode>;
   createdAt: Scalars['DateTime']['output'];
-  customFields?: Maybe<Scalars['JSON']['output']>;
+  customFields?: Maybe<GlobalSettingsCustomFields>;
   id: Scalars['ID']['output'];
   outOfStockThreshold: Scalars['Int']['output'];
   serverConfig: ServerConfig;
   trackInventory: Scalars['Boolean']['output'];
   updatedAt: Scalars['DateTime']['output'];
+};
+
+export type GlobalSettingsCustomFields = {
+  __typename?: 'GlobalSettingsCustomFields';
+  RootNonPhysicalProduct?: Maybe<Product>;
 };
 
 /** Returned when attempting to set the Customer on a guest checkout when the configured GuestCheckoutStrategy does not allow it. */
@@ -4916,8 +4921,6 @@ export type Query = {
   customer?: Maybe<Customer>;
   customerGroup?: Maybe<CustomerGroup>;
   customerGroups: CustomerGroupList;
-  customerStoreCredit: StoreCredit;
-  customerStoreCredits: Array<StoreCredit>;
   customers: CustomerList;
   /** Returns a list of eligible shipping methods for the draft Order */
   eligibleShippingMethodsForDraftOrder: Array<ShippingMethodQuote>;
@@ -4971,7 +4974,7 @@ export type Query = {
   shippingMethods: ShippingMethodList;
   stockLocation?: Maybe<StockLocation>;
   stockLocations: StockLocationList;
-  storeCredit: StoreCredit;
+  storeCredit?: Maybe<StoreCredit>;
   storeCredits: StoreCreditList;
   tag: Tag;
   tags: TagList;
@@ -5049,12 +5052,6 @@ export type QueryCustomerGroupArgs = {
 
 export type QueryCustomerGroupsArgs = {
   options?: InputMaybe<CustomerGroupListOptions>;
-};
-
-
-export type QueryCustomerStoreCreditArgs = {
-  customerId: Scalars['ID']['input'];
-  id: Scalars['ID']['input'];
 };
 
 
@@ -5880,27 +5877,33 @@ export enum StockMovementType {
 export type StoreCredit = Node & {
   __typename?: 'StoreCredit';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
-  customerId?: Maybe<Scalars['String']['output']>;
+  customer?: Maybe<Customer>;
+  customerId?: Maybe<Scalars['ID']['output']>;
   id: Scalars['ID']['output'];
-  isClaimed?: Maybe<Scalars['Boolean']['output']>;
   key?: Maybe<Scalars['String']['output']>;
+  perUserLimit: Scalars['Int']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   value?: Maybe<Scalars['Int']['output']>;
+  variant?: Maybe<ProductVariant>;
+  variantId?: Maybe<Scalars['ID']['output']>;
 };
 
 export type StoreCreditAddInput = {
-  key?: InputMaybe<Scalars['String']['input']>;
-  value?: InputMaybe<Scalars['Int']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  perUserLimit: Scalars['Int']['input'];
+  price?: InputMaybe<Scalars['Int']['input']>;
+  value: Scalars['Int']['input'];
 };
 
 export type StoreCreditFilterParameter = {
   createdAt?: InputMaybe<DateOperators>;
-  customerId?: InputMaybe<StringOperators>;
+  customerId?: InputMaybe<IdOperators>;
   id?: InputMaybe<IdOperators>;
-  isClaimed?: InputMaybe<BooleanOperators>;
   key?: InputMaybe<StringOperators>;
+  perUserLimit?: InputMaybe<NumberOperators>;
   updatedAt?: InputMaybe<DateOperators>;
   value?: InputMaybe<NumberOperators>;
+  variantId?: InputMaybe<IdOperators>;
 };
 
 export type StoreCreditList = PaginatedList & {
@@ -5927,13 +5930,16 @@ export type StoreCreditSortParameter = {
   customerId?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   key?: InputMaybe<SortOrder>;
+  perUserLimit?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
   value?: InputMaybe<SortOrder>;
+  variantId?: InputMaybe<SortOrder>;
 };
 
 export type StoreCreditUpdateInput = {
   id: Scalars['ID']['input'];
-  key?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  perUserLimit?: InputMaybe<Scalars['Int']['input']>;
   value?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -6322,9 +6328,13 @@ export type UpdateFacetValueInput = {
   translations?: InputMaybe<Array<FacetValueTranslationInput>>;
 };
 
+export type UpdateGlobalSettingsCustomFieldsInput = {
+  RootNonPhysicalProductId?: InputMaybe<Scalars['ID']['input']>;
+};
+
 export type UpdateGlobalSettingsInput = {
   availableLanguages?: InputMaybe<Array<LanguageCode>>;
-  customFields?: InputMaybe<Scalars['JSON']['input']>;
+  customFields?: InputMaybe<UpdateGlobalSettingsCustomFieldsInput>;
   outOfStockThreshold?: InputMaybe<Scalars['Int']['input']>;
   trackInventory?: InputMaybe<Scalars['Boolean']['input']>;
 };
@@ -6575,7 +6585,7 @@ export type CreateStoreCreditMutationVariables = Exact<{
 }>;
 
 
-export type CreateStoreCreditMutation = { __typename?: 'Mutation', createStoreCredit: { __typename?: 'StoreCredit', key?: string, value?: number, isClaimed?: boolean } };
+export type CreateStoreCreditMutation = { __typename?: 'Mutation', createStoreCredit: { __typename?: 'StoreCredit', key?: string, value?: number, perUserLimit: number, customerId?: string } };
 
 export type TransferFromSellerToCustomerMutationVariables = Exact<{
   value: Scalars['Int']['input'];
@@ -6616,7 +6626,7 @@ export type GetSellerQuery = { __typename?: 'Query', seller?: { __typename?: 'Se
 
 export const GetCustomerListDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetCustomerList"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"options"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"CustomerListOptions"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customers"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"options"},"value":{"kind":"Variable","name":{"kind":"Name","value":"options"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}},{"kind":"Field","name":{"kind":"Name","value":"emailAddress"}},{"kind":"Field","name":{"kind":"Name","value":"phoneNumber"}},{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"identifier"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalItems"}}]}}]}}]} as unknown as DocumentNode<GetCustomerListQuery, GetCustomerListQueryVariables>;
 export const SetSellerUserDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetSellerUser"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateSellerInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateSeller"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"identifier"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SetSellerUserMutation, SetSellerUserMutationVariables>;
-export const CreateStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCreditAddInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createStoreCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"isClaimed"}}]}}]}}]} as unknown as DocumentNode<CreateStoreCreditMutation, CreateStoreCreditMutationVariables>;
+export const CreateStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"createStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCreditAddInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createStoreCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}}]}}]}}]} as unknown as DocumentNode<CreateStoreCreditMutation, CreateStoreCreditMutationVariables>;
 export const TransferFromSellerToCustomerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"TransferFromSellerToCustomer"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"transferCreditfromSellerToCustomer"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"sellerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]}}]} as unknown as DocumentNode<TransferFromSellerToCustomerMutation, TransferFromSellerToCustomerMutationVariables>;
 export const CreateSellerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSeller"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSellerInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSeller"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"identifier"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateSellerMutation, CreateSellerMutationVariables>;
 export const CreateChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateChannelInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createChannel"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Channel"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]}}]} as unknown as DocumentNode<CreateChannelMutation, CreateChannelMutationVariables>;
