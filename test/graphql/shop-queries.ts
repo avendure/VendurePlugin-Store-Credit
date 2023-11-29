@@ -1,5 +1,14 @@
 import gql from "graphql-tag";
 
+export const GET_BALANCE = gql`
+	query GetBalance($sellerId: ID!) {
+		getSellerANDCustomerStoreCredits(sellerId: $sellerId) {
+			customerAccountBalance
+			sellerAccountBalance
+		}
+	}
+`;
+
 export const CLAIM_CREDIT = gql`
 	mutation ClaimCredit($key: String!) {
 		claim(key: $key) {

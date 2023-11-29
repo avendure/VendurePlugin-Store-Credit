@@ -151,8 +151,10 @@ describe("store-credits plugin", () => {
 	it("Should create store credit for claim by key", async () => {
 		const createResult = await adminClient.query(CreateStoreCreditDocument, {
 			input: {
-				key: "abcdef",
-				value: 10000,
+				name: "100 Store Credits",
+				value: 100,
+				price: 90,
+				perUserLimit: 200,
 			},
 		});
 
@@ -174,6 +176,10 @@ describe("store-credits plugin", () => {
 			key: "abcdef",
 			value: 10000,
 		});
+
+		//TODO: get activecustomerbalance to confirm balance is increased
+		// const userBalance = await shopClient.query()
+		// expect()
 	});
 
 	it("Should fail transfer with empty balance", async () => {
@@ -277,6 +283,10 @@ describe("store-credits plugin", () => {
 			expect(sellerResult.seller?.customFields?.accountBalance).toBeGreaterThan(
 				0
 			);
+		});
+
+		it("Should deduct credits from buyer's account", async () => {
+			return false;
 		});
 	});
 
