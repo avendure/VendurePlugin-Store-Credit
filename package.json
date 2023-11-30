@@ -1,6 +1,6 @@
 {
 	"name": "@avendure/vendure-plugin-store-credit",
-	"version": "1.0.1",
+	"version": "1.0.3",
 	"description": "Offers a store credit implementation plugin for users to transact using store credits",
 	"author": "",
 	"repository": "https://github.com/avendure/VendurePlugin-Store-Credit",
@@ -9,7 +9,7 @@
 	"engines": {
 		"node": ">=16.0.0"
 	},
-	"main": "dist/index",
+	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"files": [
 		"dist",
@@ -17,8 +17,8 @@
 	],
 	"scripts": {
 		"start": "ts-node test/dev-server.ts",
-		"build": "rimraf dist && tsc",
-		"test": "rimraf __data__ && vitest",
+		"build": "rimraf dist && tsc && cp -r src/ui dist/",
+		"test": "vitest",
 		"codegen": "graphql-codegen --config ./codegen.json"
 	},
 	"devDependencies": {
@@ -48,5 +48,6 @@
 	},
 	"dependencies": {
 		"deepmerge": "^4.3.1"
+		"copyfiles": "^2.4.1"
 	}
 }
