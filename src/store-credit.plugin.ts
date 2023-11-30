@@ -105,7 +105,7 @@ export class StoreCreditPlugin {
             slug: 'root-non-purchasable-product',
         },
         creditToCurrencyFactor: { default: 1 },
-        platformFee: { type: 'percent', value: 1 },
+        platformFee: { type: 'fixed', value: 100 },
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {

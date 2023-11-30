@@ -16,6 +16,11 @@ const commonExtensions = gql`
         totalItems: Int!
     }
 
+    type AccountBalance {
+        customerAccountBalance: Int
+        sellerAccountBalance: Int
+    }
+
     extend type Query {
         storeCredits(options: StoreCreditListOptions): StoreCreditList!
         storeCredit(id: ID!): StoreCredit
@@ -35,6 +40,10 @@ export const shopApiExtensions = gql`
         message: String!
         addedCredit: Int
         currentBalance: Int
+    }
+
+    extend type Query {
+        getSellerANDCustomerStoreCredits: AccountBalance!
     }
 
     extend type Mutation {
@@ -66,11 +75,6 @@ export const adminApiExtensions = gql`
         name: String
         value: Int
         perUserLimit: Int
-    }
-
-    type AccountBalance {
-        customerAccountBalance: Int
-        sellerAccountBalance: Int
     }
 
     extend type Query {

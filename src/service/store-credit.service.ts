@@ -17,6 +17,7 @@ import {
     LanguageCode,
     ProductVariant,
     EntityHydrator,
+    UnauthorizedError,
 } from '@vendure/core';
 import { StoreCredit } from '../entity/store-credit.entity';
 import { IsNull, Not } from 'typeorm';
@@ -272,8 +273,32 @@ export class StoreCreditService {
         if (!customer) throw new Error('Customer with same email as seller not found');
 
         return {
-            customerAccountBalance: seller.customFields.accountBalance,
-            sellerAccountBalance: customer.customFields.accountBalance,
+            customerAccountBalance: customer.customFields.accountBalance,
+            sellerAccountBalance: seller.customFields.accountBalance,
+        };
+    }
+
+    async getSellerANDCustomerStoreCreditsShop(ctx: RequestContext) {
+        if (!ctx.activeUserId) throw new UnauthorizedError();
+        const customer = await this.connection.getRepository(ctx, Customer).findOne({
+            where: {
+                user: {
+                    id: ctx.activeUserId,
+                },
+            },
+        });
+        const seller = await this.connection.getRepository(ctx, Seller).findOne({
+            where: {
+                customFields: {
+                    user: {
+                        id: ctx.activeUserId,
+                    },
+                },
+            },
+        });
+        return {
+            customerAccountBalance: customer?.customFields.accountBalance || 0,
+            sellerAccountBalance: seller?.customFields.accountBalance || 0,
         };
     }
 }

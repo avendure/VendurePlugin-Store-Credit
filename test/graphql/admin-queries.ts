@@ -79,10 +79,13 @@ export const CREATE_CHANNEL = gql`
 	}
 `;
 
-export const ASSIGN_PRODUCT_TO_CHANNEL = gql`
-	mutation AssignProductToChannel($input: AssignProductsToChannelInput!) {
-		assignProductsToChannel(input: $input) {
+export const ASSIGN_PRODUCT_VARIANT_TO_CHANNEL = gql`
+	mutation AssignProductVariantsToChannel($input: AssignProductVariantsToChannelInput!) {
+		assignProductVariantsToChannel(input: $input) {
 			id
+            channels {
+                id
+            }
 		}
 	}
 `;

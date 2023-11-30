@@ -2501,36 +2501,6 @@ export type ManualPaymentStateError = ErrorResult & {
   message: Scalars['String']['output'];
 };
 
-export enum MetricInterval {
-  Daily = 'Daily'
-}
-
-export type MetricSummary = {
-  __typename?: 'MetricSummary';
-  entries: Array<MetricSummaryEntry>;
-  interval: MetricInterval;
-  title: Scalars['String']['output'];
-  type: MetricType;
-};
-
-export type MetricSummaryEntry = {
-  __typename?: 'MetricSummaryEntry';
-  label: Scalars['String']['output'];
-  value: Scalars['Float']['output'];
-};
-
-export type MetricSummaryInput = {
-  interval: MetricInterval;
-  refresh?: InputMaybe<Scalars['Boolean']['input']>;
-  types: Array<MetricType>;
-};
-
-export enum MetricType {
-  AverageOrderValue = 'AverageOrderValue',
-  OrderCount = 'OrderCount',
-  OrderTotal = 'OrderTotal'
-}
-
 export type MimeTypeError = ErrorResult & {
   __typename?: 'MimeTypeError';
   errorCode: ErrorCode;
@@ -4936,8 +4906,6 @@ export type Query = {
   jobs: JobList;
   jobsById: Array<Job>;
   me?: Maybe<CurrentUser>;
-  /** Get metrics for the given interval and metric types. */
-  metricSummary: Array<MetricSummary>;
   order?: Maybe<Order>;
   orders: OrderList;
   paymentMethod?: Maybe<PaymentMethod>;
@@ -5102,11 +5070,6 @@ export type QueryJobsArgs = {
 
 export type QueryJobsByIdArgs = {
   jobIds: Array<Scalars['ID']['input']>;
-};
-
-
-export type QueryMetricSummaryArgs = {
-  input?: InputMaybe<MetricSummaryInput>;
 };
 
 
@@ -6609,12 +6572,12 @@ export type CreateChannelMutationVariables = Exact<{
 
 export type CreateChannelMutation = { __typename?: 'Mutation', createChannel: { __typename: 'Channel', id: string, code: string } | { __typename: 'LanguageNotAvailableError' } };
 
-export type AssignProductToChannelMutationVariables = Exact<{
-  input: AssignProductsToChannelInput;
+export type AssignProductVariantsToChannelMutationVariables = Exact<{
+  input: AssignProductVariantsToChannelInput;
 }>;
 
 
-export type AssignProductToChannelMutation = { __typename?: 'Mutation', assignProductsToChannel: Array<{ __typename?: 'Product', id: string }> };
+export type AssignProductVariantsToChannelMutation = { __typename?: 'Mutation', assignProductVariantsToChannel: Array<{ __typename?: 'ProductVariant', id: string, channels: Array<{ __typename?: 'Channel', id: string }> }> };
 
 export type GetSellerQueryVariables = Exact<{
   id: Scalars['ID']['input'];
@@ -6630,5 +6593,5 @@ export const CreateStoreCreditDocument = {"kind":"Document","definitions":[{"kin
 export const TransferFromSellerToCustomerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"TransferFromSellerToCustomer"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"transferCreditfromSellerToCustomer"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"sellerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]}}]} as unknown as DocumentNode<TransferFromSellerToCustomerMutation, TransferFromSellerToCustomerMutationVariables>;
 export const CreateSellerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSeller"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSellerInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createSeller"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"user"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"identifier"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreateSellerMutation, CreateSellerMutationVariables>;
 export const CreateChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateChannelInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createChannel"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Channel"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]}}]} as unknown as DocumentNode<CreateChannelMutation, CreateChannelMutationVariables>;
-export const AssignProductToChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AssignProductToChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AssignProductsToChannelInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignProductsToChannel"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]} as unknown as DocumentNode<AssignProductToChannelMutation, AssignProductToChannelMutationVariables>;
+export const AssignProductVariantsToChannelDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AssignProductVariantsToChannel"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"AssignProductVariantsToChannelInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"assignProductVariantsToChannel"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"channels"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}}]}}]}}]} as unknown as DocumentNode<AssignProductVariantsToChannelMutation, AssignProductVariantsToChannelMutationVariables>;
 export const GetSellerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSeller"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"seller"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"accountBalance"}}]}}]}}]}}]} as unknown as DocumentNode<GetSellerQuery, GetSellerQueryVariables>;

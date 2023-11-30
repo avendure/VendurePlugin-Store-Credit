@@ -1,8 +1,8 @@
 import gql from "graphql-tag";
 
 export const GET_BALANCE = gql`
-	query GetBalance($sellerId: ID!) {
-		getSellerANDCustomerStoreCredits(sellerId: $sellerId) {
+	query GetBalance {
+		getSellerANDCustomerStoreCredits {
 			customerAccountBalance
 			sellerAccountBalance
 		}

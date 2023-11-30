@@ -49,4 +49,11 @@ export class ShopStoreCreditResolver {
     async claim(@Ctx() ctx: RequestContext, @Args() args: MutationClaimArgs): Promise<ClaimResult> {
         return this.storeCreditService.claim(ctx, args.key);
     }
+
+    @Query()
+    @Allow(Permission.Authenticated)
+    @Transaction()
+    async getSellerANDCustomerStoreCredits(@Ctx() ctx: RequestContext) {
+        return this.storeCreditService.getSellerANDCustomerStoreCreditsShop(ctx);
+    }
 }
