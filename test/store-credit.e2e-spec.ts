@@ -18,7 +18,7 @@ import {
 	CreateChannelDocument,
 	LanguageCode,
 	CurrencyCode,
-	AssignProductToChannelDocument,
+    AssignProductVariantsToChannelDocument,
 	GetSellerDocument,
 } from "./graphql/generated-admin-types";
 import {
@@ -29,19 +29,21 @@ import {
 	SetShippingMethodDocument,
 	TransitionToStateDocument,
 	AddPaymentToOrderDocument,
+    GetBalanceDocument,
 } from "./graphql/generated-shop-types";
 
 registerInitializer("sqljs", new SqljsInitializer("__data__"));
 
 describe("store-credits plugin", () => {
 	const devConfig = mergeConfig(testConfig, {
-		plugins: [StoreCreditPlugin],
+		plugins: [StoreCreditPlugin.init({creditToCurrencyFactor: {default: 100}})],
 	});
 	const { server, adminClient, shopClient } = createTestEnvironment(devConfig);
 	let started = false;
 	let customers: GetCustomerListQuery["customers"]["items"] = [];
 	let sellerId: string = "";
 	let channelId: string = "";
+    let creditKey: string = "";
 
 	beforeAll(async () => {
 		await server.init({
@@ -82,6 +84,8 @@ describe("store-credits plugin", () => {
 		sellerId = createSellerResult.createSeller.id;
 	});
 
+	// we are already setting the seller's user in other test,
+	//  so it's not necessary to re-set the user:
 	// it("Should set seller's user", async () => {
 	//   const user = customers[0].user!;
 	//   const setSellerResult = await adminClient.query(SetSellerUserDocument, {
@@ -118,40 +122,63 @@ describe("store-credits plugin", () => {
 
 	it("Should assign product to channel", async () => {
 		const assignResult = await adminClient.query(
-			AssignProductToChannelDocument,
+			AssignProductVariantsToChannelDocument,
 			{
-				input: { channelId, productIds: ["T_1"], priceFactor: 1 },
+				input: { channelId, productVariantIds: ["T_1"], priceFactor: 1 },
 			}
 		);
-		expect(assignResult.assignProductsToChannel).toHaveLength(1);
-		expect(assignResult.assignProductsToChannel[0].id).toEqual("T_1");
+		expect(assignResult.assignProductVariantsToChannel).toHaveLength(1);
+		expect(assignResult.assignProductVariantsToChannel[0].id).toEqual("T_1");
 	});
 
-	it("Should create store credit", async () => {
+	it("Should create store credit for purchase", async () => {
 		const createResult = await adminClient.query(CreateStoreCreditDocument, {
 			input: {
-				key: "abcdef",
-				value: 10000,
+				name: "100 Store Credits",
+				value: 100,
+				price: 90,
+				perUserLimit: 200,
 			},
 		});
 
+		expect(createResult.createStoreCredit.key).toBeTruthy();
 		expect(createResult.createStoreCredit).toEqual({
-			key: "abcdef",
-			value: 10000,
-			isClaimed: false,
+			key: createResult.createStoreCredit.key,
+			value: 100,
+			customerId: null,
+			perUserLimit: 200,
 		});
+	});
+
+	it("Should create store credit for claim by key", async () => {
+		const createResult = await adminClient.query(CreateStoreCreditDocument, {
+			input: {
+				value: 10000,
+				perUserLimit: 200,
+			},
+		});
+
+		expect(createResult.createStoreCredit.key).toBeTruthy();
+		expect(createResult.createStoreCredit).toEqual({
+            key: createResult.createStoreCredit.key,
+			value: 10000,
+			customerId: null,
+            perUserLimit: 200,
+		});
+        creditKey = createResult.createStoreCredit.key || ""
 	});
 
 	it("Should claim store credit", async () => {
 		await shopClient.asUserWithCredentials(customers[1].emailAddress, "test");
 		const result = await shopClient.query(ClaimCreditDocument, {
-			key: "abcdef",
+			key: creditKey,
 		});
 
 		expect(result.claim).toEqual({
-			isClaimed: true,
-			key: "abcdef",
-			value: 10000,
+            success: true,
+            message: "Successfully claimed credit",
+            addedCredit: 10000,
+            currentBalance: 10000
 		});
 	});
 
@@ -159,7 +186,7 @@ describe("store-credits plugin", () => {
 		expect(async () => {
 			await adminClient.query(TransferFromSellerToCustomerDocument, {
 				value: 1000,
-				sellerId: "T_1",
+				sellerId,
 			});
 		}).rejects.toThrowError("Insufficient balance");
 	});
@@ -256,6 +283,11 @@ describe("store-credits plugin", () => {
 			expect(sellerResult.seller?.customFields?.accountBalance).toBeGreaterThan(
 				0
 			);
+		});
+
+		it("Should deduct credits from buyer's account", async () => {
+            const balance = await shopClient.query(GetBalanceDocument)
+            expect(balance.getSellerANDCustomerStoreCredits.customerAccountBalance).toBeLessThan(10000)
 		});
 	});
 

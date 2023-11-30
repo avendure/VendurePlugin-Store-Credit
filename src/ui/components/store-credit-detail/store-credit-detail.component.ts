@@ -1,184 +1,146 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-  OnDestroy
-} from '@angular/core';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import {
-  TypedBaseDetailComponent,
-  NotificationService
-} from '@vendure/admin-ui/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
+import { FormBuilder } from '@angular/forms';
+import { TypedBaseDetailComponent, CurrencyCode, NotificationService } from '@vendure/admin-ui/core';
 import { Observable, of } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 
 import {
-  CreateStoreCreditMutation,
-  CreateStoreCreditMutationVariables,
-  StoreCreditsFragmentDoc,
-  UpdateStoreCreditMutation,
-  UpdateStoreCreditMutationVariables,
-  StoreCreditAddInput,
-  StoreCreditUpdateInput,
-  StoreCreditsFragment
+    CreateStoreCreditMutation,
+    CreateStoreCreditMutationVariables,
+    StoreCreditsFragmentDoc,
+    UpdateStoreCreditMutation,
+    UpdateStoreCreditMutationVariables,
+    StoreCreditsFragment,
+    GetStoreCreditQuery,
 } from '../../generated-types';
 
-import {
-  CREATE_STORE_CREDIT,
-  UPDATE_STORE_CREDIT
-} from './store-credit-detail.graphql';
+import { CREATE_STORE_CREDIT, UPDATE_STORE_CREDIT } from './store-credit-detail.graphql';
 
 @Component({
-  selector: 'vdr-store-credit-detail',
-  templateUrl: './store-credit-detail.component.html',
-  styleUrls: ['./store-credit-detail.component.scss'],
-  changeDetection: ChangeDetectionStrategy.Default
+    selector: 'vdr-store-credit-detail',
+    templateUrl: './store-credit-detail.component.html',
+    styleUrls: ['./store-credit-detail.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Default,
 })
 export class StoreCreditDetailComponent
-  extends TypedBaseDetailComponent<
-    typeof StoreCreditsFragmentDoc,
-    keyof StoreCreditsFragment
-  >
-  implements OnInit, OnDestroy
+    extends TypedBaseDetailComponent<typeof StoreCreditsFragmentDoc, keyof StoreCreditsFragment>
+    implements OnInit, OnDestroy
 {
-  detailForm: FormGroup;
-  which = false;
-  storeCreditKey: string | null = null;
+    storeCreditKey: string | null = null;
 
-  constructor(
-    private formBuilder: FormBuilder,
-    private changeDetector: ChangeDetectorRef,
-    private notificationService: NotificationService
-  ) {
-    super();
-    this.detailForm = this.formBuilder.group({
-      key: [''],
-      value: []
+    constructor(
+        private formBuilder: FormBuilder,
+        private changeDetector: ChangeDetectorRef,
+        private notificationService: NotificationService,
+    ) {
+        super();
+    }
+
+    detailForm = this.formBuilder.nonNullable.group({
+        id: '',
+        value: 0,
+        perUserLimit: 0,
+        name: '',
+        key: 'Will be auto generated',
+        price: 0,
+        claimable: false,
     });
-  }
 
-  ngOnInit() {
-    if (this.router.url != '/extensions/store-credit/create') {
-      this.which = false;
-      this.init();
-    } else {
-      this.which = true;
+    currencyCode: CurrencyCode;
+
+    ngOnInit() {
+        this.init();
+        this.dataService.settings.getActiveChannel().single$.subscribe(data => {
+            this.currencyCode = data.activeChannel.defaultCurrencyCode;
+        });
     }
-  }
 
-  ngOnDestroy() {
-    this.destroy();
-  }
-
-  generateStoreCreditKey() {
-    this.storeCreditKey = this.generateRandomKey();
-  }
-
-  private generateRandomKey(): string {
-    console.log(this);
-    const length = 10;
-    const characters =
-      'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let result = '';
-    for (let i = 0; i < length; i++) {
-      result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
-      );
+    ngOnDestroy() {
+        this.destroy();
     }
-    return result;
-  }
 
-  create() {
-    this.addNew()
-      .pipe(filter((result) => !!result))
-      .subscribe({
-        next: () => {
-          this.detailForm.markAsPristine();
-          this.changeDetector.markForCheck();
-          this.notificationService.success('common.notify-create-success', {
-            entity: 'StoreCredit'
-          });
-        },
-        error: () => {
-          this.notificationService.error('common.notify-create-error', {
-            entity: 'StoreCredit'
-          });
-        }
-      });
-  }
-
-  update() {
-    this.saveChanges()
-      .pipe(filter((result) => !!result))
-      .subscribe({
-        next: () => {
-          this.detailForm.markAsPristine();
-          this.changeDetector.markForCheck();
-          this.notificationService.success('common.notify-update-success', {
-            entity: 'StoreCredit'
-          });
-        },
-        error: () => {
-          this.notificationService.error('common.notify-update-error', {
-            entity: 'StoreCredit'
-          });
-        }
-      });
-  }
-
-  private addNew(): Observable<boolean> {
-    if (this.detailForm.dirty) {
-      const formValue = this.detailForm.value;
-      const input: StoreCreditAddInput = {
-        key: formValue.key || this.storeCreditKey,
-        value: formValue.value
-      };
-
-      return this.dataService
-        .mutate<CreateStoreCreditMutation, CreateStoreCreditMutationVariables>(
-          CREATE_STORE_CREDIT,
-          {
-            input
-          }
-        )
-        .pipe(map(() => true));
-    } else {
-      return of(false);
+    create() {
+        this.addNew().subscribe({
+            next: id => {
+                this.detailForm.markAsPristine();
+                this.changeDetector.markForCheck();
+                this.notificationService.success('common.notify-create-success', {
+                    entity: 'StoreCredit',
+                });
+                this.router.navigate(['../', id], {
+                    relativeTo: this.route,
+                });
+            },
+            error: () => {
+                this.notificationService.error('common.notify-create-error', {
+                    entity: 'StoreCredit',
+                });
+            },
+        });
     }
-  }
 
-  private saveChanges(): Observable<boolean> {
-    if (this.detailForm.dirty) {
-      const formValue = this.detailForm.value;
-      const input: StoreCreditUpdateInput = {
-        id: this.id,
-        key: formValue.key || this.storeCreditKey,
-        value: formValue.value
-      };
-
-      this.route.params.forEach((val) => {
-        input.id = val.id;
-      });
-
-      return this.dataService
-        .mutate<UpdateStoreCreditMutation, UpdateStoreCreditMutationVariables>(
-          UPDATE_STORE_CREDIT,
-          {
-            input
-          }
-        )
-        .pipe(map(() => true));
-    } else {
-      return of(false);
+    update() {
+        this.saveChanges()
+            .pipe(filter(result => !!result))
+            .subscribe({
+                next: () => {
+                    this.detailForm.markAsPristine();
+                    this.changeDetector.markForCheck();
+                    this.notificationService.success('common.notify-update-success', {
+                        entity: 'StoreCredit',
+                    });
+                },
+                error: () => {
+                    this.notificationService.error('common.notify-update-error', {
+                        entity: 'StoreCredit',
+                    });
+                },
+            });
     }
-  }
 
-  protected setFormValues(entity: StoreCreditsFragment) {
-    console.log(entity);
-    this.detailForm.patchValue({
-      key: entity.key,
-      value: entity.value
-    });
-  }
+    private addNew(): Observable<string | undefined> {
+        const { value = 0, name = 'Store Credit', perUserLimit, price = 0 } = this.detailForm.value;
+
+        if (!this.detailForm.dirty || !this.detailForm.valid || perUserLimit == undefined)
+            return of(undefined);
+
+        return this.dataService
+            .mutate<CreateStoreCreditMutation, CreateStoreCreditMutationVariables>(CREATE_STORE_CREDIT, {
+                input: {
+                    name,
+                    value,
+                    perUserLimit,
+                    price,
+                },
+            })
+            .pipe(map(data => data.createStoreCredit?.id));
+    }
+
+    private saveChanges(): Observable<string | undefined> {
+        const formValue = this.detailForm.value;
+        if (!this.detailForm.dirty || !this.detailForm.valid || !formValue.id) return of(undefined);
+
+        return this.dataService
+            .mutate<UpdateStoreCreditMutation, UpdateStoreCreditMutationVariables>(UPDATE_STORE_CREDIT, {
+                input: {
+                    id: formValue.id,
+                    perUserLimit: formValue.perUserLimit || undefined,
+                    value: formValue.value || undefined,
+                    name: formValue.name || undefined,
+                },
+            })
+            .pipe(map(data => data.updateStoreCredit.id));
+    }
+
+    protected setFormValues(entity: NonNullable<GetStoreCreditQuery['storeCredit']>) {
+        this.detailForm.patchValue({
+            id: entity.id,
+            name: entity.variant?.name,
+            value: entity.value,
+            perUserLimit: entity.perUserLimit,
+            price: entity.variant?.price,
+            key: entity.key,
+            claimable: !entity.variant,
+        });
+    }
 }

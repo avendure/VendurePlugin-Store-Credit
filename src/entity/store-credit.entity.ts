@@ -1,22 +1,42 @@
-import { VendureEntity, DeepPartial } from '@vendure/core';
-import { Entity, Column, Unique } from 'typeorm';
+import { VendureEntity, ID, ProductVariant, DeepPartial, Customer } from '@vendure/core';
+import { Entity, Column, Generated, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
+import { EntityId } from '@vendure/core/dist/entity/entity-id.decorator';
 
 @Entity()
-@Unique(['key'])
 export class StoreCredit extends VendureEntity {
-  constructor(input?: DeepPartial<StoreCredit>) {
-    super(input);
-  }
+    constructor(input?: DeepPartial<StoreCredit>) {
+        super(input);
+    }
 
-  @Column()
-  key: string;
+    @OneToOne(() => ProductVariant, {
+        eager: true,
+        nullable: true,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'variantId' })
+    variant: ProductVariant | null;
 
-  @Column({ default: 0 })
-  value: number;
+    @EntityId({ nullable: true })
+    variantId: ID | null;
 
-  @Column({ nullable: true })
-  customerId: string;
+    @Column({ default: 0 })
+    perUserLimit: number;
 
-  @Column({ default: false })
-  isClaimed: boolean;
+    @Column({ nullable: false })
+    value: number;
+
+    @Column()
+    @Generated('uuid')
+    key: string;
+
+    @ManyToOne(() => Customer, {
+        eager: true,
+        nullable: true,
+        onDelete: 'CASCADE',
+    })
+    @JoinColumn({ name: 'customerId' })
+    customer: Customer | null;
+
+    @EntityId({ nullable: true })
+    customerId: ID | null;
 }

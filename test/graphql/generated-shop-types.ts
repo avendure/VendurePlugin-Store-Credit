@@ -164,6 +164,14 @@ export type Channel = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type ClaimResult = {
+  __typename?: 'ClaimResult';
+  addedCredit?: Maybe<Scalars['Int']['output']>;
+  currentBalance?: Maybe<Scalars['Int']['output']>;
+  message: Scalars['String']['output'];
+  success: Scalars['Boolean']['output'];
+};
+
 export type Collection = Node & {
   __typename?: 'Collection';
   assets: Array<Asset>;
@@ -1649,6 +1657,7 @@ export type MissingPasswordError = ErrorResult & {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  addCreditToOrder?: Maybe<UpdateOrderItemsResult>;
   /** Adds an item to the order. If custom fields are defined on the OrderLine entity, a third argument 'customFields' will be available. */
   addItemToOrder: UpdateOrderItemsResult;
   /** Add a Payment to the Order */
@@ -1659,7 +1668,7 @@ export type Mutation = {
   applyCouponCode: ApplyCouponCodeResult;
   /** Authenticates the user using a named authentication strategy */
   authenticate: AuthenticationResult;
-  claim: StoreCredit;
+  claim: ClaimResult;
   /** Create a new Customer Address */
   createCustomerAddress: Address;
   /** Delete an existing Address */
@@ -1739,6 +1748,12 @@ export type Mutation = {
    * provided here.
    */
   verifyCustomerAccount: VerifyCustomerAccountResult;
+};
+
+
+export type MutationAddCreditToOrderArgs = {
+  creditId: Scalars['ID']['input'];
+  quantity: Scalars['Int']['input'];
 };
 
 
@@ -2821,8 +2836,6 @@ export type Query = {
   collection?: Maybe<Collection>;
   /** A list of Collections available to the shop */
   collections: CollectionList;
-  customerStoreCredit: StoreCredit;
-  customerStoreCredits: Array<StoreCredit>;
   /** Returns a list of payment methods and their eligibility based on the current active Order */
   eligiblePaymentMethods: Array<PaymentMethodQuote>;
   /** Returns a list of eligible shipping methods based on the current active Order */
@@ -2831,6 +2844,7 @@ export type Query = {
   facet?: Maybe<Facet>;
   /** A list of Facets available to the shop */
   facets: FacetList;
+  getSellerANDCustomerStoreCredits: AccountBalance;
   /** Returns information about the current authenticated User */
   me?: Maybe<CurrentUser>;
   /** Returns the possible next states that the activeOrder can transition to */
@@ -2853,7 +2867,8 @@ export type Query = {
   products: ProductList;
   /** Search Products based on the criteria set by the `SearchInput` */
   search: SearchResponse;
-  storeCredit: StoreCredit;
+  storeCredit?: Maybe<StoreCredit>;
+  storeCredits: StoreCreditList;
 };
 
 
@@ -2865,12 +2880,6 @@ export type QueryCollectionArgs = {
 
 export type QueryCollectionsArgs = {
   options?: InputMaybe<CollectionListOptions>;
-};
-
-
-export type QueryCustomerStoreCreditArgs = {
-  customerId: Scalars['ID']['input'];
-  id: Scalars['ID']['input'];
 };
 
 
@@ -2912,6 +2921,11 @@ export type QuerySearchArgs = {
 
 export type QueryStoreCreditArgs = {
   id: Scalars['ID']['input'];
+};
+
+
+export type QueryStoreCreditsArgs = {
+  options?: InputMaybe<StoreCreditListOptions>;
 };
 
 export type RefreshCustomerVerificationResult = NativeAuthStrategyError | Success;
@@ -3167,17 +3181,49 @@ export enum SortOrder {
 export type StoreCredit = Node & {
   __typename?: 'StoreCredit';
   createdAt?: Maybe<Scalars['DateTime']['output']>;
-  customerId?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  isClaimed?: Maybe<Scalars['Boolean']['output']>;
-  key?: Maybe<Scalars['String']['output']>;
+  perUserLimit: Scalars['Int']['output'];
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   value?: Maybe<Scalars['Int']['output']>;
+  variant: ProductVariant;
+  variantId: Scalars['ID']['output'];
 };
 
-export type StoreCreditAddInput = {
-  key?: InputMaybe<Scalars['String']['input']>;
-  value?: InputMaybe<Scalars['Int']['input']>;
+export type StoreCreditFilterParameter = {
+  createdAt?: InputMaybe<DateOperators>;
+  id?: InputMaybe<IdOperators>;
+  perUserLimit?: InputMaybe<NumberOperators>;
+  updatedAt?: InputMaybe<DateOperators>;
+  value?: InputMaybe<NumberOperators>;
+  variantId?: InputMaybe<IdOperators>;
+};
+
+export type StoreCreditList = PaginatedList & {
+  __typename?: 'StoreCreditList';
+  items: Array<StoreCredit>;
+  totalItems: Scalars['Int']['output'];
+};
+
+export type StoreCreditListOptions = {
+  /** Allows the results to be filtered */
+  filter?: InputMaybe<StoreCreditFilterParameter>;
+  /** Specifies whether multiple "filter" arguments should be combines with a logical AND or OR operation. Defaults to AND. */
+  filterOperator?: InputMaybe<LogicalOperator>;
+  /** Skips the first n results, for use in pagination */
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  /** Specifies which properties to sort the results by */
+  sort?: InputMaybe<StoreCreditSortParameter>;
+  /** Takes n results, for use in pagination */
+  take?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type StoreCreditSortParameter = {
+  createdAt?: InputMaybe<SortOrder>;
+  id?: InputMaybe<SortOrder>;
+  perUserLimit?: InputMaybe<SortOrder>;
+  updatedAt?: InputMaybe<SortOrder>;
+  value?: InputMaybe<SortOrder>;
+  variantId?: InputMaybe<SortOrder>;
 };
 
 export type StringCustomFieldConfig = CustomField & {
@@ -3382,12 +3428,17 @@ export type Zone = Node & {
   updatedAt: Scalars['DateTime']['output'];
 };
 
+export type GetBalanceQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetBalanceQuery = { __typename?: 'Query', getSellerANDCustomerStoreCredits: { __typename?: 'AccountBalance', customerAccountBalance?: number, sellerAccountBalance?: number } };
+
 export type ClaimCreditMutationVariables = Exact<{
   key: Scalars['String']['input'];
 }>;
 
 
-export type ClaimCreditMutation = { __typename?: 'Mutation', claim: { __typename?: 'StoreCredit', key?: string, value?: number, isClaimed?: boolean } };
+export type ClaimCreditMutation = { __typename?: 'Mutation', claim: { __typename?: 'ClaimResult', success: boolean, message: string, addedCredit?: number, currentBalance?: number } };
 
 export type OrderFieldsFragment = { __typename?: 'Order', id: string, code: string, state: string, active: boolean, total: any, totalWithTax: any, shippingWithTax: any, customer?: { __typename?: 'Customer', emailAddress: string }, shippingAddress?: { __typename?: 'OrderAddress', fullName?: string }, lines: Array<{ __typename?: 'OrderLine', id: string, quantity: number, productVariant: { __typename?: 'ProductVariant', id: string }, discounts: Array<{ __typename?: 'Discount', adjustmentSource: string, amount: any, amountWithTax: any, description: string, type: AdjustmentType }> }> };
 
@@ -3435,7 +3486,8 @@ export type AddPaymentToOrderMutationVariables = Exact<{
 export type AddPaymentToOrderMutation = { __typename?: 'Mutation', addPaymentToOrder: { __typename: 'IneligiblePaymentMethodError', errorCode: ErrorCode, message: string } | { __typename: 'NoActiveOrderError', errorCode: ErrorCode, message: string } | { __typename: 'Order', id: string, code: string, state: string, active: boolean, total: any, totalWithTax: any, shippingWithTax: any, customer?: { __typename?: 'Customer', emailAddress: string }, shippingAddress?: { __typename?: 'OrderAddress', fullName?: string }, lines: Array<{ __typename?: 'OrderLine', id: string, quantity: number, productVariant: { __typename?: 'ProductVariant', id: string }, discounts: Array<{ __typename?: 'Discount', adjustmentSource: string, amount: any, amountWithTax: any, description: string, type: AdjustmentType }> }> } | { __typename: 'OrderPaymentStateError', errorCode: ErrorCode, message: string } | { __typename: 'OrderStateTransitionError', errorCode: ErrorCode, message: string } | { __typename: 'PaymentDeclinedError', errorCode: ErrorCode, message: string, paymentErrorMessage: string } | { __typename: 'PaymentFailedError', errorCode: ErrorCode, message: string } };
 
 export const OrderFieldsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"shippingWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"emailAddress"}}]}},{"kind":"Field","name":{"kind":"Name","value":"shippingAddress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fullName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"lines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"productVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"discounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adjustmentSource"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"amountWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]}}]} as unknown as DocumentNode<OrderFieldsFragment, unknown>;
-export const ClaimCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"isClaimed"}}]}}]}}]} as unknown as DocumentNode<ClaimCreditMutation, ClaimCreditMutationVariables>;
+export const GetBalanceDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetBalance"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getSellerANDCustomerStoreCredits"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]}}]} as unknown as DocumentNode<GetBalanceQuery, GetBalanceQueryVariables>;
+export const ClaimCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"ClaimCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"key"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"claim"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"key"},"value":{"kind":"Variable","name":{"kind":"Name","value":"key"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"success"}},{"kind":"Field","name":{"kind":"Name","value":"message"}},{"kind":"Field","name":{"kind":"Name","value":"addedCredit"}},{"kind":"Field","name":{"kind":"Name","value":"currentBalance"}}]}}]}}]} as unknown as DocumentNode<ClaimCreditMutation, ClaimCreditMutationVariables>;
 export const AddProductToOrderDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AddProductToOrder"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"productVariantId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"quantity"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addItemToOrder"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"productVariantId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"productVariantId"}}},{"kind":"Argument","name":{"kind":"Name","value":"quantity"},"value":{"kind":"Variable","name":{"kind":"Name","value":"quantity"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OrderFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"shippingWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"emailAddress"}}]}},{"kind":"Field","name":{"kind":"Name","value":"shippingAddress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fullName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"lines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"productVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"discounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adjustmentSource"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"amountWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]}}]} as unknown as DocumentNode<AddProductToOrderMutation, AddProductToOrderMutationVariables>;
 export const SetShippingAddressDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetShippingAddress"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateAddressInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setOrderShippingAddress"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OrderFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"shippingWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"emailAddress"}}]}},{"kind":"Field","name":{"kind":"Name","value":"shippingAddress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fullName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"lines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"productVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"discounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adjustmentSource"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"amountWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]}}]} as unknown as DocumentNode<SetShippingAddressMutation, SetShippingAddressMutationVariables>;
 export const SetBillingAddressDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"SetBillingAddress"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateAddressInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"setOrderBillingAddress"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"__typename"}},{"kind":"InlineFragment","typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"OrderFields"}}]}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"OrderFields"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Order"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"active"}},{"kind":"Field","name":{"kind":"Name","value":"total"}},{"kind":"Field","name":{"kind":"Name","value":"totalWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"shippingWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"emailAddress"}}]}},{"kind":"Field","name":{"kind":"Name","value":"shippingAddress"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"fullName"}}]}},{"kind":"Field","name":{"kind":"Name","value":"lines"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"quantity"}},{"kind":"Field","name":{"kind":"Name","value":"productVariant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}}]}},{"kind":"Field","name":{"kind":"Name","value":"discounts"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"adjustmentSource"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"amountWithTax"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"type"}}]}}]}}]}}]} as unknown as DocumentNode<SetBillingAddressMutation, SetBillingAddressMutationVariables>;
