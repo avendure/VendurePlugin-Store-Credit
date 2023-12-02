@@ -254,7 +254,6 @@ describe("store-credits plugin", () => {
 			);
 		});
 
-		//Todo: add a failure for low balance
 		it("Should fail to add payment", async () => {
 			const addPaymentReuslt = await shopClient.query(
 				AddPaymentToOrderDocument,
