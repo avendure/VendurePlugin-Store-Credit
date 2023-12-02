@@ -18,7 +18,7 @@ import {
 	CreateChannelDocument,
 	LanguageCode,
 	CurrencyCode,
-    AssignProductVariantsToChannelDocument,
+	AssignProductVariantsToChannelDocument,
 	GetSellerDocument,
 } from "./graphql/generated-admin-types";
 import {
@@ -29,21 +29,24 @@ import {
 	SetShippingMethodDocument,
 	TransitionToStateDocument,
 	AddPaymentToOrderDocument,
-    GetBalanceDocument,
+	GetBalanceDocument,
 } from "./graphql/generated-shop-types";
 
 registerInitializer("sqljs", new SqljsInitializer("__data__"));
 
 describe("store-credits plugin", () => {
 	const devConfig = mergeConfig(testConfig, {
-		plugins: [StoreCreditPlugin.init({creditToCurrencyFactor: {default: 100}})],
+		plugins: [
+			StoreCreditPlugin.init({ creditToCurrencyFactor: { default: 100 } }),
+		],
 	});
 	const { server, adminClient, shopClient } = createTestEnvironment(devConfig);
 	let started = false;
 	let customers: GetCustomerListQuery["customers"]["items"] = [];
 	let sellerId: string = "";
 	let channelId: string = "";
-    let creditKey: string = "";
+	let creditKey: string = "";
+	let customerClaimedBalance = 1300;
 
 	beforeAll(async () => {
 		await server.init({
@@ -153,33 +156,19 @@ describe("store-credits plugin", () => {
 	it("Should create store credit for claim by key", async () => {
 		const createResult = await adminClient.query(CreateStoreCreditDocument, {
 			input: {
-				value: 10000,
-				perUserLimit: 200,
+				value: customerClaimedBalance,
+				perUserLimit: 0,
 			},
 		});
 
 		expect(createResult.createStoreCredit.key).toBeTruthy();
 		expect(createResult.createStoreCredit).toEqual({
-            key: createResult.createStoreCredit.key,
-			value: 10000,
+			key: createResult.createStoreCredit.key,
+			value: customerClaimedBalance,
 			customerId: null,
-            perUserLimit: 200,
+			perUserLimit: 0,
 		});
-        creditKey = createResult.createStoreCredit.key || ""
-	});
-
-	it("Should claim store credit", async () => {
-		await shopClient.asUserWithCredentials(customers[1].emailAddress, "test");
-		const result = await shopClient.query(ClaimCreditDocument, {
-			key: creditKey,
-		});
-
-		expect(result.claim).toEqual({
-            success: true,
-            message: "Successfully claimed credit",
-            addedCredit: 10000,
-            currentBalance: 10000
-		});
+		creditKey = createResult.createStoreCredit.key || "";
 	});
 
 	it("Should fail transfer with empty balance", async () => {
@@ -204,8 +193,13 @@ describe("store-credits plugin", () => {
 					quantity: 1,
 				}
 			);
+
 			expect(addProductResult.addItemToOrder.__typename).toEqual("Order");
 			if (addProductResult.addItemToOrder.__typename == "Order") {
+				console.log(
+					"AddProductResult total: ",
+					addProductResult.addItemToOrder.total
+				);
 				expect(addProductResult.addItemToOrder.code).toBeDefined();
 			}
 		});
@@ -260,34 +254,68 @@ describe("store-credits plugin", () => {
 			);
 		});
 
-		it("Should add payment", async () => {
+		//Todo: add a failure for low balance
+		it("Should fail to add payment", async () => {
 			const addPaymentReuslt = await shopClient.query(
 				AddPaymentToOrderDocument,
 				{
 					input: { method: "store-credit", metadata: {} },
 				}
 			);
-			expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual("Order");
-			if (addPaymentReuslt.addPaymentToOrder.__typename == "Order") {
-				expect(addPaymentReuslt.addPaymentToOrder.state).toEqual(
-					"PaymentSettled"
-				);
-			}
-		});
-
-		it("Should add credits to seller's account", async () => {
-			const sellerResult = await adminClient.query(GetSellerDocument, {
-				id: sellerId,
-			});
-
-			expect(sellerResult.seller?.customFields?.accountBalance).toBeGreaterThan(
-				0
+			expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual(
+				"PaymentDeclinedError"
 			);
 		});
 
-		it("Should deduct credits from buyer's account", async () => {
-            const balance = await shopClient.query(GetBalanceDocument)
-            expect(balance.getSellerANDCustomerStoreCredits.customerAccountBalance).toBeLessThan(10000)
+		it("Should claim store credit", async () => {
+			await shopClient.asUserWithCredentials(customers[1].emailAddress, "test");
+			const result = await shopClient.query(ClaimCreditDocument, {
+				key: creditKey,
+			});
+
+			expect(result.claim).toEqual({
+				success: true,
+				message: "Successfully claimed credit",
+				addedCredit: customerClaimedBalance,
+				currentBalance: customerClaimedBalance,
+			});
+		});
+
+		it("Should add payment", async () => {
+			const customerBalanceQuery = await shopClient.query(GetBalanceDocument);
+			const customerBalance =
+				customerBalanceQuery.getSellerANDCustomerStoreCredits
+					.customerAccountBalance;
+
+			const addPaymentReuslt = await shopClient.query(
+				AddPaymentToOrderDocument,
+				{
+					input: { method: "store-credit", metadata: {} },
+				}
+			);
+
+			expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual("Order");
+			if (addPaymentReuslt.addPaymentToOrder.__typename == "Order") {
+				//Order state should have transitioned
+				expect(addPaymentReuslt.addPaymentToOrder.state).toEqual(
+					"PaymentSettled"
+				);
+
+				//Credits should have been transferred to Seller's account
+				const sellerResult = await adminClient.query(GetSellerDocument, {
+					id: sellerId,
+				});
+				const tokenCost = Math.ceil(
+					addPaymentReuslt.addPaymentToOrder.totalWithTax
+				);
+				expect(sellerResult.seller?.customFields?.accountBalance).toEqual(
+					tokenCost
+				);
+
+				//credits should have been deducted from Buyer's account
+				expect(customerBalance).toBeTruthy();
+				expect(customerBalance).toEqual(customerBalance! - tokenCost);
+			}
 		});
 	});
 
