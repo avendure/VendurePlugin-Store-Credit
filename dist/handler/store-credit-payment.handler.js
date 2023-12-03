@@ -45,20 +45,15 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] ||
             options.creditToCurrencyFactor["default"];
         const customerCurrencyBalance = customerCreditBalance * conversion_factor;
-        if (customerCurrencyBalance < amount) {
+        // This `amount` doesn't have decimals
+        if (customerCurrencyBalance < Math.ceil(amount / 100)) {
             return {
                 amount: amount,
                 state: "Declined",
-                errorMessage: "Insufficient Balance: " +
-                    customerCurrencyBalance +
-                    ", " +
-                    conversion_factor,
+                errorMessage: "Insufficient Balance",
                 metadata: {
                     public: {
-                        errorMessage: "Insufficient Balance: " +
-                            customerCurrencyBalance +
-                            ", " +
-                            conversion_factor,
+                        errorMessage: "Insufficient Balance",
                     },
                 },
             };
@@ -124,8 +119,8 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
                 ? options.platformFee.value
                 : options.platformFee.value * orderline.listPrice;
             const newBalance = sellerAccountBalance -
-                Math.round(platFormFee) +
-                Math.round(totalPrice / 100);
+                Math.ceil(platFormFee) +
+                Math.ceil(totalPrice / 100);
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
@@ -136,7 +131,7 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
-                accountBalance: customerCreditBalance - Math.round(amount / conversion_factor),
+                accountBalance: customerCreditBalance - Math.ceil(amount / conversion_factor),
             },
         });
         return {
