@@ -11,11 +11,11 @@ let channelService;
 let entityHydrator;
 let options;
 exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
-    code: 'credit-store-payment',
+    code: "credit-store-payment",
     description: [
         {
             languageCode: core_1.LanguageCode.en,
-            value: 'Pay with Credit',
+            value: "Pay with Credit",
         },
     ],
     args: {},
@@ -33,25 +33,32 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         if (!customer) {
             return {
                 amount: amount,
-                state: 'Declined',
+                state: "Declined",
                 metadata: {
                     public: {
-                        errorMessage: 'Customer Not found',
+                        errorMessage: "Customer Not found",
                     },
                 },
             };
         }
         const customerCreditBalance = customer.customFields.accountBalance || 0;
-        const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] || options.creditToCurrencyFactor['default'];
+        const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] ||
+            options.creditToCurrencyFactor["default"];
         const customerCurrencyBalance = customerCreditBalance * conversion_factor;
         if (customerCurrencyBalance < amount) {
             return {
                 amount: amount,
-                state: 'Declined',
-                errorMessage: 'Insufficient Balance',
+                state: "Declined",
+                errorMessage: "Insufficient Balance: " +
+                    customerCurrencyBalance +
+                    ", " +
+                    conversion_factor,
                 metadata: {
                     public: {
-                        errorMessage: 'Insufficient Balance',
+                        errorMessage: "Insufficient Balance: " +
+                            customerCurrencyBalance +
+                            ", " +
+                            conversion_factor,
                     },
                 },
             };
@@ -60,21 +67,22 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         const defaultChannel = await channelService.getDefaultChannel();
         for (let orderline of order.lines) {
             await entityHydrator.hydrate(ctx, orderline.productVariant, {
-                relations: ['channels', 'channels.seller'],
+                relations: ["channels", "channels.seller"],
             });
             const productPriceWithTax = orderline.proratedUnitPriceWithTax * orderline.quantity;
-            if (!orderline.productVariant.channels || !orderline.productVariant.channels)
+            if (!orderline.productVariant.channels ||
+                !orderline.productVariant.channels)
                 continue;
-            const sellerChannel = orderline.productVariant.channels.find(channel => channel.id !== defaultChannel.id);
+            const sellerChannel = orderline.productVariant.channels.find((channel) => channel.id !== defaultChannel.id);
             const sellerId = sellerChannel === null || sellerChannel === void 0 ? void 0 : sellerChannel.sellerId;
             if (!sellerId) {
                 return {
                     amount: amount,
-                    state: 'Declined',
-                    errorMessage: 'One of Seller Not Found',
+                    state: "Declined",
+                    errorMessage: "One of Seller Not Found",
                     metadata: {
                         public: {
-                            errorMessage: 'One of Seller Not Found',
+                            errorMessage: "One of Seller Not Found",
                         },
                     },
                 };
@@ -84,9 +92,9 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
             for (const shoppingLine of orderShippingLines) {
                 if (!shoppingLine.shippingMethodId)
                     continue;
-                const shippingMethod = await shippingMethodService.findOne(ctx, shoppingLine.shippingMethodId, false, ['channels']);
+                const shippingMethod = await shippingMethodService.findOne(ctx, shoppingLine.shippingMethodId, false, ["channels"]);
                 const channels = shippingMethod === null || shippingMethod === void 0 ? void 0 : shippingMethod.channels;
-                const channel = channels === null || channels === void 0 ? void 0 : channels.find(channel => channel.id === sellerChannel.id);
+                const channel = channels === null || channels === void 0 ? void 0 : channels.find((channel) => channel.id === sellerChannel.id);
                 if (channel !== undefined) {
                     shippingLine = shoppingLine;
                     break;
@@ -98,24 +106,26 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
             const totalPrice = productPriceWithTax + totalShippingCharge;
             const seller = sellerChannel.seller;
             if (!seller) {
-                core_1.Logger.error('Seller Not Found');
+                core_1.Logger.error("Seller Not Found");
                 return {
                     amount: amount,
-                    state: 'Declined',
-                    errorMessage: 'Seller Not Found',
+                    state: "Declined",
+                    errorMessage: "Seller Not Found",
                     metadata: {
                         public: {
-                            errorMessage: 'Seller Not Found',
+                            errorMessage: "Seller Not Found",
                         },
                     },
                 };
             }
             const sellerCustomFields = seller.customFields;
             const sellerAccountBalance = (sellerCustomFields === null || sellerCustomFields === void 0 ? void 0 : sellerCustomFields.accountBalance) || 0;
-            let platFormFee = options.platformFee.type == 'fixed'
+            let platFormFee = options.platformFee.type == "fixed"
                 ? options.platformFee.value
                 : options.platformFee.value * orderline.listPrice;
-            const newBalance = sellerAccountBalance - Math.round(platFormFee) + Math.round(totalPrice / 100);
+            const newBalance = sellerAccountBalance -
+                Math.round(platFormFee) +
+                Math.round(totalPrice / 100);
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
@@ -131,10 +141,10 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         });
         return {
             amount: amount,
-            state: 'Settled',
+            state: "Settled",
             metadata: {
                 public: {
-                    message: 'Success',
+                    message: "Success",
                 },
             },
         };
