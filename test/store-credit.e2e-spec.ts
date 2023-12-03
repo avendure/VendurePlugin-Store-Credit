@@ -60,7 +60,7 @@ describe("store-credits plugin", () => {
 			.query(GetCustomerListDocument, {
 				options: { take: 2 },
 			})
-			.then(c => c.customers.items);
+			.then((c) => c.customers.items);
 
 		started = true;
 	}, 60000);
@@ -311,7 +311,7 @@ describe("store-credits plugin", () => {
 					"Credits should have been deducted from Buyer's account"
 				).toEqual(
 					customerClaimedBalance -
-						Math.round(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)
+						Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)
 				);
 			}
 		});
