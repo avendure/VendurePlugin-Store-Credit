@@ -37,7 +37,7 @@ registerInitializer("sqljs", new SqljsInitializer("__data__"));
 describe("store-credits plugin", () => {
 	const devConfig = mergeConfig(testConfig, {
 		plugins: [
-			StoreCreditPlugin.init({ creditToCurrencyFactor: { default: 100 } }),
+			StoreCreditPlugin.init({ creditToCurrencyFactor: { default: 1 } }),
 		],
 	});
 	const { server, adminClient, shopClient } = createTestEnvironment(devConfig);
@@ -313,6 +313,22 @@ describe("store-credits plugin", () => {
 					customerClaimedBalance -
 						Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)
 				);
+				console.log("Customer Claimed Balance: ", customerClaimedBalance);
+				console.log(
+					"totalWithTax: ",
+					addPaymentReuslt.addPaymentToOrder.totalWithTax
+				);
+				console.log(
+					"result: ",
+					customerClaimedBalance -
+						Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)
+				);
+
+				expect(
+					customerResult.getSellerANDCustomerStoreCredits
+						.customerAccountBalance,
+					"Credits have become negative - Something went wrong."
+				).toBeGreaterThanOrEqual(0);
 			}
 		});
 	});

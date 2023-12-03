@@ -59,10 +59,12 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 		const conversion_factor =
 			options.creditToCurrencyFactor[order.currencyCode] ||
 			options.creditToCurrencyFactor["default"];
+
+		//Scale the currencyBalance Up to match magnitude of `amount`
 		const customerCurrencyBalance = customerCreditBalance * conversion_factor;
 
 		// This `amount` doesn't have decimals
-		if (customerCurrencyBalance < Math.ceil(amount / 100)) {
+		if (customerCurrencyBalance < amount) {
 			return {
 				amount: amount,
 				state: "Declined",
@@ -163,6 +165,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 				Math.ceil(platFormFee) +
 				Math.ceil(totalPrice / 100);
 
+			console.log("platformFee: ", platFormFee);
 			await sellerService.update(ctx, {
 				id: seller.id,
 				customFields: {
@@ -171,6 +174,14 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			});
 		}
 
+		console.log("customerCreditBalance: ", customerCreditBalance);
+		console.log("amount: ", amount);
+		console.log("rounded amount: ", amount / conversion_factor);
+		console.log("conversion factor: ", conversion_factor);
+		console.log(
+			"newBalance: ",
+			customerCreditBalance - Math.ceil(amount / conversion_factor)
+		);
 		await customerService.update(ctx, {
 			id: customer.id,
 			customFields: {
