@@ -113,10 +113,10 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
                     ctx,
                     shoppingLine.shippingMethodId,
                     false,
-                    ['channels', 'channels.seller'],
+                    ['channels'],
                 );
                 const channels = shippingMethod?.channels;
-                const channel = channels?.find(channel => channel.sellerId === sellerId);
+                const channel = channels?.find(channel => channel.id === sellerChannel.id);
                 if (channel !== undefined) {
                     shippingLine = shoppingLine;
                     break;

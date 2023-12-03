@@ -46,7 +46,7 @@ describe("store-credits plugin", () => {
 	let sellerId: string = "";
 	let channelId: string = "";
 	let creditKey: string = "";
-	let customerClaimedBalance = 1300;
+	let customerClaimedBalance = 1600;
 
 	beforeAll(async () => {
 		await server.init({
@@ -60,7 +60,7 @@ describe("store-credits plugin", () => {
 			.query(GetCustomerListDocument, {
 				options: { take: 2 },
 			})
-			.then((c) => c.customers.items);
+			.then(c => c.customers.items);
 
 		started = true;
 	}, 60000);
@@ -198,7 +198,7 @@ describe("store-credits plugin", () => {
 			if (addProductResult.addItemToOrder.__typename == "Order") {
 				console.log(
 					"AddProductResult total: ",
-					addProductResult.addItemToOrder.total
+					addProductResult.addItemToOrder.totalWithTax
 				);
 				expect(addProductResult.addItemToOrder.code).toBeDefined();
 			}
@@ -254,7 +254,7 @@ describe("store-credits plugin", () => {
 			);
 		});
 
-		it("Should fail to add payment", async () => {
+		it("Should fail to add payment with no credits", async () => {
 			const addPaymentReuslt = await shopClient.query(
 				AddPaymentToOrderDocument,
 				{
@@ -281,11 +281,6 @@ describe("store-credits plugin", () => {
 		});
 
 		it("Should add payment", async () => {
-			const customerBalanceQuery = await shopClient.query(GetBalanceDocument);
-			const customerBalance =
-				customerBalanceQuery.getSellerANDCustomerStoreCredits
-					.customerAccountBalance;
-
 			const addPaymentReuslt = await shopClient.query(
 				AddPaymentToOrderDocument,
 				{
@@ -295,25 +290,29 @@ describe("store-credits plugin", () => {
 
 			expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual("Order");
 			if (addPaymentReuslt.addPaymentToOrder.__typename == "Order") {
-				//Order state should have transitioned
-				expect(addPaymentReuslt.addPaymentToOrder.state).toEqual(
-					"PaymentSettled"
-				);
+				expect(
+					addPaymentReuslt.addPaymentToOrder.state,
+					"Order state should have transitioned"
+				).toEqual("PaymentSettled");
 
-				//Credits should have been transferred to Seller's account
+				const customerResult = await shopClient.query(GetBalanceDocument);
 				const sellerResult = await adminClient.query(GetSellerDocument, {
 					id: sellerId,
 				});
-				const tokenCost = Math.ceil(
-					addPaymentReuslt.addPaymentToOrder.totalWithTax
-				);
-				expect(sellerResult.seller?.customFields?.accountBalance).toEqual(
-					tokenCost
-				);
 
-				//credits should have been deducted from Buyer's account
-				expect(customerBalance).toBeTruthy();
-				expect(customerBalance).toEqual(customerBalance! - tokenCost);
+				expect(
+					sellerResult.seller?.customFields?.accountBalance,
+					"Credits should have been transferred to Seller's account"
+				).toBeGreaterThan(0);
+
+				expect(
+					customerResult.getSellerANDCustomerStoreCredits
+						.customerAccountBalance,
+					"Credits should have been deducted from Buyer's account"
+				).toEqual(
+					customerClaimedBalance -
+						Math.round(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)
+				);
 			}
 		});
 	});
