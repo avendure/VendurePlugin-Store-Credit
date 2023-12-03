@@ -61,22 +61,15 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			options.creditToCurrencyFactor["default"];
 		const customerCurrencyBalance = customerCreditBalance * conversion_factor;
 
-		if (customerCurrencyBalance < amount) {
+		// This `amount` doesn't have decimals
+		if (customerCurrencyBalance < Math.ceil(amount / 100)) {
 			return {
 				amount: amount,
 				state: "Declined",
-				errorMessage:
-					"Insufficient Balance: " +
-					customerCurrencyBalance +
-					", " +
-					conversion_factor,
+				errorMessage: "Insufficient Balance",
 				metadata: {
 					public: {
-						errorMessage:
-							"Insufficient Balance: " +
-							customerCurrencyBalance +
-							", " +
-							conversion_factor,
+						errorMessage: "Insufficient Balance",
 					},
 				},
 			};
@@ -167,8 +160,8 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 					: options.platformFee.value * orderline.listPrice;
 			const newBalance =
 				sellerAccountBalance -
-				Math.round(platFormFee) +
-				Math.round(totalPrice / 100);
+				Math.ceil(platFormFee) +
+				Math.ceil(totalPrice / 100);
 
 			await sellerService.update(ctx, {
 				id: seller.id,
@@ -182,7 +175,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			id: customer.id,
 			customFields: {
 				accountBalance:
-					customerCreditBalance - Math.round(amount / conversion_factor),
+					customerCreditBalance - Math.ceil(amount / conversion_factor),
 			},
 		});
 
