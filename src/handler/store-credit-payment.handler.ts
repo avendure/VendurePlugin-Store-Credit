@@ -65,10 +65,18 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			return {
 				amount: amount,
 				state: "Declined",
-				errorMessage: "Insufficient Balance: " + customerCurrencyBalance,
+				errorMessage:
+					"Insufficient Balance: " +
+					customerCurrencyBalance +
+					", " +
+					conversion_factor,
 				metadata: {
 					public: {
-						errorMessage: "Insufficient Balance",
+						errorMessage:
+							"Insufficient Balance: " +
+							customerCurrencyBalance +
+							", " +
+							conversion_factor,
 					},
 				},
 			};
