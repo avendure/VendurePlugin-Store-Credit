@@ -1,8 +1,11 @@
-import { VendureEntity, DeepPartial } from '@vendure/core';
+import { VendureEntity, ID, ProductVariant, DeepPartial, Customer } from '@vendure/core';
 export declare class StoreCredit extends VendureEntity {
     constructor(input?: DeepPartial<StoreCredit>);
-    key: string;
+    variant: ProductVariant | null;
+    variantId: ID | null;
+    perUserLimit: number;
     value: number;
-    customerId: string;
-    isClaimed: boolean;
+    key: string;
+    customer: Customer | null;
+    customerId: ID | null;
 }

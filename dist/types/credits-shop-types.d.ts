@@ -22,8 +22,8 @@ export type Incremental<T> = T | {
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
     ID: {
-        input: string | number;
-        output: string | number;
+        input: string;
+        output: string;
     };
     String: {
         input: string;
@@ -50,18 +50,13 @@ export type Scalars = {
         output: any;
     };
     Money: {
-        input: number;
-        output: number;
+        input: any;
+        output: any;
     };
     Upload: {
         input: any;
         output: any;
     };
-};
-export type AccountBalance = {
-    __typename?: 'AccountBalance';
-    customerAccountBalance?: Maybe<Scalars['Int']['output']>;
-    sellerAccountBalance?: Maybe<Scalars['Int']['output']>;
 };
 export type ActiveOrderResult = NoActiveOrderError | Order;
 export type AddPaymentToOrderResult = IneligiblePaymentMethodError | NoActiveOrderError | Order | OrderPaymentStateError | OrderStateTransitionError | PaymentDeclinedError | PaymentFailedError;
@@ -71,7 +66,7 @@ export type Address = Node & {
     company?: Maybe<Scalars['String']['output']>;
     country: Country;
     createdAt: Scalars['DateTime']['output'];
-    customFields?: Maybe<AddressCustomFields>;
+    customFields?: Maybe<Scalars['JSON']['output']>;
     defaultBillingAddress?: Maybe<Scalars['Boolean']['output']>;
     defaultShippingAddress?: Maybe<Scalars['Boolean']['output']>;
     fullName?: Maybe<Scalars['String']['output']>;
@@ -82,10 +77,6 @@ export type Address = Node & {
     streetLine1: Scalars['String']['output'];
     streetLine2?: Maybe<Scalars['String']['output']>;
     updatedAt: Scalars['DateTime']['output'];
-};
-export type AddressCustomFields = {
-    __typename?: 'AddressCustomFields';
-    coordinates?: Maybe<Scalars['String']['output']>;
 };
 export type Adjustment = {
     __typename?: 'Adjustment';
@@ -188,6 +179,13 @@ export type Channel = Node & {
     /** Not yet used - will be implemented in a future release. */
     trackInventory?: Maybe<Scalars['Boolean']['output']>;
     updatedAt: Scalars['DateTime']['output'];
+};
+export type ClaimResult = {
+    __typename?: 'ClaimResult';
+    addedCredit?: Maybe<Scalars['Int']['output']>;
+    currentBalance?: Maybe<Scalars['Int']['output']>;
+    message: Scalars['String']['output'];
+    success: Scalars['Boolean']['output'];
 };
 export type Collection = Node & {
     __typename?: 'Collection';
@@ -360,14 +358,11 @@ export type CouponCodeLimitError = ErrorResult & {
     limit: Scalars['Int']['output'];
     message: Scalars['String']['output'];
 };
-export type CreateAddressCustomFieldsInput = {
-    coordinates?: InputMaybe<Scalars['String']['input']>;
-};
 export type CreateAddressInput = {
     city?: InputMaybe<Scalars['String']['input']>;
     company?: InputMaybe<Scalars['String']['input']>;
     countryCode: Scalars['String']['input'];
-    customFields?: InputMaybe<CreateAddressCustomFieldsInput>;
+    customFields?: InputMaybe<Scalars['JSON']['input']>;
     defaultBillingAddress?: InputMaybe<Scalars['Boolean']['input']>;
     defaultShippingAddress?: InputMaybe<Scalars['Boolean']['input']>;
     fullName?: InputMaybe<Scalars['String']['input']>;
@@ -384,20 +379,6 @@ export type CreateCustomerInput = {
     lastName: Scalars['String']['input'];
     phoneNumber?: InputMaybe<Scalars['String']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
-};
-export type CreateSellerCustomFieldsInput = {
-    addressId?: InputMaybe<Scalars['ID']['input']>;
-    coverimageId?: InputMaybe<Scalars['ID']['input']>;
-    sellingRadius?: InputMaybe<Scalars['Float']['input']>;
-    storeDescription?: InputMaybe<Scalars['String']['input']>;
-    userId?: InputMaybe<Scalars['ID']['input']>;
-};
-export type CreateSellerInput = {
-    customFields?: InputMaybe<CreateSellerCustomFieldsInput>;
-    emailAddress: Scalars['String']['input'];
-    firstName: Scalars['String']['input'];
-    lastName: Scalars['String']['input'];
-    password: Scalars['String']['input'];
 };
 /**
  * @description
@@ -925,7 +906,12 @@ export type Facet = Node & {
     name: Scalars['String']['output'];
     translations: Array<FacetTranslation>;
     updatedAt: Scalars['DateTime']['output'];
+    /** Returns a paginated, sortable, filterable list of the Facet's values. Added in v2.1.0. */
+    valueList: FacetValueList;
     values: Array<FacetValue>;
+};
+export type FacetValueListArgs = {
+    options?: InputMaybe<FacetValueListOptions>;
 };
 export type FacetFilterParameter = {
     code?: InputMaybe<StringOperators>;
@@ -973,6 +959,7 @@ export type FacetValue = Node & {
     createdAt: Scalars['DateTime']['output'];
     customFields?: Maybe<Scalars['JSON']['output']>;
     facet: Facet;
+    facetId: Scalars['ID']['output'];
     id: Scalars['ID']['output'];
     languageCode: LanguageCode;
     name: Scalars['String']['output'];
@@ -991,6 +978,32 @@ export type FacetValueFilterInput = {
     and?: InputMaybe<Scalars['ID']['input']>;
     or?: InputMaybe<Array<Scalars['ID']['input']>>;
 };
+export type FacetValueFilterParameter = {
+    code?: InputMaybe<StringOperators>;
+    createdAt?: InputMaybe<DateOperators>;
+    facetId?: InputMaybe<IdOperators>;
+    id?: InputMaybe<IdOperators>;
+    languageCode?: InputMaybe<StringOperators>;
+    name?: InputMaybe<StringOperators>;
+    updatedAt?: InputMaybe<DateOperators>;
+};
+export type FacetValueList = PaginatedList & {
+    __typename?: 'FacetValueList';
+    items: Array<FacetValue>;
+    totalItems: Scalars['Int']['output'];
+};
+export type FacetValueListOptions = {
+    /** Allows the results to be filtered */
+    filter?: InputMaybe<FacetValueFilterParameter>;
+    /** Specifies whether multiple "filter" arguments should be combines with a logical AND or OR operation. Defaults to AND. */
+    filterOperator?: InputMaybe<LogicalOperator>;
+    /** Skips the first n results, for use in pagination */
+    skip?: InputMaybe<Scalars['Int']['input']>;
+    /** Specifies which properties to sort the results by */
+    sort?: InputMaybe<FacetValueSortParameter>;
+    /** Takes n results, for use in pagination */
+    take?: InputMaybe<Scalars['Int']['input']>;
+};
 /**
  * Which FacetValues are present in the products returned
  * by the search, and in what quantity.
@@ -999,6 +1012,14 @@ export type FacetValueResult = {
     __typename?: 'FacetValueResult';
     count: Scalars['Int']['output'];
     facetValue: FacetValue;
+};
+export type FacetValueSortParameter = {
+    code?: InputMaybe<SortOrder>;
+    createdAt?: InputMaybe<SortOrder>;
+    facetId?: InputMaybe<SortOrder>;
+    id?: InputMaybe<SortOrder>;
+    name?: InputMaybe<SortOrder>;
+    updatedAt?: InputMaybe<SortOrder>;
 };
 export type FacetValueTranslation = {
     __typename?: 'FacetValueTranslation';
@@ -1547,10 +1568,6 @@ export type LocalizedString = {
     languageCode: LanguageCode;
     value: Scalars['String']['output'];
 };
-export type LocationSearchInput = {
-    customerRadius?: InputMaybe<Scalars['Int']['input']>;
-    searchInput: SearchInput;
-};
 export declare enum LogicalOperator {
     AND = "AND",
     OR = "OR"
@@ -1563,6 +1580,7 @@ export type MissingPasswordError = ErrorResult & {
 };
 export type Mutation = {
     __typename?: 'Mutation';
+    addCreditToOrder?: Maybe<UpdateOrderItemsResult>;
     /** Adds an item to the order. If custom fields are defined on the OrderLine entity, a third argument 'customFields' will be available. */
     addItemToOrder: UpdateOrderItemsResult;
     /** Add a Payment to the Order */
@@ -1573,7 +1591,7 @@ export type Mutation = {
     applyCouponCode: ApplyCouponCodeResult;
     /** Authenticates the user using a named authentication strategy */
     authenticate: AuthenticationResult;
-    claim: StoreCredit;
+    claim: ClaimResult;
     /** Create a new Customer Address */
     createCustomerAddress: Address;
     /** Delete an existing Address */
@@ -1601,7 +1619,6 @@ export type Mutation = {
      * 3. The Customer _must_ be registered _with_ a password. No further action is needed - the Customer is able to authenticate immediately.
      */
     registerCustomerAccount: RegisterCustomerAccountResult;
-    registerNewSeller?: Maybe<Channel>;
     /** Remove all OrderLine from the Order */
     removeAllOrderLines: RemoveOrderItemsResult;
     /** Removes the given coupon code from the active Order */
@@ -1655,6 +1672,10 @@ export type Mutation = {
      */
     verifyCustomerAccount: VerifyCustomerAccountResult;
 };
+export type MutationAddCreditToOrderArgs = {
+    creditId: Scalars['ID']['input'];
+    quantity: Scalars['Int']['input'];
+};
 export type MutationAddItemToOrderArgs = {
     productVariantId: Scalars['ID']['input'];
     quantity: Scalars['Int']['input'];
@@ -1692,9 +1713,6 @@ export type MutationRefreshCustomerVerificationArgs = {
 };
 export type MutationRegisterCustomerAccountArgs = {
     input: RegisterCustomerInput;
-};
-export type MutationRegisterNewSellerArgs = {
-    input: RegisterSellerInput;
 };
 export type MutationRemoveCouponCodeArgs = {
     couponCode: Scalars['String']['input'];
@@ -1870,7 +1888,7 @@ export type OrderAddress = {
     company?: Maybe<Scalars['String']['output']>;
     country?: Maybe<Scalars['String']['output']>;
     countryCode?: Maybe<Scalars['String']['output']>;
-    customFields?: Maybe<AddressCustomFields>;
+    customFields?: Maybe<Scalars['JSON']['output']>;
     fullName?: Maybe<Scalars['String']['output']>;
     phoneNumber?: Maybe<Scalars['String']['output']>;
     postalCode?: Maybe<Scalars['String']['output']>;
@@ -1952,6 +1970,7 @@ export type OrderLine = Node & {
     proratedUnitPrice: Scalars['Money']['output'];
     /** The proratedUnitPrice including tax */
     proratedUnitPriceWithTax: Scalars['Money']['output'];
+    /** The quantity of items purchased */
     quantity: Scalars['Int']['output'];
     taxLines: Array<TaxLine>;
     taxRate: Scalars['Float']['output'];
@@ -2383,7 +2402,6 @@ export type Product = Node & {
     languageCode: LanguageCode;
     name: Scalars['String']['output'];
     optionGroups: Array<ProductOptionGroup>;
-    seller?: Maybe<Seller>;
     slug: Scalars['String']['output'];
     translations: Array<ProductTranslation>;
     updatedAt: Scalars['DateTime']['output'];
@@ -2568,6 +2586,7 @@ export type Promotion = Node & {
     startsAt?: Maybe<Scalars['DateTime']['output']>;
     translations: Array<PromotionTranslation>;
     updatedAt: Scalars['DateTime']['output'];
+    usageLimit?: Maybe<Scalars['Int']['output']>;
 };
 export type PromotionList = PaginatedList & {
     __typename?: 'PromotionList';
@@ -2617,14 +2636,10 @@ export type Query = {
     activeOrder?: Maybe<Order>;
     /** An array of supported Countries */
     availableCountries: Array<Country>;
-    buyerLocationProducts: ProductList;
     /** Returns a Collection either by its id or slug. If neither 'id' nor 'slug' is specified, an error will result. */
     collection?: Maybe<Collection>;
     /** A list of Collections available to the shop */
     collections: CollectionList;
-    customerStoreCredit: StoreCredit;
-    customerStoreCredits: Array<StoreCredit>;
-    eligibleOrderShippingMethods?: Maybe<Array<Maybe<ShippingMethod>>>;
     /** Returns a list of payment methods and their eligibility based on the current active Order */
     eligiblePaymentMethods: Array<PaymentMethodQuote>;
     /** Returns a list of eligible shipping methods based on the current active Order */
@@ -2633,10 +2648,8 @@ export type Query = {
     facet?: Maybe<Facet>;
     /** A list of Facets available to the shop */
     facets: FacetList;
-    locationSearch: SearchResponse;
     /** Returns information about the current authenticated User */
     me?: Maybe<CurrentUser>;
-    nearbySellers: SellerList;
     /** Returns the possible next states that the activeOrder can transition to */
     nextOrderStates: Array<Scalars['String']['output']>;
     /**
@@ -2657,11 +2670,8 @@ export type Query = {
     products: ProductList;
     /** Search Products based on the criteria set by the `SearchInput` */
     search: SearchResponse;
-    storeCredit: StoreCredit;
-};
-export type QueryBuyerLocationProductsArgs = {
-    customerRadius?: InputMaybe<Scalars['Int']['input']>;
-    options?: InputMaybe<ProductListOptions>;
+    storeCredit?: Maybe<StoreCredit>;
+    storeCredits: StoreCreditList;
 };
 export type QueryCollectionArgs = {
     id?: InputMaybe<Scalars['ID']['input']>;
@@ -2670,22 +2680,11 @@ export type QueryCollectionArgs = {
 export type QueryCollectionsArgs = {
     options?: InputMaybe<CollectionListOptions>;
 };
-export type QueryCustomerStoreCreditArgs = {
-    customerId: Scalars['ID']['input'];
-    id: Scalars['ID']['input'];
-};
 export type QueryFacetArgs = {
     id: Scalars['ID']['input'];
 };
 export type QueryFacetsArgs = {
     options?: InputMaybe<FacetListOptions>;
-};
-export type QueryLocationSearchArgs = {
-    input: LocationSearchInput;
-};
-export type QueryNearbySellersArgs = {
-    customerRadius?: InputMaybe<Scalars['Int']['input']>;
-    options?: InputMaybe<ProductListOptions>;
 };
 export type QueryOrderArgs = {
     id: Scalars['ID']['input'];
@@ -2705,6 +2704,9 @@ export type QuerySearchArgs = {
 };
 export type QueryStoreCreditArgs = {
     id: Scalars['ID']['input'];
+};
+export type QueryStoreCreditsArgs = {
+    options?: InputMaybe<StoreCreditListOptions>;
 };
 export type RefreshCustomerVerificationResult = NativeAuthStrategyError | Success;
 export type Refund = Node & {
@@ -2762,10 +2764,6 @@ export type RegisterCustomerInput = {
     phoneNumber?: InputMaybe<Scalars['String']['input']>;
     title?: InputMaybe<Scalars['String']['input']>;
 };
-export type RegisterSellerInput = {
-    seller: CreateSellerInput;
-    shopName: Scalars['String']['input'];
-};
 export type RelationCustomFieldConfig = CustomField & {
     __typename?: 'RelationCustomFieldConfig';
     description?: Maybe<Array<LocalizedString>>;
@@ -2804,8 +2802,6 @@ export type SearchInput = {
     collectionSlug?: InputMaybe<Scalars['String']['input']>;
     facetValueFilters?: InputMaybe<Array<FacetValueFilterInput>>;
     groupByProduct?: InputMaybe<Scalars['Boolean']['input']>;
-    inStock?: InputMaybe<Scalars['Boolean']['input']>;
-    productIds?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
     skip?: InputMaybe<Scalars['Int']['input']>;
     sort?: InputMaybe<SearchResultSortParameter>;
     take?: InputMaybe<Scalars['Int']['input']>;
@@ -2830,8 +2826,6 @@ export type SearchResult = {
     description: Scalars['String']['output'];
     facetIds: Array<Scalars['ID']['output']>;
     facetValueIds: Array<Scalars['ID']['output']>;
-    inStock: Scalars['Boolean']['output'];
-    nearYourLocation: Scalars['Boolean']['output'];
     price: SearchResultPrice;
     priceWithTax: SearchResultPrice;
     productAsset?: Maybe<SearchResultAsset>;
@@ -2842,12 +2836,8 @@ export type SearchResult = {
     productVariantName: Scalars['String']['output'];
     /** A relevance score for the result. Differs between database implementations */
     score: Scalars['Float']['output'];
-    seller: Seller;
     sku: Scalars['String']['output'];
     slug: Scalars['String']['output'];
-};
-export type SearchResultNearYourLocationArgs = {
-    customerRadius?: InputMaybe<Scalars['Int']['input']>;
 };
 export type SearchResultAsset = {
     __typename?: 'SearchResultAsset';
@@ -2872,17 +2862,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
     __typename?: 'SellerCustomFields';
     accountBalance?: Maybe<Scalars['Int']['output']>;
-    address?: Maybe<Address>;
-    coverimage?: Maybe<Asset>;
-    isVerified?: Maybe<Scalars['Boolean']['output']>;
-    sellingRadius?: Maybe<Scalars['Float']['output']>;
-    storeDescription?: Maybe<Scalars['String']['output']>;
     user?: Maybe<User>;
-};
-export type SellerList = {
-    __typename?: 'SellerList';
-    items: Array<Seller>;
-    totalItems: Scalars['Int']['output'];
 };
 export type SetCustomerForOrderResult = AlreadyLoggedInError | EmailAddressConflictError | GuestCheckoutError | NoActiveOrderError | Order;
 export type SetOrderShippingMethodResult = IneligibleShippingMethodError | NoActiveOrderError | Order | OrderModificationError;
@@ -2908,7 +2888,6 @@ export type ShippingMethod = Node & {
     id: Scalars['ID']['output'];
     languageCode: LanguageCode;
     name: Scalars['String']['output'];
-    seller?: Maybe<Seller>;
     translations: Array<ShippingMethodTranslation>;
     updatedAt: Scalars['DateTime']['output'];
 };
@@ -2950,16 +2929,45 @@ export declare enum SortOrder {
 export type StoreCredit = Node & {
     __typename?: 'StoreCredit';
     createdAt?: Maybe<Scalars['DateTime']['output']>;
-    customerId?: Maybe<Scalars['String']['output']>;
     id: Scalars['ID']['output'];
-    isClaimed?: Maybe<Scalars['Boolean']['output']>;
-    key?: Maybe<Scalars['String']['output']>;
+    perUserLimit: Scalars['Int']['output'];
     updatedAt?: Maybe<Scalars['DateTime']['output']>;
     value?: Maybe<Scalars['Int']['output']>;
+    variant: ProductVariant;
+    variantId: Scalars['ID']['output'];
 };
-export type StoreCreditAddInput = {
-    key?: InputMaybe<Scalars['String']['input']>;
-    value?: InputMaybe<Scalars['Int']['input']>;
+export type StoreCreditFilterParameter = {
+    createdAt?: InputMaybe<DateOperators>;
+    id?: InputMaybe<IdOperators>;
+    perUserLimit?: InputMaybe<NumberOperators>;
+    updatedAt?: InputMaybe<DateOperators>;
+    value?: InputMaybe<NumberOperators>;
+    variantId?: InputMaybe<IdOperators>;
+};
+export type StoreCreditList = PaginatedList & {
+    __typename?: 'StoreCreditList';
+    items: Array<StoreCredit>;
+    totalItems: Scalars['Int']['output'];
+};
+export type StoreCreditListOptions = {
+    /** Allows the results to be filtered */
+    filter?: InputMaybe<StoreCreditFilterParameter>;
+    /** Specifies whether multiple "filter" arguments should be combines with a logical AND or OR operation. Defaults to AND. */
+    filterOperator?: InputMaybe<LogicalOperator>;
+    /** Skips the first n results, for use in pagination */
+    skip?: InputMaybe<Scalars['Int']['input']>;
+    /** Specifies which properties to sort the results by */
+    sort?: InputMaybe<StoreCreditSortParameter>;
+    /** Takes n results, for use in pagination */
+    take?: InputMaybe<Scalars['Int']['input']>;
+};
+export type StoreCreditSortParameter = {
+    createdAt?: InputMaybe<SortOrder>;
+    id?: InputMaybe<SortOrder>;
+    perUserLimit?: InputMaybe<SortOrder>;
+    updatedAt?: InputMaybe<SortOrder>;
+    value?: InputMaybe<SortOrder>;
+    variantId?: InputMaybe<SortOrder>;
 };
 export type StringCustomFieldConfig = CustomField & {
     __typename?: 'StringCustomFieldConfig';
@@ -3070,14 +3078,11 @@ export type TextCustomFieldConfig = CustomField & {
     ui?: Maybe<Scalars['JSON']['output']>;
 };
 export type TransitionOrderToStateResult = Order | OrderStateTransitionError;
-export type UpdateAddressCustomFieldsInput = {
-    coordinates?: InputMaybe<Scalars['String']['input']>;
-};
 export type UpdateAddressInput = {
     city?: InputMaybe<Scalars['String']['input']>;
     company?: InputMaybe<Scalars['String']['input']>;
     countryCode?: InputMaybe<Scalars['String']['input']>;
-    customFields?: InputMaybe<UpdateAddressCustomFieldsInput>;
+    customFields?: InputMaybe<Scalars['JSON']['input']>;
     defaultBillingAddress?: InputMaybe<Scalars['Boolean']['input']>;
     defaultShippingAddress?: InputMaybe<Scalars['Boolean']['input']>;
     fullName?: InputMaybe<Scalars['String']['input']>;

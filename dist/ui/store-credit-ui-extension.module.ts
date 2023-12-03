@@ -9,7 +9,6 @@ import {
   registerCustomDetailComponent,
 } from '@vendure/admin-ui/core';
 import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsInSeller';
-import { CurrencyInputComponent } from '@vendure/admin-ui/core/shared/components/currency-input/currency-input.component';
 
 @NgModule({
   imports: [SharedModule],

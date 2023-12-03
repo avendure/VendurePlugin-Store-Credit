@@ -14,34 +14,52 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminStoreCreditResolver = void 0;
 const graphql_1 = require("@nestjs/graphql");
+const store_credit_entity_1 = require("../entity/store-credit.entity");
 const core_1 = require("@vendure/core");
 const store_credit_service_1 = require("../service/store-credit.service");
 let AdminStoreCreditResolver = exports.AdminStoreCreditResolver = class AdminStoreCreditResolver {
     constructor(storeCreditService) {
         this.storeCreditService = storeCreditService;
     }
+    async storeCredit(ctx, args, relations) {
+        return this.storeCreditService.findOne(ctx, args.id, relations);
+    }
+    storeCredits(ctx, args) {
+        return this.storeCreditService.findAll(ctx, args.options);
+    }
     async createStoreCredit(ctx, args) {
-        const { input } = args;
-        return this.storeCreditService.createStoreCredit(ctx, input);
+        return this.storeCreditService.createStoreCredit(ctx, args.input);
     }
     async updateStoreCredit(ctx, args) {
-        const { input } = args;
-        return this.storeCreditService.updateStoreCredit(ctx, input);
+        return this.storeCreditService.updateStoreCredit(ctx, args.input);
     }
-    async deleteSingleStoreCredit(ctx, id) {
-        return this.storeCreditService.deleteStoreCredit(ctx, id);
+    async deleteSingleStoreCredit(ctx, args) {
+        return this.storeCreditService.deleteOne(ctx, args.id);
     }
-    storeCredits(args) {
-        const { options } = args;
-        return this.storeCreditService.getAllStoreCredit(options);
+    transferCreditfromSellerToCustomer(ctx, args) {
+        return this.storeCreditService.transferCreditfromSellerToCustomerWithSameEmail(ctx, args.value, args.sellerId);
     }
-    transferCreditfromSellerToCustomer(ctx, sellerId, value) {
-        return this.storeCreditService.transferCreditfromSellerToCustomerWithSameEmail(ctx, value, sellerId);
-    }
-    getSellerANDCustomerStoreCredits(ctx, sellerId) {
-        return this.storeCreditService.getSellerANDCustomerStoreCredits(ctx, sellerId);
+    getSellerANDCustomerStoreCredits(ctx, args) {
+        return this.storeCreditService.getSellerANDCustomerStoreCredits(ctx, args.sellerId);
     }
 };
+__decorate([
+    (0, graphql_1.Query)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Args)()),
+    __param(2, (0, core_1.Relations)({ entity: store_credit_entity_1.StoreCredit })),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, Object, Array]),
+    __metadata("design:returntype", Promise)
+], AdminStoreCreditResolver.prototype, "storeCredit", null);
+__decorate([
+    (0, graphql_1.Query)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Args)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
+    __metadata("design:returntype", void 0)
+], AdminStoreCreditResolver.prototype, "storeCredits", null);
 __decorate([
     (0, core_1.Transaction)(),
     (0, graphql_1.Mutation)(),
@@ -67,32 +85,24 @@ __decorate([
     (0, graphql_1.Mutation)(),
     (0, core_1.Allow)(core_1.Permission.SuperAdmin),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)("id")),
+    __param(1, (0, graphql_1.Args)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [core_1.RequestContext, String]),
+    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", Promise)
 ], AdminStoreCreditResolver.prototype, "deleteSingleStoreCredit", null);
 __decorate([
-    (0, graphql_1.Query)(),
-    (0, core_1.Allow)(core_1.Permission.SuperAdmin),
-    __param(0, (0, graphql_1.Args)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
-    __metadata("design:returntype", void 0)
-], AdminStoreCreditResolver.prototype, "storeCredits", null);
-__decorate([
     (0, graphql_1.Mutation)(),
+    (0, core_1.Transaction)(),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)("sellerId")),
-    __param(2, (0, graphql_1.Args)("value")),
+    __param(1, (0, graphql_1.Args)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [core_1.RequestContext, Object, Number]),
+    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", void 0)
 ], AdminStoreCreditResolver.prototype, "transferCreditfromSellerToCustomer", null);
 __decorate([
     (0, graphql_1.Query)(),
     __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)("sellerId")),
+    __param(1, (0, graphql_1.Args)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", void 0)
