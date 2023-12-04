@@ -44,6 +44,7 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         const customerCreditBalance = customer.customFields.accountBalance || 0;
         const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] ||
             options.creditToCurrencyFactor["default"];
+        //Vendure doesn't use decimals so I scale it so it's comparing values at the same magnitude
         const scaling_factor = 100;
         //Scale the currencyBalance Up to match magnitude of `amount`
         // then we multiply by the conversion factor to convert from credit to dollar value
@@ -123,11 +124,8 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
             const sellerAccountBalance = (sellerCustomFields === null || sellerCustomFields === void 0 ? void 0 : sellerCustomFields.accountBalance) || 0;
             let platFormFee = options.platformFee.type == "fixed"
                 ? options.platformFee.value
-                : options.platformFee.value * orderline.listPrice;
-            const newBalance = sellerAccountBalance -
-                Math.ceil(platFormFee) +
-                Math.ceil(adjustedTotalPrice);
-            console.log("platformFee: ", platFormFee);
+                : options.platformFee.value * (orderline.listPrice / scaling_factor);
+            const newBalance = sellerAccountBalance - Math.ceil(platFormFee + adjustedTotalPrice);
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
@@ -139,8 +137,8 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         console.log("amount: ", amount);
         console.log("rounded amount: ", amount / conversion_factor);
         console.log("conversion factor: ", conversion_factor);
-        console.log("newBalance: ", customerCreditBalance - Math.ceil(amount / conversion_factor));
         const adjustedAmount = amount / (scaling_factor * conversion_factor);
+        console.log("newBalance: ", customerCreditBalance - adjustedAmount);
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
