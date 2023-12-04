@@ -59,9 +59,12 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 		const conversion_factor =
 			options.creditToCurrencyFactor[order.currencyCode] ||
 			options.creditToCurrencyFactor["default"];
+		const scaling_factor = 100;
 
 		//Scale the currencyBalance Up to match magnitude of `amount`
-		const customerCurrencyBalance = customerCreditBalance * conversion_factor;
+		// then we multiply by the conversion factor to convert from credit to dollar value
+		const customerCurrencyBalance =
+			customerCreditBalance * scaling_factor * conversion_factor;
 
 		// This `amount` doesn't have decimals
 		if (customerCurrencyBalance < amount) {
@@ -154,6 +157,11 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 				};
 			}
 
+			//The total price doesn't include decimals so is divided by the scaling_factor
+			// and needs to be scaled to deliver the correct number of credits based on the priced
+			const adjustedTotalPrice =
+				totalPrice / (scaling_factor * conversion_factor);
+
 			const sellerCustomFields = seller.customFields;
 			const sellerAccountBalance = sellerCustomFields?.accountBalance || 0;
 			let platFormFee =
@@ -163,7 +171,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			const newBalance =
 				sellerAccountBalance -
 				Math.ceil(platFormFee) +
-				Math.ceil(totalPrice / 100);
+				Math.ceil(adjustedTotalPrice);
 
 			console.log("platformFee: ", platFormFee);
 			await sellerService.update(ctx, {
@@ -182,11 +190,11 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			"newBalance: ",
 			customerCreditBalance - Math.ceil(amount / conversion_factor)
 		);
+		const adjustedAmount = amount / (scaling_factor * conversion_factor);
 		await customerService.update(ctx, {
 			id: customer.id,
 			customFields: {
-				accountBalance:
-					customerCreditBalance - Math.ceil(amount / conversion_factor),
+				accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
 			},
 		});
 
