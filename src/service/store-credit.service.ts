@@ -222,10 +222,10 @@ export class StoreCreditService {
 
     async transferCreditfromSellerToCustomerWithSameEmail(ctx: RequestContext, value: number, sellerId: ID) {
         const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.user?.identifier;
+        const sellerEmail = seller.customFields.customer?.emailAddress;
         if (!sellerEmail) throw new Error("Seller's user account not set.");
 
         if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
@@ -259,10 +259,10 @@ export class StoreCreditService {
 
     async getSellerANDCustomerStoreCredits(ctx: RequestContext, sellerId: ID) {
         const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.user?.identifier;
+        const sellerEmail = seller.customFields.customer?.emailAddress;
         if (!sellerEmail) throw new Error("Seller's user account not set.");
 
         const customer = await this.connection.getRepository(ctx, Customer).findOne({
@@ -290,7 +290,7 @@ export class StoreCreditService {
         const seller = await this.connection.getRepository(ctx, Seller).findOne({
             where: {
                 customFields: {
-                    user: {
+                    customer: {
                         id: ctx.activeUserId,
                     },
                 },

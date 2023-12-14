@@ -902,7 +902,7 @@ export type CreateRoleInput = {
 };
 
 export type CreateSellerCustomFieldsInput = {
-  userId?: InputMaybe<Scalars['ID']['input']>;
+  customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type CreateSellerInput = {
@@ -2500,6 +2500,36 @@ export type ManualPaymentStateError = ErrorResult & {
   errorCode: ErrorCode;
   message: Scalars['String']['output'];
 };
+
+export enum MetricInterval {
+  Daily = 'Daily'
+}
+
+export type MetricSummary = {
+  __typename?: 'MetricSummary';
+  entries: Array<MetricSummaryEntry>;
+  interval: MetricInterval;
+  title: Scalars['String']['output'];
+  type: MetricType;
+};
+
+export type MetricSummaryEntry = {
+  __typename?: 'MetricSummaryEntry';
+  label: Scalars['String']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type MetricSummaryInput = {
+  interval: MetricInterval;
+  refresh?: InputMaybe<Scalars['Boolean']['input']>;
+  types: Array<MetricType>;
+};
+
+export enum MetricType {
+  AverageOrderValue = 'AverageOrderValue',
+  OrderCount = 'OrderCount',
+  OrderTotal = 'OrderTotal'
+}
 
 export type MimeTypeError = ErrorResult & {
   __typename?: 'MimeTypeError';
@@ -4906,6 +4936,8 @@ export type Query = {
   jobs: JobList;
   jobsById: Array<Job>;
   me?: Maybe<CurrentUser>;
+  /** Get metrics for the given interval and metric types. */
+  metricSummary: Array<MetricSummary>;
   order?: Maybe<Order>;
   orders: OrderList;
   paymentMethod?: Maybe<PaymentMethod>;
@@ -5070,6 +5102,11 @@ export type QueryJobsArgs = {
 
 export type QueryJobsByIdArgs = {
   jobIds: Array<Scalars['ID']['input']>;
+};
+
+
+export type QueryMetricSummaryArgs = {
+  input?: InputMaybe<MetricSummaryInput>;
 };
 
 
@@ -5557,7 +5594,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
   __typename?: 'SellerCustomFields';
   accountBalance?: Maybe<Scalars['Int']['output']>;
-  user?: Maybe<User>;
+  customer?: Maybe<Customer>;
 };
 
 export type SellerFilterParameter = {
@@ -5590,10 +5627,10 @@ export type SellerListOptions = {
 export type SellerSortParameter = {
   accountBalance?: InputMaybe<SortOrder>;
   createdAt?: InputMaybe<SortOrder>;
+  customer?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   name?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
-  user?: InputMaybe<SortOrder>;
 };
 
 export type ServerConfig = {
@@ -6418,7 +6455,7 @@ export type UpdateRoleInput = {
 };
 
 export type UpdateSellerCustomFieldsInput = {
-  userId?: InputMaybe<Scalars['ID']['input']>;
+  customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type UpdateSellerInput = {

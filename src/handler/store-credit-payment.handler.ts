@@ -21,6 +21,9 @@ let channelService: ChannelService;
 let entityHydrator: EntityHydrator;
 let options: StoreCreditPluginOptions;
 
+// Vendure doesn't use decimals so I scale it so it's comparing values at the same magnitude
+const SCALING_FACTOR = 100;
+
 export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 	code: "credit-store-payment",
 	description: [
@@ -60,13 +63,10 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			options.creditToCurrencyFactor[order.currencyCode] ||
 			options.creditToCurrencyFactor["default"];
 
-		//Vendure doesn't use decimals so I scale it so it's comparing values at the same magnitude
-		const scaling_factor = 100;
-
-		//Scale the currencyBalance Up to match magnitude of `amount`
+		// Scale the currencyBalance Up to match magnitude of `amount`
 		// then we multiply by the conversion factor to convert from credit to dollar value
 		const customerCurrencyBalance =
-			customerCreditBalance * scaling_factor * conversion_factor;
+			customerCreditBalance * SCALING_FACTOR * conversion_factor;
 
 		// This `amount` doesn't have decimals
 		if (customerCurrencyBalance < amount) {
@@ -159,24 +159,24 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 				};
 			}
 
-			//The total price doesn't include decimals so is divided by the scaling_factor
+			// The total price doesn't include decimals so is divided by the scaling_factor
 			// and needs to be scaled to deliver the correct number of credits based on the priced
 			const adjustedTotalPrice =
-				totalPrice / (scaling_factor * conversion_factor);
+				totalPrice / (SCALING_FACTOR * conversion_factor);
 
 			const sellerCustomFields = seller.customFields;
 			const sellerAccountBalance = sellerCustomFields?.accountBalance || 0;
 			let platFormFee =
 				options.platformFee.type == "fixed"
 					? options.platformFee.value
-					: options.platformFee.value * (orderline.listPrice / scaling_factor);
+					: options.platformFee.value * (orderline.listPrice / SCALING_FACTOR);
 			const newBalance =
-				sellerAccountBalance - Math.ceil(platFormFee + adjustedTotalPrice);
+				sellerAccountBalance - platFormFee + adjustedTotalPrice;
 
 			await sellerService.update(ctx, {
 				id: seller.id,
 				customFields: {
-					accountBalance: newBalance,
+					accountBalance: Math.ceil(newBalance),
 				},
 			});
 		}
@@ -186,7 +186,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 		console.log("rounded amount: ", amount / conversion_factor);
 		console.log("conversion factor: ", conversion_factor);
 
-		const adjustedAmount = amount / (scaling_factor * conversion_factor);
+		const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
 		console.log("newBalance: ", customerCreditBalance - adjustedAmount);
 		await customerService.update(ctx, {
 			id: customer.id,

@@ -75,14 +75,13 @@ describe("store-credits plugin", () => {
 	});
 
 	it("Should create new seller", async () => {
-		const user = customers[0].user!;
 		const createSellerResult = await adminClient.query(CreateSellerDocument, {
-			input: { name: "Seller 2", customFields: { userId: user.id } },
+			input: { name: "Seller 2", customFields: { customerId: customers[0].id } },
 		});
 		expect(createSellerResult.createSeller.id).toBeDefined();
-		expect(createSellerResult.createSeller.customFields?.user).toEqual({
-			id: user.id,
-			identifier: user.identifier,
+		expect(createSellerResult.createSeller.customFields?.customer).toEqual({
+			id: customers[0].id,
+			emailAddress: customers[0].emailAddress,
 		});
 		sellerId = createSellerResult.createSeller.id;
 	});

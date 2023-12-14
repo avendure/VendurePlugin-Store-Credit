@@ -1,4 +1,4 @@
-import { LanguageCode, PluginCommonModule, Product, User, VendurePlugin } from '@vendure/core';
+import { Customer, LanguageCode, PluginCommonModule, Product, User, VendurePlugin } from '@vendure/core';
 import { StoreCredit } from './entity/store-credit.entity';
 import { adminApiExtensions, shopApiExtensions } from './api.extension';
 import { ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
@@ -20,7 +20,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
 
     interface CustomSellerFields {
         accountBalance: number;
-        user?: User;
+        customer?: Customer | null;
     }
 
     interface CustomGlobalSettingsFields {
@@ -66,9 +66,9 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
             ],
         });
         config.customFields.Seller.push({
-            name: 'user',
+            name: 'customer',
             type: 'relation',
-            entity: User,
+            entity: Customer,
             nullable: true,
         });
         config.customFields.GlobalSettings.push({
@@ -105,7 +105,7 @@ export class StoreCreditPlugin {
             slug: 'root-non-purchasable-product',
         },
         creditToCurrencyFactor: { default: 1 },
-        platformFee: { type: 'fixed', value: 100 },
+        platformFee: { type: 'fixed', value: 1 },
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {

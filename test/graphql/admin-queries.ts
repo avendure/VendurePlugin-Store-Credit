@@ -24,9 +24,9 @@ export const SET_SELLER_USER = gql`
 	mutation SetSellerUser($input: UpdateSellerInput!) {
 		updateSeller(input: $input) {
 			customFields {
-				user {
+				customer {
 					id
-					identifier
+					emailAddress
 				}
 			}
 		}
@@ -58,9 +58,9 @@ export const CREATE_SELLER = gql`
 		createSeller(input: $input) {
 			id
 			customFields {
-				user {
+				customer {
 					id
-					identifier
+					emailAddress
 				}
 			}
 		}

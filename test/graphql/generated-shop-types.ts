@@ -3104,7 +3104,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
   __typename?: 'SellerCustomFields';
   accountBalance?: Maybe<Scalars['Int']['output']>;
-  user?: Maybe<User>;
+  customer?: Maybe<Customer>;
 };
 
 export type SetCustomerForOrderResult = AlreadyLoggedInError | EmailAddressConflictError | GuestCheckoutError | NoActiveOrderError | Order;
