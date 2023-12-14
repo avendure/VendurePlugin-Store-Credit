@@ -141,9 +141,9 @@ export class StoreCreditService {
         const resp = await this.connection.getRepository(ctx, StoreCredit).delete({ id });
         return resp.affected
             ? {
-                  result: DeletionResult.DELETED,
-                  message: 'Store Credit deleted successfully',
-              }
+                result: DeletionResult.DELETED,
+                message: 'Store Credit deleted successfully',
+            }
             : { result: DeletionResult.NOT_DELETED, message: 'Something went wrong' };
     }
 
@@ -225,17 +225,9 @@ export class StoreCreditService {
             relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.customer?.emailAddress;
-        if (!sellerEmail) throw new Error("Seller's user account not set.");
+        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
 
         if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
-
-        const customer = await this.connection.getRepository(ctx, Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer) throw new Error('Customer with same email as seller not found');
 
         const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
@@ -245,9 +237,9 @@ export class StoreCreditService {
         });
 
         const updateCustomer = await this.customerService.update(ctx, {
-            id: customer.id,
+            id: seller.customFields.customer.id,
             customFields: {
-                accountBalance: customer.customFields.accountBalance + value,
+                accountBalance: seller.customFields.customer.customFields.accountBalance + value,
             },
         });
 
@@ -262,18 +254,10 @@ export class StoreCreditService {
             relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.customer?.emailAddress;
-        if (!sellerEmail) throw new Error("Seller's user account not set.");
-
-        const customer = await this.connection.getRepository(ctx, Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer) throw new Error('Customer with same email as seller not found');
+        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
 
         return {
-            customerAccountBalance: customer.customFields.accountBalance,
+            customerAccountBalance: seller.customFields.customer.customFields.accountBalance,
             sellerAccountBalance: seller.customFields.accountBalance,
         };
     }
