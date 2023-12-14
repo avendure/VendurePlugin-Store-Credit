@@ -1,4 +1,4 @@
-import { Customer, LanguageCode, PluginCommonModule, Product, User, VendurePlugin } from '@vendure/core';
+import { Customer, LanguageCode, PluginCommonModule, Product, VendurePlugin } from '@vendure/core';
 import { StoreCredit } from './entity/store-credit.entity';
 import { adminApiExtensions, shopApiExtensions } from './api.extension';
 import { ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
@@ -12,6 +12,9 @@ import { NppAdminResolver, NppShopResolver } from './resolvers/npp.resolver';
 import { StoreCreditPluginOptions } from './types/options';
 import deepmerge from 'deepmerge';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from './constants';
+import { CreditExchangeService } from './service/credit-exchange.service';
+import { CreditExchange } from './entity/exchange-request.entity';
+import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolver';
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomCustomerFields {
@@ -30,14 +33,14 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
 
 @VendurePlugin({
     imports: [PluginCommonModule],
-    entities: [StoreCredit],
+    entities: [StoreCredit, CreditExchange],
     shopApiExtensions: {
         schema: shopApiExtensions,
         resolvers: [ShopStoreCreditResolver, NppShopResolver],
     },
     adminApiExtensions: {
         schema: adminApiExtensions,
-        resolvers: [AdminStoreCreditResolver, NppAdminResolver],
+        resolvers: [AdminStoreCreditResolver, NppAdminResolver, AdminCreditExchangeResolver],
     },
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
@@ -94,6 +97,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     providers: [
         StoreCreditService,
         NPPService,
+        CreditExchangeService,
         { provide: STORE_CREDIT_PLUGIN_OPTIONS, useFactory: () => StoreCreditPlugin.options },
     ],
     compatibility: '>0.0.0',
@@ -106,6 +110,7 @@ export class StoreCreditPlugin {
         },
         creditToCurrencyFactor: { default: 1 },
         platformFee: { type: 'fixed', value: 1 },
+        exchangeFee: { type: 'fixed', value: 0 }
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {

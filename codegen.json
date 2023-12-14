@@ -33,6 +33,24 @@
         }
       }
     },
+    "src/types/credits-admin-types.ts": {
+      "schema": "http://localhost:3050/admin-api",
+      "plugins": ["typescript"],
+      "config": {
+        "scalars": {
+          "ID": "string"
+        }
+      }
+    },
+    "src/types/credits-shop-types.ts": {
+      "schema": "http://localhost:3050/shop-api",
+      "plugins": ["typescript"],
+      "config": {
+        "scalars": {
+          "ID": "string"
+        }
+      }
+    },
     "src/ui/generated-types.ts": {
       "schema": "http://localhost:3050/admin-api",
       "documents": "src/ui/**/*.graphql.ts",
