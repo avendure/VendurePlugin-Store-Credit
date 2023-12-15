@@ -7,8 +7,11 @@ import {
   SharedModule,
   addNavMenuSection,
   registerCustomDetailComponent,
+  registerBulkAction
 } from '@vendure/admin-ui/core';
 import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsInSeller';
+import { UpdateCreditExchangeStatus } from './components/credit-exchange-list/credit-exchange-bulk-actions';
+import { CreditExchangeStatusDialog } from './components/credit-exchange-list/credit-exchange-status-dialog.component';
 
 @NgModule({
   imports: [SharedModule],
@@ -21,9 +24,15 @@ import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsIn
           {
             id: 'store-credit',
             label: 'Store Credit',
-            routerLink: ['/extensions/store-credit'],
+            routerLink: ['/extensions/store-credit/credits'],
             icon: 'folder-open',
           },
+          {
+              id: 'credit-exchanges',
+              label: 'Exchanges',
+              routerLink: ['/extensions/store-credit/exchanges'],
+              icon: 'folder-open'
+          }
         ],
         requiresPermission: 'SuperAdmin',
       },
@@ -34,8 +43,9 @@ import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsIn
       locationId: 'seller-detail',
       component: CreditsInSellerComponent,
     }),
+    registerBulkAction(UpdateCreditExchangeStatus),
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA],
-  declarations: [CreditsInSellerComponent],
+  declarations: [CreditsInSellerComponent, CreditExchangeStatusDialog],
 })
 export class StoreCreditExtensionModule {}

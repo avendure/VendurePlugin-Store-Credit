@@ -108,5 +108,7 @@ export const adminApiExtensions = gql`
         updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
         deleteSingleStoreCredit(id: ID!): DeletionResponse!
         requestCreditExchange(amount: Int!): CreditExchange!
+        updateCreditExchangeStatus(ids: [ID!]!, status: String!): Int!
+        initiateCreditExchange(id: ID!): Order!
     }
 `;

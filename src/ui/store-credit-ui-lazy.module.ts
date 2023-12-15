@@ -8,19 +8,20 @@ import { GetStoreCreditQuery, GetStoreCreditQueryVariables } from './generated-t
 import { Observable, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GET_STORE_CREDIT } from './components/all-store-credit-list/all-store-credit-list.graphql';
+import { CreditExchangesListComponent } from './components/credit-exchange-list/credit-exchange-list.component';
 
 @NgModule({
     imports: [
         SharedModule,
         RouterModule.forChild([
             {
-                path: '',
+                path: 'credits',
                 pathMatch: 'full',
                 component: AllStoreCreditListComponent,
                 data: { breadcrumb: 'Store Credits' },
             },
             {
-                path: ':id',
+                path: 'credits/:id',
                 component: StoreCreditDetailComponent,
                 resolve: {
                     detail: (route: any) => {
@@ -35,11 +36,17 @@ import { GET_STORE_CREDIT } from './components/all-store-credit-list/all-store-c
                 },
                 data: { breadcrumb: storeCreditDetailBreadcrumb },
             },
+            {
+                path: 'exchanges',
+                pathMatch: 'full',
+                component: CreditExchangesListComponent,
+                data: { breadcrumb: 'Credit Exchanges' }
+            }
         ]),
     ],
-    declarations: [AllStoreCreditListComponent, StoreCreditDetailComponent],
+    declarations: [AllStoreCreditListComponent, StoreCreditDetailComponent, CreditExchangesListComponent],
 })
-export class StoreCreditUIModule {}
+export class StoreCreditUIModule { }
 
 export function storeCreditDetailBreadcrumb(resolved: {
     detail: { entity: Observable<GetStoreCreditQuery['storeCredit']> };

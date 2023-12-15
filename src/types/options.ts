@@ -12,4 +12,5 @@ export type StoreCreditPluginOptions = {
     creditToCurrencyFactor: CreditConversion;
     platformFee: { type: 'fixed' | 'percent'; value: number };
     exchangeFee: { type: 'fixed' | 'percent'; value: number };
+    maxEchangeAmount: number;
 };

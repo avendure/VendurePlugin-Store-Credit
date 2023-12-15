@@ -7,11 +7,17 @@ import {
 	RelationPaths,
 	EntityHydrator,
 	Seller,
+	ChannelService,
+	OrderService,
+	ProductVariant,
+	isGraphQlErrorResult,
 } from "@vendure/core";
 import { CreditExchange } from "../entity/exchange-request.entity";
 import { CreditExchangeListOptions } from "src/types/credits-admin-types";
 import { StoreCreditPluginOptions } from "../types/options";
 import { STORE_CREDIT_PLUGIN_OPTIONS } from "../constants";
+import { In } from "typeorm";
+import { NPPService } from "./npp.service";
 
 @Injectable()
 export class CreditExchangeService {
@@ -20,7 +26,10 @@ export class CreditExchangeService {
 		private connection: TransactionalConnection,
 		private entityHydrator: EntityHydrator,
 		@Inject(STORE_CREDIT_PLUGIN_OPTIONS)
-		private options: StoreCreditPluginOptions
+		private options: StoreCreditPluginOptions,
+		private channelService: ChannelService,
+		private orderService: OrderService,
+		private nppService: NPPService
 	) {}
 
 	async findAll(
@@ -56,6 +65,12 @@ export class CreditExchangeService {
 	}
 
 	async requestCreditExchange(ctx: RequestContext, amount: number) {
+		if (amount > this.options.maxEchangeAmount) {
+			throw new Error(
+				`Request amount exceed the max amount which is ${this.options.maxEchangeAmount}`
+			);
+		}
+
 		await this.entityHydrator.hydrate(ctx, ctx.channel, {
 			relations: ["seller"],
 		});
@@ -91,5 +106,65 @@ export class CreditExchangeService {
 		return this.connection
 			.getRepository(ctx, CreditExchange)
 			.save(creditExchange);
+	}
+
+	async updateStatus(ctx: RequestContext, ids: ID[], status: string) {
+		return this.connection
+			.getRepository(ctx, CreditExchange)
+			.update({ id: In(ids) }, { status });
+	}
+
+	async initiateCreditExchange(ctx: RequestContext, id: ID) {
+		const exchange = await this.connection.getEntityOrThrow(
+			ctx,
+			CreditExchange,
+			id
+		);
+		if (exchange.orderId) {
+			throw new Error("Order already created for this exchange");
+		}
+
+		const defaultChannel = await this.channelService.getDefaultChannel(ctx);
+		const superAdminSeller = await this.connection
+			.getRepository(ctx, Seller)
+			.findOne({
+				where: { id: defaultChannel.sellerId },
+				relations: { customFields: { customer: { user: true } } },
+			});
+		if (!superAdminSeller?.customFields.customer?.user?.id)
+			throw new Error("Superadmin seller has no customer account linked");
+
+		const order = await this.orderService.create(
+			ctx,
+			superAdminSeller.customFields.customer.user?.id
+		);
+
+		const nppId = await this.nppService.getRootNPPId(ctx);
+
+		const payoutVariant = await this.connection
+			.getRepository(ctx, ProductVariant)
+			.findOne({ where: { productId: nppId, options: { code: "payout" } } });
+		if (!payoutVariant) throw new Error("Payout variant not found");
+
+		const conversionFactor =
+			this.options.creditToCurrencyFactor[payoutVariant.currencyCode] ||
+			this.options.creditToCurrencyFactor["default"];
+		const exchangeAmount = Math.floor(exchange.amount / conversionFactor);
+
+		const addPaymentResult = await this.orderService.addItemToOrder(
+			ctx,
+			order.id,
+			payoutVariant.id,
+			exchangeAmount
+		);
+
+		if (isGraphQlErrorResult(addPaymentResult)) throw addPaymentResult;
+
+		exchange.orderId = addPaymentResult.id;
+		exchange.order = addPaymentResult;
+		exchange.status = "Processing";
+		await this.connection.getRepository(ctx, CreditExchange).save(exchange);
+
+		return addPaymentResult;
 	}
 }

@@ -2823,6 +2823,7 @@ export type Mutation = {
   deleteZones: Array<DeletionResponse>;
   flushBufferedJobs: Success;
   importProducts?: Maybe<ImportInfo>;
+  initiateCreditExchange: Order;
   /** Authenticates the user using the native authentication strategy. This mutation is an alias for `authenticate({ native: { ... }})` */
   login: NativeAuthenticationResult;
   logout: Success;
@@ -2868,7 +2869,7 @@ export type Mutation = {
   removeShippingMethodsFromChannel: Array<ShippingMethod>;
   /** Removes StockLocations from the specified Channel */
   removeStockLocationsFromChannel: Array<StockLocation>;
-  requestCreditExchange: Scalars['Boolean']['output'];
+  requestCreditExchange: CreditExchange;
   runPendingSearchIndexUpdates: Success;
   setCustomerForDraftOrder: SetCustomerForDraftOrderResult;
   /** Sets the billing address for a draft Order */
@@ -2898,6 +2899,7 @@ export type Mutation = {
   updateCollection: Collection;
   /** Update an existing Country */
   updateCountry: Country;
+  updateCreditExchangeStatus: Scalars['Int']['output'];
   /** Update an existing Customer */
   updateCustomer: UpdateCustomerResult;
   /** Update an existing Address */
@@ -3455,6 +3457,11 @@ export type MutationImportProductsArgs = {
 };
 
 
+export type MutationInitiateCreditExchangeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationLoginArgs = {
   password: Scalars['String']['input'];
   rememberMe?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3656,6 +3663,12 @@ export type MutationUpdateCollectionArgs = {
 
 export type MutationUpdateCountryArgs = {
   input: UpdateCountryInput;
+};
+
+
+export type MutationUpdateCreditExchangeStatusArgs = {
+  ids: Array<Scalars['ID']['input']>;
+  status: Scalars['String']['input'];
 };
 
 

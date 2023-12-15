@@ -110,7 +110,8 @@ export class StoreCreditPlugin {
         },
         creditToCurrencyFactor: { default: 1 },
         platformFee: { type: 'fixed', value: 1 },
-        exchangeFee: { type: 'fixed', value: 0 }
+        exchangeFee: { type: 'fixed', value: 0 },
+        maxEchangeAmount: 999
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {
