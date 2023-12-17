@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
-import { TypedBaseListComponent, NotificationService, ModalService } from '@vendure/admin-ui/core';
+import { TypedBaseListComponent, SharedModule, NotificationService, ModalService } from '@vendure/admin-ui/core';
 
 import {
     GetAllStoreCreditsDocument,
@@ -14,6 +14,8 @@ import { switchMap } from 'rxjs/operators';
 import { DELETE_STORE_CREDIT } from './all-store-credit-list.graphql';
 
 @Component({
+    imports: [SharedModule],
+    standalone: true,
     selector: 'vdr-all-store-credit-list',
     templateUrl: './all-store-credit-list.component.html',
     styleUrls: ['./all-store-credit-list.component.scss'],

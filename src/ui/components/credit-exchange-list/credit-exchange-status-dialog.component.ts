@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from "@angular/core";
-import { Dialog } from "@vendure/admin-ui/core";
+import { Dialog, SharedModule } from "@vendure/admin-ui/core";
 @Component({
+    imports: [SharedModule],
+    standalone: true,
 	selector: "credit-exchange-staus-dialog",
 	template: ` <ng-template vdrDialogTitle>{{
 			"order.select-state" | translate

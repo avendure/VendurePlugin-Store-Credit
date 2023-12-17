@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Input, Component, OnInit } from "@angular/core";
 import { marker as _ } from "@biesbjerg/ngx-translate-extract-marker";
 import {
 	TypedBaseListComponent,
 	NotificationService,
+    SharedModule
 } from "@vendure/admin-ui/core";
 
 import {
@@ -12,7 +13,9 @@ import {
 } from "../../generated-types";
 
 @Component({
-	selector: "credit-exchanges",
+    imports: [SharedModule],
+    standalone: true,
+	selector: "store-credit-exchanges",
 	templateUrl: "./credit-exchange-list.component.html",
 	styleUrls: ["./credit-exchange-list.component.scss"],
 	changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,6 +27,8 @@ export class CreditExchangesListComponent
 	>
 	implements OnInit
 {
+    @Input() sellerId?: string;
+
 	readonly filters = this.createFilterCollection()
 		.addDateFilters()
 		.addIdFilter()
@@ -74,7 +79,10 @@ export class CreditExchangesListComponent
 					skip,
 					take,
 					sort: this.sorts.createSortInput(),
-					filter: this.filters.createFilterInput(),
+					filter: {
+                        ...this.filters.createFilterInput(),
+                        ...(this.sellerId ? { sellerId: { eq: this.sellerId } } : {}),
+                    },
 				},
 			}),
 			refreshListOnChanges: [

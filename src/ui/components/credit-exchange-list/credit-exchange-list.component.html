@@ -1,11 +1,7 @@
-<vdr-page-header>
-	<vdr-page-title></vdr-page-title>
-</vdr-page-header>
-
 <vdr-page-block>
 	<vdr-action-bar>
 		<vdr-ab-left></vdr-ab-left>
-		<vdr-ab-right> </vdr-ab-right>
+		<vdr-ab-right></vdr-ab-right>
 	</vdr-action-bar>
 </vdr-page-block>
 
@@ -63,7 +59,11 @@
 		</ng-template>
 	</vdr-dt2-column>
 
-	<vdr-dt2-column [heading]="'Seller'" [sort]="sorts.get('sellerId')">
+	<vdr-dt2-column
+		[heading]="'Seller'"
+		[sort]="sorts.get('sellerId')"
+		*vdrIfPermissions="['SuperAdmin']"
+	>
 		<ng-template let-exchange="item">
 			<a
 				class="button-ghost"
@@ -79,7 +79,11 @@
 		</ng-template>
 	</vdr-dt2-column>
 
-	<vdr-dt2-column [heading]="'Order'" [sort]="sorts.get('orderId')">
+	<vdr-dt2-column
+		[heading]="'Order'"
+		[sort]="sorts.get('orderId')"
+		*vdrIfPermissions="['SuperAdmin']"
+	>
 		<ng-template let-exchange="item">
 			<a
 				class="button-ghost"
@@ -98,7 +102,7 @@
 		</ng-template>
 	</vdr-dt2-column>
 
-	<vdr-dt2-column [heading]="'Actions'">
+	<vdr-dt2-column [heading]="'Actions'" *vdrIfPermissions="['SuperAdmin']">
 		<ng-template let-exchange="item">
 			<div *ngIf="exchange.status == 'Pending'; else noActions" class="actions">
 				<button class="btn" (click)="acceptRequest(exchange.id)">
@@ -110,7 +114,7 @@
 			</div>
 		</ng-template>
 		<ng-template #noActions>
-			<span>Not in pending state</span>
+			<span>No actions available</span>
 		</ng-template>
 	</vdr-dt2-column>
 </vdr-data-table-2>

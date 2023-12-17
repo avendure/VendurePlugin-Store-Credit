@@ -4,6 +4,7 @@ import {
     CustomDetailComponent,
     DataService,
     NotificationService,
+    SharedModule,
     GetSellerDetailDocument,
 } from '@vendure/admin-ui/core';
 import { Observable } from 'rxjs';
@@ -19,6 +20,8 @@ import {
 type SellerEntity = ResultOf<typeof GetSellerDetailDocument>['seller'];
 
 @Component({
+    imports: [SharedModule],
+    standalone: true,
     selector: 'creditsInSeller-component',
     templateUrl: './creditsInSeller.html',
     styleUrls: ['./creditsInSeller.scss'],

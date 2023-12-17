@@ -120,19 +120,9 @@ export class StoreCreditPlugin {
     }
 
     static uiExtensions: AdminUiExtension = {
+        id: 'store-credit',
         extensionPath: path.join(__dirname, 'ui'),
-        ngModules: [
-            {
-                type: 'lazy',
-                route: 'store-credit',
-                ngModuleFileName: 'store-credit-ui-lazy.module.ts',
-                ngModuleName: 'StoreCreditUIModule',
-            },
-            {
-                type: 'shared',
-                ngModuleFileName: 'store-credit-ui-extension.module.ts',
-                ngModuleName: 'StoreCreditExtensionModule',
-            },
-        ],
+        routes: [{route: 'store-credit', filePath: 'routes.ts'}],
+        providers: ['providers.ts']
     };
 }
