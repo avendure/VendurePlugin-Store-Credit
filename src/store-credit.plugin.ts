@@ -71,6 +71,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
         config.customFields.Seller.push({
             name: 'customer',
             type: 'relation',
+            readonly: true,
             entity: Customer,
             nullable: true,
         });
