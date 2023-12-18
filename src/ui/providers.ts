@@ -1,11 +1,13 @@
 import {
     addNavMenuSection,
     registerCustomDetailComponent,
+    registerFormInputComponent,
     registerBulkAction,
 } from "@vendure/admin-ui/core";
 import { CreditsInSellerComponent } from "./components/CreditsInSeller/creditsInSeller";
 import { UpdateCreditExchangeStatus } from "./components/credit-exchange-list/credit-exchange-bulk-actions";
 import { RequestExchange } from "./components/request-exchange/request-exchange.component";
+import { SellerCustomerFormInputComponent } from "./components/seller-customer/seller-customer.component";
 
 export default [
     addNavMenuSection(
@@ -40,4 +42,8 @@ export default [
         component: RequestExchange,
     }),
     registerBulkAction(UpdateCreditExchangeStatus),
+    registerFormInputComponent(
+        "seller-customer-input",
+        SellerCustomerFormInputComponent
+    ),
 ];

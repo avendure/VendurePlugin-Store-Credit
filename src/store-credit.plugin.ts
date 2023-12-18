@@ -71,7 +71,8 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
         config.customFields.Seller.push({
             name: 'customer',
             type: 'relation',
-            readonly: true,
+            label: [{ languageCode: LanguageCode.en, value: 'Customer' }],
+            ui: { component: 'seller-customer-input' },
             entity: Customer,
             nullable: true,
         });
