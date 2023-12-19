@@ -131,7 +131,9 @@ export class StoreCreditService {
             };
 
         if (cred.variant && cred.variantId) {
-            this.entityHydrator.hydrate(ctx, cred.variant, { relations: ['options'] });
+            this.entityHydrator.hydrate(ctx, cred.variant, {
+                relations: ['options'],
+            });
             await this.productVariantService.softDelete(ctx, cred.variantId);
 
             for (let option of cred.variant.options)
@@ -141,9 +143,9 @@ export class StoreCreditService {
         const resp = await this.connection.getRepository(ctx, StoreCredit).delete({ id });
         return resp.affected
             ? {
-                result: DeletionResult.DELETED,
-                message: 'Store Credit deleted successfully',
-            }
+                  result: DeletionResult.DELETED,
+                  message: 'Store Credit deleted successfully',
+              }
             : { result: DeletionResult.NOT_DELETED, message: 'Something went wrong' };
     }
 
@@ -271,11 +273,12 @@ export class StoreCreditService {
                 },
             },
         });
+        if (!customer) throw new UnauthorizedError();
         const seller = await this.connection.getRepository(ctx, Seller).findOne({
             where: {
                 customFields: {
                     customer: {
-                        id: ctx.activeUserId,
+                        id: customer?.id,
                     },
                 },
             },

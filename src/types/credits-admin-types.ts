@@ -2834,6 +2834,7 @@ export type Mutation = {
   modifyOrder: ModifyOrderResult;
   /** Move a Collection to a different parent or index */
   moveCollection: Collection;
+  refundCreditExchange: CreditExchange;
   refundOrder: RefundOrderResult;
   reindex: Job;
   /** Removes Collections from the specified Channel */
@@ -3476,6 +3477,11 @@ export type MutationModifyOrderArgs = {
 
 export type MutationMoveCollectionArgs = {
   input: MoveCollectionInput;
+};
+
+
+export type MutationRefundCreditExchangeArgs = {
+  id: Scalars['ID']['input'];
 };
 
 

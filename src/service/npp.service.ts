@@ -41,7 +41,8 @@ export class NPPService implements OnApplicationBootstrap {
         private facetService: FacetService,
         private facetValueService: FacetValueService,
         private eventBus: EventBus,
-        @Inject(STORE_CREDIT_PLUGIN_OPTIONS) private options: StoreCreditPluginOptions,
+        @Inject(STORE_CREDIT_PLUGIN_OPTIONS)
+        private options: StoreCreditPluginOptions,
     ) {}
 
     onApplicationBootstrap() {
@@ -51,6 +52,11 @@ export class NPPService implements OnApplicationBootstrap {
 
             await this.getOrCreateRootNPP(ctx);
             await this.getOrCreateFacet(ctx);
+            await this.registerNppProductOption(
+                ctx,
+                this.options.exchange.payoutOption.code,
+                this.options.exchange.payoutOption.name,
+            );
         });
 
         this.eventBus.ofType(OrderPlacedEvent).subscribe(async ev => {

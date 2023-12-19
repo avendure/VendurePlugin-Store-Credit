@@ -100,7 +100,10 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
         StoreCreditService,
         NPPService,
         CreditExchangeService,
-        { provide: STORE_CREDIT_PLUGIN_OPTIONS, useFactory: () => StoreCreditPlugin.options },
+        {
+            provide: STORE_CREDIT_PLUGIN_OPTIONS,
+            useFactory: () => StoreCreditPlugin.options,
+        },
     ],
     compatibility: '>0.0.0',
 })
@@ -112,8 +115,11 @@ export class StoreCreditPlugin {
         },
         creditToCurrencyFactor: { default: 1 },
         platformFee: { type: 'fixed', value: 1 },
-        exchangeFee: { type: 'fixed', value: 0 },
-        maxEchangeAmount: 999
+        exchange: {
+            fee: { type: 'fixed', value: 0 },
+            maxAmount: 999,
+            payoutOption: { name: 'Payout', code: 'payout' },
+        },
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {
@@ -124,7 +130,7 @@ export class StoreCreditPlugin {
     static uiExtensions: AdminUiExtension = {
         id: 'store-credit',
         extensionPath: path.join(__dirname, 'ui'),
-        routes: [{route: 'store-credit', filePath: 'routes.ts'}],
-        providers: ['providers.ts']
+        routes: [{ route: 'store-credit', filePath: 'routes.ts' }],
+        providers: ['providers.ts'],
     };
 }

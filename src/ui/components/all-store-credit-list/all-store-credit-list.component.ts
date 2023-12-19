@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { marker as _ } from '@biesbjerg/ngx-translate-extract-marker';
-import { TypedBaseListComponent, SharedModule, NotificationService, ModalService } from '@vendure/admin-ui/core';
+import {
+    TypedBaseListComponent,
+    SharedModule,
+    NotificationService,
+    ModalService,
+} from '@vendure/admin-ui/core';
 
 import {
     GetAllStoreCreditsDocument,

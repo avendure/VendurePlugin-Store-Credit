@@ -91,7 +91,8 @@ export class NppShopResolver {
     async product(
         @Ctx() ctx: RequestContext,
         @Args() args: QueryProductArgs,
-        @Relations({ entity: Product, omit: ['variants', 'assets'] }) relations: RelationPaths<Product>,
+        @Relations({ entity: Product, omit: ['variants', 'assets'] })
+        relations: RelationPaths<Product>,
     ): Promise<Translated<Product> | undefined> {
         let result: Translated<Product> | undefined;
         if (args.id) {

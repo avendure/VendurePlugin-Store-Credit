@@ -110,5 +110,6 @@ export const adminApiExtensions = gql`
         requestCreditExchange(amount: Int!): CreditExchange!
         updateCreditExchangeStatus(ids: [ID!]!, status: String!): Int!
         initiateCreditExchange(id: ID!): Order!
+        refundCreditExchange(id: ID!): CreditExchange!
     }
 `;

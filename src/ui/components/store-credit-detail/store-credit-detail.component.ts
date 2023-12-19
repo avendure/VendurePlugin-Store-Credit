@@ -1,6 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
-import { TypedBaseDetailComponent, SharedModule, CurrencyCode, NotificationService } from '@vendure/admin-ui/core';
+import {
+    TypedBaseDetailComponent,
+    SharedModule,
+    CurrencyCode,
+    NotificationService,
+} from '@vendure/admin-ui/core';
 import { Observable, of } from 'rxjs';
 import { map, filter } from 'rxjs/operators';
 
