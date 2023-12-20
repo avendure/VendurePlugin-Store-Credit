@@ -1,0 +1,7 @@
+/__data__/
+/dist/
+/node_modules/
+/src/ui/generated-types.ts
+/src/types/credits-*.ts
+/test/admin-ui/
+/test/graphql/generated-*.ts

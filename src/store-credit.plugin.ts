@@ -1,4 +1,4 @@
-import { LanguageCode, PluginCommonModule, Product, User, VendurePlugin } from '@vendure/core';
+import { Customer, LanguageCode, PluginCommonModule, Product, VendurePlugin } from '@vendure/core';
 import { StoreCredit } from './entity/store-credit.entity';
 import { adminApiExtensions, shopApiExtensions } from './api.extension';
 import { ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
@@ -12,6 +12,9 @@ import { NppAdminResolver, NppShopResolver } from './resolvers/npp.resolver';
 import { StoreCreditPluginOptions } from './types/options';
 import deepmerge from 'deepmerge';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from './constants';
+import { CreditExchangeService } from './service/credit-exchange.service';
+import { CreditExchange } from './entity/exchange-request.entity';
+import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolver';
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomCustomerFields {
@@ -20,7 +23,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
 
     interface CustomSellerFields {
         accountBalance: number;
-        user?: User;
+        customer?: Customer | null;
     }
 
     interface CustomGlobalSettingsFields {
@@ -30,14 +33,14 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
 
 @VendurePlugin({
     imports: [PluginCommonModule],
-    entities: [StoreCredit],
+    entities: [StoreCredit, CreditExchange],
     shopApiExtensions: {
         schema: shopApiExtensions,
         resolvers: [ShopStoreCreditResolver, NppShopResolver],
     },
     adminApiExtensions: {
         schema: adminApiExtensions,
-        resolvers: [AdminStoreCreditResolver, NppAdminResolver],
+        resolvers: [AdminStoreCreditResolver, NppAdminResolver, AdminCreditExchangeResolver],
     },
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
@@ -66,9 +69,11 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
             ],
         });
         config.customFields.Seller.push({
-            name: 'user',
+            name: 'customer',
             type: 'relation',
-            entity: User,
+            label: [{ languageCode: LanguageCode.en, value: 'Customer' }],
+            ui: { component: 'seller-customer-input' },
+            entity: Customer,
             nullable: true,
         });
         config.customFields.GlobalSettings.push({
@@ -94,7 +99,11 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     providers: [
         StoreCreditService,
         NPPService,
-        { provide: STORE_CREDIT_PLUGIN_OPTIONS, useFactory: () => StoreCreditPlugin.options },
+        CreditExchangeService,
+        {
+            provide: STORE_CREDIT_PLUGIN_OPTIONS,
+            useFactory: () => StoreCreditPlugin.options,
+        },
     ],
     compatibility: '>0.0.0',
 })
@@ -105,7 +114,12 @@ export class StoreCreditPlugin {
             slug: 'root-non-purchasable-product',
         },
         creditToCurrencyFactor: { default: 1 },
-        platformFee: { type: 'fixed', value: 100 },
+        platformFee: { type: 'fixed', value: 1 },
+        exchange: {
+            fee: { type: 'fixed', value: 0 },
+            maxAmount: 999,
+            payoutOption: { name: 'Payout', code: 'payout' },
+        },
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {
@@ -114,19 +128,9 @@ export class StoreCreditPlugin {
     }
 
     static uiExtensions: AdminUiExtension = {
+        id: 'store-credit',
         extensionPath: path.join(__dirname, 'ui'),
-        ngModules: [
-            {
-                type: 'lazy',
-                route: 'store-credit',
-                ngModuleFileName: 'store-credit-ui-lazy.module.ts',
-                ngModuleName: 'StoreCreditUIModule',
-            },
-            {
-                type: 'shared',
-                ngModuleFileName: 'store-credit-ui-extension.module.ts',
-                ngModuleName: 'StoreCreditExtensionModule',
-            },
-        ],
+        routes: [{ route: 'store-credit', filePath: 'routes.ts' }],
+        providers: ['providers.ts'],
     };
 }
