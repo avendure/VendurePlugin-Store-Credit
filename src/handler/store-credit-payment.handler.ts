@@ -181,13 +181,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 			});
 		}
 
-		console.log("customerCreditBalance: ", customerCreditBalance);
-		console.log("amount: ", amount);
-		console.log("rounded amount: ", amount / conversion_factor);
-		console.log("conversion factor: ", conversion_factor);
-
 		const adjustedAmount = amount / (scaling_factor * conversion_factor);
-		console.log("newBalance: ", customerCreditBalance - adjustedAmount);
 		await customerService.update(ctx, {
 			id: customer.id,
 			customFields: {
