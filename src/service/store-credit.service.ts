@@ -131,7 +131,9 @@ export class StoreCreditService {
             };
 
         if (cred.variant && cred.variantId) {
-            this.entityHydrator.hydrate(ctx, cred.variant, { relations: ['options'] });
+            this.entityHydrator.hydrate(ctx, cred.variant, {
+                relations: ['options'],
+            });
             await this.productVariantService.softDelete(ctx, cred.variantId);
 
             for (let option of cred.variant.options)
@@ -222,20 +224,12 @@ export class StoreCreditService {
 
     async transferCreditfromSellerToCustomerWithSameEmail(ctx: RequestContext, value: number, sellerId: ID) {
         const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.user?.identifier;
-        if (!sellerEmail) throw new Error("Seller's user account not set.");
+        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
 
         if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
-
-        const customer = await this.connection.getRepository(ctx, Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer) throw new Error('Customer with same email as seller not found');
 
         const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
@@ -245,9 +239,9 @@ export class StoreCreditService {
         });
 
         const updateCustomer = await this.customerService.update(ctx, {
-            id: customer.id,
+            id: seller.customFields.customer.id,
             customFields: {
-                accountBalance: customer.customFields.accountBalance + value,
+                accountBalance: seller.customFields.customer.customFields.accountBalance + value,
             },
         });
 
@@ -259,21 +253,13 @@ export class StoreCreditService {
 
     async getSellerANDCustomerStoreCredits(ctx: RequestContext, sellerId: ID) {
         const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
 
-        const sellerEmail = seller.customFields.user?.identifier;
-        if (!sellerEmail) throw new Error("Seller's user account not set.");
-
-        const customer = await this.connection.getRepository(ctx, Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer) throw new Error('Customer with same email as seller not found');
+        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
 
         return {
-            customerAccountBalance: customer.customFields.accountBalance,
+            customerAccountBalance: seller.customFields.customer.customFields.accountBalance,
             sellerAccountBalance: seller.customFields.accountBalance,
         };
     }
@@ -287,11 +273,12 @@ export class StoreCreditService {
                 },
             },
         });
+        if (!customer) throw new UnauthorizedError();
         const seller = await this.connection.getRepository(ctx, Seller).findOne({
             where: {
                 customFields: {
-                    user: {
-                        id: ctx.activeUserId,
+                    customer: {
+                        id: customer?.id,
                     },
                 },
             },

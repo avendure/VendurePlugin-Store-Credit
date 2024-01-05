@@ -1,47 +1,65 @@
 {
-  "overwrite": true,
-  "config": {
-    "strict": true,
-    "namingConvention": {
-      "typeNames": "pascal-case#pascalCase",
-      "enumValues": "keep"
-    },
-    "scalars": {
-      "ID": "string | number",
-      "Money": "number"
-    },
-    "maybeValue": "T"
-  },
-  "generates": {
-    "test/graphql/generated-admin-types.ts": {
-      "schema": "http://localhost:3050/admin-api",
-      "documents": "test/graphql/admin-queries.ts",
-      "plugins": ["typescript", "typescript-operations", "typed-document-node"],
-      "config": {
+    "overwrite": true,
+    "config": {
+        "strict": true,
+        "namingConvention": {
+            "typeNames": "pascal-case#pascalCase",
+            "enumValues": "keep"
+        },
         "scalars": {
-          "ID": "string"
-        }
-      }
+            "ID": "string | number",
+            "Money": "number"
+        },
+        "maybeValue": "T"
     },
-    "test/graphql/generated-shop-types.ts": {
-      "schema": "http://localhost:3050/shop-api",
-      "documents": "test/graphql/shop-queries.ts",
-      "plugins": ["typescript", "typescript-operations", "typed-document-node"],
-      "config": {
-        "scalars": {
-          "ID": "string"
+    "generates": {
+        "test/graphql/generated-admin-types.ts": {
+            "schema": "http://localhost:3050/admin-api",
+            "documents": "test/graphql/admin-queries.ts",
+            "plugins": ["typescript", "typescript-operations", "typed-document-node"],
+            "config": {
+                "scalars": {
+                    "ID": "string"
+                }
+            }
+        },
+        "test/graphql/generated-shop-types.ts": {
+            "schema": "http://localhost:3050/shop-api",
+            "documents": "test/graphql/shop-queries.ts",
+            "plugins": ["typescript", "typescript-operations", "typed-document-node"],
+            "config": {
+                "scalars": {
+                    "ID": "string"
+                }
+            }
+        },
+        "src/types/credits-admin-types.ts": {
+            "schema": "http://localhost:3050/admin-api",
+            "plugins": ["typescript"],
+            "config": {
+                "scalars": {
+                    "ID": "string"
+                }
+            }
+        },
+        "src/types/credits-shop-types.ts": {
+            "schema": "http://localhost:3050/shop-api",
+            "plugins": ["typescript"],
+            "config": {
+                "scalars": {
+                    "ID": "string"
+                }
+            }
+        },
+        "src/ui/generated-types.ts": {
+            "schema": "http://localhost:3050/admin-api",
+            "documents": "src/ui/**/*.graphql.ts",
+            "plugins": ["typescript", "typescript-operations", "typed-document-node"],
+            "config": {
+                "scalars": {
+                    "ID": "string"
+                }
+            }
         }
-      }
-    },
-    "src/ui/generated-types.ts": {
-      "schema": "http://localhost:3050/admin-api",
-      "documents": "src/ui/**/*.graphql.ts",
-      "plugins": ["typescript", "typescript-operations", "typed-document-node"],
-      "config": {
-        "scalars": {
-          "ID": "string"
-        }
-      }
     }
-  }
 }

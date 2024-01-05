@@ -18,6 +18,12 @@ export type Scalars = {
   Upload: { input: any; output: any; }
 };
 
+export type AccountBalance = {
+  __typename?: 'AccountBalance';
+  customerAccountBalance?: Maybe<Scalars['Int']['output']>;
+  sellerAccountBalance?: Maybe<Scalars['Int']['output']>;
+};
+
 export type ActiveOrderResult = NoActiveOrderError | Order;
 
 export type AddPaymentToOrderResult = IneligiblePaymentMethodError | NoActiveOrderError | Order | OrderPaymentStateError | OrderStateTransitionError | PaymentDeclinedError | PaymentFailedError;
@@ -2837,6 +2843,7 @@ export type Query = {
   facet?: Maybe<Facet>;
   /** A list of Facets available to the shop */
   facets: FacetList;
+  getSellerANDCustomerStoreCredits: AccountBalance;
   /** Returns information about the current authenticated User */
   me?: Maybe<CurrentUser>;
   /** Returns the possible next states that the activeOrder can transition to */
@@ -3096,7 +3103,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
   __typename?: 'SellerCustomFields';
   accountBalance?: Maybe<Scalars['Int']['output']>;
-  user?: Maybe<User>;
+  customer?: Maybe<Customer>;
 };
 
 export type SetCustomerForOrderResult = AlreadyLoggedInError | EmailAddressConflictError | GuestCheckoutError | NoActiveOrderError | Order;

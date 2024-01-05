@@ -41,19 +41,19 @@ deleteSingleStoreCredit(id: ID!): DeletionResponse!
 
 ## Installation
 
-- Server should run on port `3050`, so the endpoints are
+-   Server should run on port `3050`, so the endpoints are
 
-  ```graphql
-  http://localhost:3050/admin
-  http://localhost:3050/shop-api
-  http://localhost:3050/admin-api
-  ```
+    ```graphql
+    http://localhost:3050/admin
+    http://localhost:3050/shop-api
+    http://localhost:3050/admin-api
+    ```
 
-- `yarn`
-- Edit the `.env` file to add the required environment variables.
-- `yarn start`
-- Edit `test/store-credit.e2e-spec.ts` with required constants.
-- `yarn test`
+-   `yarn`
+-   Edit the `.env` file to add the required environment variables.
+-   `yarn start`
+-   Edit `test/store-credit.e2e-spec.ts` with required constants.
+-   `yarn test`
 
 ## Errors
 

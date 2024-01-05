@@ -1,21 +1,21 @@
-import gql from "graphql-tag";
+import gql from 'graphql-tag';
 
-import { STORE_CREDIT_FRAGMENT } from "../../common/fragments.graphql";
+import { STORE_CREDIT_FRAGMENT } from '../../common/fragments.graphql';
 
 export const UPDATE_STORE_CREDIT = gql`
-  mutation UpdateStoreCredit($input: StoreCreditUpdateInput!) {
-    updateStoreCredit(input: $input) {
-      ...StoreCredits
+    mutation UpdateStoreCredit($input: StoreCreditUpdateInput!) {
+        updateStoreCredit(input: $input) {
+            ...StoreCredits
+        }
     }
-  }
-  ${STORE_CREDIT_FRAGMENT}
+    ${STORE_CREDIT_FRAGMENT}
 `;
 
 export const CREATE_STORE_CREDIT = gql`
-  mutation CreateStoreCredit($input: StoreCreditAddInput!) {
-    createStoreCredit(input: $input) {
-      ...StoreCredits
+    mutation CreateStoreCredit($input: StoreCreditAddInput!) {
+        createStoreCredit(input: $input) {
+            ...StoreCredits
+        }
     }
-  }
-  ${STORE_CREDIT_FRAGMENT}
+    ${STORE_CREDIT_FRAGMENT}
 `;
