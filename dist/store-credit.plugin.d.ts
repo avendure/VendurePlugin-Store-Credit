@@ -1,4 +1,4 @@
-import { Product, User } from '@vendure/core';
+import { Customer, Product } from '@vendure/core';
 import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
 import { StoreCreditPluginOptions } from './types/options';
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
@@ -7,7 +7,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     }
     interface CustomSellerFields {
         accountBalance: number;
-        user?: User;
+        customer?: Customer | null;
     }
     interface CustomGlobalSettingsFields {
         RootNonPhysicalProduct: Product | null;

@@ -77,8 +77,29 @@ exports.adminApiExtensions = (0, apollo_server_core_1.gql) `
         perUserLimit: Int
     }
 
+    type CreditExchange implements Node {
+        id: ID!
+        createdAt: DateTime!
+        updatedAt: DateTime!
+        amount: Int!
+        status: String!
+        order: Order
+        orderId: ID
+        seller: Seller!
+        sellerId: ID!
+    }
+
+    type CreditExchangeList implements PaginatedList {
+        items: [CreditExchange!]!
+        totalItems: Int!
+    }
+
+    input CreditExchangeListOptions
+
     extend type Query {
         getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
+        creditExchanges(options: CreditExchangeListOptions): CreditExchangeList!
+        creditExchange(id: ID!): CreditExchange!
     }
 
     extend type Mutation {
@@ -86,5 +107,9 @@ exports.adminApiExtensions = (0, apollo_server_core_1.gql) `
         createStoreCredit(input: StoreCreditAddInput!): StoreCredit!
         updateStoreCredit(input: StoreCreditUpdateInput!): StoreCredit!
         deleteSingleStoreCredit(id: ID!): DeletionResponse!
+        requestCreditExchange(amount: Int!): CreditExchange!
+        updateCreditExchangeStatus(ids: [ID!]!, status: String!): Int!
+        initiateCreditExchange(id: ID!): Order!
+        refundCreditExchange(id: ID!): CreditExchange!
     }
 `;

@@ -37,6 +37,7 @@ let NPPService = exports.NPPService = class NPPService {
             core_1.Logger.info('Bootstrapping Root Non Physical Product', 'NPPPlugin');
             await this.getOrCreateRootNPP(ctx);
             await this.getOrCreateFacet(ctx);
+            await this.registerNppProductOption(ctx, this.options.exchange.payoutOption.code, this.options.exchange.payoutOption.name);
         });
         this.eventBus.ofType(core_1.OrderPlacedEvent).subscribe(async (ev) => {
             if (ev.toState != 'PaymentSettled')

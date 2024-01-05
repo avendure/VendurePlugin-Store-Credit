@@ -40,3 +40,26 @@ export const ACCOUNT_BALANCE_FRAGMENT = gql`
         sellerAccountBalance
     }
 `;
+
+export const CREDIT_EXCHANGE_FRAGMENT = gql`
+    fragment CreditExchange on CreditExchange {
+        id
+        createdAt
+        updatedAt
+        amount
+        status
+        order {
+            id
+            code
+        }
+        seller {
+            id
+            customFields {
+                customer {
+                    firstName
+                    lastName
+                }
+            }
+        }
+    }
+`;

@@ -833,7 +833,7 @@ export type CreateRoleInput = {
     permissions: Array<Permission>;
 };
 export type CreateSellerCustomFieldsInput = {
-    userId?: InputMaybe<Scalars['ID']['input']>;
+    customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 export type CreateSellerInput = {
     customFields?: InputMaybe<CreateSellerCustomFieldsInput>;
@@ -873,6 +873,53 @@ export type CreateZoneInput = {
     customFields?: InputMaybe<Scalars['JSON']['input']>;
     memberIds?: InputMaybe<Array<Scalars['ID']['input']>>;
     name: Scalars['String']['input'];
+};
+export type CreditExchange = Node & {
+    __typename?: 'CreditExchange';
+    amount: Scalars['Int']['output'];
+    createdAt: Scalars['DateTime']['output'];
+    id: Scalars['ID']['output'];
+    order?: Maybe<Order>;
+    orderId?: Maybe<Scalars['ID']['output']>;
+    seller: Seller;
+    sellerId: Scalars['ID']['output'];
+    status: Scalars['String']['output'];
+    updatedAt: Scalars['DateTime']['output'];
+};
+export type CreditExchangeFilterParameter = {
+    amount?: InputMaybe<NumberOperators>;
+    createdAt?: InputMaybe<DateOperators>;
+    id?: InputMaybe<IdOperators>;
+    orderId?: InputMaybe<IdOperators>;
+    sellerId?: InputMaybe<IdOperators>;
+    status?: InputMaybe<StringOperators>;
+    updatedAt?: InputMaybe<DateOperators>;
+};
+export type CreditExchangeList = PaginatedList & {
+    __typename?: 'CreditExchangeList';
+    items: Array<CreditExchange>;
+    totalItems: Scalars['Int']['output'];
+};
+export type CreditExchangeListOptions = {
+    /** Allows the results to be filtered */
+    filter?: InputMaybe<CreditExchangeFilterParameter>;
+    /** Specifies whether multiple "filter" arguments should be combines with a logical AND or OR operation. Defaults to AND. */
+    filterOperator?: InputMaybe<LogicalOperator>;
+    /** Skips the first n results, for use in pagination */
+    skip?: InputMaybe<Scalars['Int']['input']>;
+    /** Specifies which properties to sort the results by */
+    sort?: InputMaybe<CreditExchangeSortParameter>;
+    /** Takes n results, for use in pagination */
+    take?: InputMaybe<Scalars['Int']['input']>;
+};
+export type CreditExchangeSortParameter = {
+    amount?: InputMaybe<SortOrder>;
+    createdAt?: InputMaybe<SortOrder>;
+    id?: InputMaybe<SortOrder>;
+    orderId?: InputMaybe<SortOrder>;
+    sellerId?: InputMaybe<SortOrder>;
+    status?: InputMaybe<SortOrder>;
+    updatedAt?: InputMaybe<SortOrder>;
 };
 /**
  * @description
@@ -2586,6 +2633,7 @@ export type Mutation = {
     deleteZones: Array<DeletionResponse>;
     flushBufferedJobs: Success;
     importProducts?: Maybe<ImportInfo>;
+    initiateCreditExchange: Order;
     /** Authenticates the user using the native authentication strategy. This mutation is an alias for `authenticate({ native: { ... }})` */
     login: NativeAuthenticationResult;
     logout: Success;
@@ -2596,6 +2644,7 @@ export type Mutation = {
     modifyOrder: ModifyOrderResult;
     /** Move a Collection to a different parent or index */
     moveCollection: Collection;
+    refundCreditExchange: CreditExchange;
     refundOrder: RefundOrderResult;
     reindex: Job;
     /** Removes Collections from the specified Channel */
@@ -2631,6 +2680,7 @@ export type Mutation = {
     removeShippingMethodsFromChannel: Array<ShippingMethod>;
     /** Removes StockLocations from the specified Channel */
     removeStockLocationsFromChannel: Array<StockLocation>;
+    requestCreditExchange: CreditExchange;
     runPendingSearchIndexUpdates: Success;
     setCustomerForDraftOrder: SetCustomerForDraftOrderResult;
     /** Sets the billing address for a draft Order */
@@ -2660,6 +2710,7 @@ export type Mutation = {
     updateCollection: Collection;
     /** Update an existing Country */
     updateCountry: Country;
+    updateCreditExchangeStatus: Scalars['Int']['output'];
     /** Update an existing Customer */
     updateCustomer: UpdateCustomerResult;
     /** Update an existing Address */
@@ -3017,6 +3068,9 @@ export type MutationFlushBufferedJobsArgs = {
 export type MutationImportProductsArgs = {
     csvFile: Scalars['Upload']['input'];
 };
+export type MutationInitiateCreditExchangeArgs = {
+    id: Scalars['ID']['input'];
+};
 export type MutationLoginArgs = {
     password: Scalars['String']['input'];
     rememberMe?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3027,6 +3081,9 @@ export type MutationModifyOrderArgs = {
 };
 export type MutationMoveCollectionArgs = {
     input: MoveCollectionInput;
+};
+export type MutationRefundCreditExchangeArgs = {
+    id: Scalars['ID']['input'];
 };
 export type MutationRefundOrderArgs = {
     input: RefundOrderInput;
@@ -3079,6 +3136,9 @@ export type MutationRemoveShippingMethodsFromChannelArgs = {
 };
 export type MutationRemoveStockLocationsFromChannelArgs = {
     input: RemoveStockLocationsFromChannelInput;
+};
+export type MutationRequestCreditExchangeArgs = {
+    amount: Scalars['Int']['input'];
 };
 export type MutationSetCustomerForDraftOrderArgs = {
     customerId?: InputMaybe<Scalars['ID']['input']>;
@@ -3143,6 +3203,10 @@ export type MutationUpdateCollectionArgs = {
 };
 export type MutationUpdateCountryArgs = {
     input: UpdateCountryInput;
+};
+export type MutationUpdateCreditExchangeStatusArgs = {
+    ids: Array<Scalars['ID']['input']>;
+    status: Scalars['String']['input'];
 };
 export type MutationUpdateCustomerArgs = {
     input: UpdateCustomerInput;
@@ -4323,6 +4387,8 @@ export type Query = {
     collections: CollectionList;
     countries: CountryList;
     country?: Maybe<Country>;
+    creditExchange: CreditExchange;
+    creditExchanges: CreditExchangeList;
     customer?: Maybe<Customer>;
     customerGroup?: Maybe<CustomerGroup>;
     customerGroups: CustomerGroupList;
@@ -4422,6 +4488,12 @@ export type QueryCountriesArgs = {
 };
 export type QueryCountryArgs = {
     id: Scalars['ID']['input'];
+};
+export type QueryCreditExchangeArgs = {
+    id: Scalars['ID']['input'];
+};
+export type QueryCreditExchangesArgs = {
+    options?: InputMaybe<CreditExchangeListOptions>;
 };
 export type QueryCustomerArgs = {
     id: Scalars['ID']['input'];
@@ -4841,7 +4913,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
     __typename?: 'SellerCustomFields';
     accountBalance?: Maybe<Scalars['Int']['output']>;
-    user?: Maybe<User>;
+    customer?: Maybe<Customer>;
 };
 export type SellerFilterParameter = {
     accountBalance?: InputMaybe<NumberOperators>;
@@ -4870,10 +4942,10 @@ export type SellerListOptions = {
 export type SellerSortParameter = {
     accountBalance?: InputMaybe<SortOrder>;
     createdAt?: InputMaybe<SortOrder>;
+    customer?: InputMaybe<SortOrder>;
     id?: InputMaybe<SortOrder>;
     name?: InputMaybe<SortOrder>;
     updatedAt?: InputMaybe<SortOrder>;
-    user?: InputMaybe<SortOrder>;
 };
 export type ServerConfig = {
     __typename?: 'ServerConfig';
@@ -5596,7 +5668,7 @@ export type UpdateRoleInput = {
     permissions?: InputMaybe<Array<Permission>>;
 };
 export type UpdateSellerCustomFieldsInput = {
-    userId?: InputMaybe<Scalars['ID']['input']>;
+    customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 export type UpdateSellerInput = {
     customFields?: InputMaybe<UpdateSellerCustomFieldsInput>;

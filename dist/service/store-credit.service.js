@@ -95,7 +95,9 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
                 message: 'Store credit not found.',
             };
         if (cred.variant && cred.variantId) {
-            this.entityHydrator.hydrate(ctx, cred.variant, { relations: ['options'] });
+            this.entityHydrator.hydrate(ctx, cred.variant, {
+                relations: ['options'],
+            });
             await this.productVariantService.softDelete(ctx, cred.variantId);
             for (let option of cred.variant.options)
                 await this.nppService.unregisterNppProductOption(ctx, option.id, true);
@@ -171,22 +173,13 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
         };
     }
     async transferCreditfromSellerToCustomerWithSameEmail(ctx, value, sellerId) {
-        var _a;
         const seller = await this.connection.getEntityOrThrow(ctx, core_1.Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
-        const sellerEmail = (_a = seller.customFields.user) === null || _a === void 0 ? void 0 : _a.identifier;
-        if (!sellerEmail)
-            throw new Error("Seller's user account not set.");
+        if (!seller.customFields.customer)
+            throw new Error("Seller's customer account not set.");
         if (seller.customFields.accountBalance < value)
             throw new Error('Insufficient balance');
-        const customer = await this.connection.getRepository(ctx, core_1.Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer)
-            throw new Error('Customer with same email as seller not found');
         const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
             customFields: {
@@ -194,9 +187,9 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
             },
         });
         const updateCustomer = await this.customerService.update(ctx, {
-            id: customer.id,
+            id: seller.customFields.customer.id,
             customFields: {
-                accountBalance: customer.customFields.accountBalance + value,
+                accountBalance: seller.customFields.customer.customFields.accountBalance + value,
             },
         });
         return {
@@ -205,22 +198,13 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
         };
     }
     async getSellerANDCustomerStoreCredits(ctx, sellerId) {
-        var _a;
         const seller = await this.connection.getEntityOrThrow(ctx, core_1.Seller, sellerId, {
-            relations: { customFields: { user: true } },
+            relations: { customFields: { customer: true } },
         });
-        const sellerEmail = (_a = seller.customFields.user) === null || _a === void 0 ? void 0 : _a.identifier;
-        if (!sellerEmail)
-            throw new Error("Seller's user account not set.");
-        const customer = await this.connection.getRepository(ctx, core_1.Customer).findOne({
-            where: {
-                emailAddress: sellerEmail,
-            },
-        });
-        if (!customer)
-            throw new Error('Customer with same email as seller not found');
+        if (!seller.customFields.customer)
+            throw new Error("Seller's customer account not set.");
         return {
-            customerAccountBalance: customer.customFields.accountBalance,
+            customerAccountBalance: seller.customFields.customer.customFields.accountBalance,
             sellerAccountBalance: seller.customFields.accountBalance,
         };
     }
@@ -234,11 +218,13 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
                 },
             },
         });
+        if (!customer)
+            throw new core_1.UnauthorizedError();
         const seller = await this.connection.getRepository(ctx, core_1.Seller).findOne({
             where: {
                 customFields: {
-                    user: {
-                        id: ctx.activeUserId,
+                    customer: {
+                        id: customer === null || customer === void 0 ? void 0 : customer.id,
                     },
                 },
             },

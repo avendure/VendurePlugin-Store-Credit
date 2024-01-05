@@ -902,7 +902,7 @@ export type CreateRoleInput = {
 };
 
 export type CreateSellerCustomFieldsInput = {
-  userId?: InputMaybe<Scalars['ID']['input']>;
+  customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type CreateSellerInput = {
@@ -949,6 +949,58 @@ export type CreateZoneInput = {
   customFields?: InputMaybe<Scalars['JSON']['input']>;
   memberIds?: InputMaybe<Array<Scalars['ID']['input']>>;
   name: Scalars['String']['input'];
+};
+
+export type CreditExchange = Node & {
+  __typename?: 'CreditExchange';
+  amount: Scalars['Int']['output'];
+  createdAt: Scalars['DateTime']['output'];
+  id: Scalars['ID']['output'];
+  order?: Maybe<Order>;
+  orderId?: Maybe<Scalars['ID']['output']>;
+  seller: Seller;
+  sellerId: Scalars['ID']['output'];
+  status: Scalars['String']['output'];
+  updatedAt: Scalars['DateTime']['output'];
+};
+
+export type CreditExchangeFilterParameter = {
+  amount?: InputMaybe<NumberOperators>;
+  createdAt?: InputMaybe<DateOperators>;
+  id?: InputMaybe<IdOperators>;
+  orderId?: InputMaybe<IdOperators>;
+  sellerId?: InputMaybe<IdOperators>;
+  status?: InputMaybe<StringOperators>;
+  updatedAt?: InputMaybe<DateOperators>;
+};
+
+export type CreditExchangeList = PaginatedList & {
+  __typename?: 'CreditExchangeList';
+  items: Array<CreditExchange>;
+  totalItems: Scalars['Int']['output'];
+};
+
+export type CreditExchangeListOptions = {
+  /** Allows the results to be filtered */
+  filter?: InputMaybe<CreditExchangeFilterParameter>;
+  /** Specifies whether multiple "filter" arguments should be combines with a logical AND or OR operation. Defaults to AND. */
+  filterOperator?: InputMaybe<LogicalOperator>;
+  /** Skips the first n results, for use in pagination */
+  skip?: InputMaybe<Scalars['Int']['input']>;
+  /** Specifies which properties to sort the results by */
+  sort?: InputMaybe<CreditExchangeSortParameter>;
+  /** Takes n results, for use in pagination */
+  take?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type CreditExchangeSortParameter = {
+  amount?: InputMaybe<SortOrder>;
+  createdAt?: InputMaybe<SortOrder>;
+  id?: InputMaybe<SortOrder>;
+  orderId?: InputMaybe<SortOrder>;
+  sellerId?: InputMaybe<SortOrder>;
+  status?: InputMaybe<SortOrder>;
+  updatedAt?: InputMaybe<SortOrder>;
 };
 
 /**
@@ -2501,6 +2553,36 @@ export type ManualPaymentStateError = ErrorResult & {
   message: Scalars['String']['output'];
 };
 
+export enum MetricInterval {
+  Daily = 'Daily'
+}
+
+export type MetricSummary = {
+  __typename?: 'MetricSummary';
+  entries: Array<MetricSummaryEntry>;
+  interval: MetricInterval;
+  title: Scalars['String']['output'];
+  type: MetricType;
+};
+
+export type MetricSummaryEntry = {
+  __typename?: 'MetricSummaryEntry';
+  label: Scalars['String']['output'];
+  value: Scalars['Float']['output'];
+};
+
+export type MetricSummaryInput = {
+  interval: MetricInterval;
+  refresh?: InputMaybe<Scalars['Boolean']['input']>;
+  types: Array<MetricType>;
+};
+
+export enum MetricType {
+  AverageOrderValue = 'AverageOrderValue',
+  OrderCount = 'OrderCount',
+  OrderTotal = 'OrderTotal'
+}
+
 export type MimeTypeError = ErrorResult & {
   __typename?: 'MimeTypeError';
   errorCode: ErrorCode;
@@ -2742,6 +2824,7 @@ export type Mutation = {
   deleteZones: Array<DeletionResponse>;
   flushBufferedJobs: Success;
   importProducts?: Maybe<ImportInfo>;
+  initiateCreditExchange: Order;
   /** Authenticates the user using the native authentication strategy. This mutation is an alias for `authenticate({ native: { ... }})` */
   login: NativeAuthenticationResult;
   logout: Success;
@@ -2752,6 +2835,7 @@ export type Mutation = {
   modifyOrder: ModifyOrderResult;
   /** Move a Collection to a different parent or index */
   moveCollection: Collection;
+  refundCreditExchange: CreditExchange;
   refundOrder: RefundOrderResult;
   reindex: Job;
   /** Removes Collections from the specified Channel */
@@ -2787,6 +2871,7 @@ export type Mutation = {
   removeShippingMethodsFromChannel: Array<ShippingMethod>;
   /** Removes StockLocations from the specified Channel */
   removeStockLocationsFromChannel: Array<StockLocation>;
+  requestCreditExchange: CreditExchange;
   runPendingSearchIndexUpdates: Success;
   setCustomerForDraftOrder: SetCustomerForDraftOrderResult;
   /** Sets the billing address for a draft Order */
@@ -2816,6 +2901,7 @@ export type Mutation = {
   updateCollection: Collection;
   /** Update an existing Country */
   updateCountry: Country;
+  updateCreditExchangeStatus: Scalars['Int']['output'];
   /** Update an existing Customer */
   updateCustomer: UpdateCustomerResult;
   /** Update an existing Address */
@@ -3373,6 +3459,11 @@ export type MutationImportProductsArgs = {
 };
 
 
+export type MutationInitiateCreditExchangeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
 export type MutationLoginArgs = {
   password: Scalars['String']['input'];
   rememberMe?: InputMaybe<Scalars['Boolean']['input']>;
@@ -3387,6 +3478,11 @@ export type MutationModifyOrderArgs = {
 
 export type MutationMoveCollectionArgs = {
   input: MoveCollectionInput;
+};
+
+
+export type MutationRefundCreditExchangeArgs = {
+  id: Scalars['ID']['input'];
 };
 
 
@@ -3469,6 +3565,11 @@ export type MutationRemoveShippingMethodsFromChannelArgs = {
 
 export type MutationRemoveStockLocationsFromChannelArgs = {
   input: RemoveStockLocationsFromChannelInput;
+};
+
+
+export type MutationRequestCreditExchangeArgs = {
+  amount: Scalars['Int']['input'];
 };
 
 
@@ -3569,6 +3670,12 @@ export type MutationUpdateCollectionArgs = {
 
 export type MutationUpdateCountryArgs = {
   input: UpdateCountryInput;
+};
+
+
+export type MutationUpdateCreditExchangeStatusArgs = {
+  ids: Array<Scalars['ID']['input']>;
+  status: Scalars['String']['input'];
 };
 
 
@@ -4888,6 +4995,8 @@ export type Query = {
   collections: CollectionList;
   countries: CountryList;
   country?: Maybe<Country>;
+  creditExchange: CreditExchange;
+  creditExchanges: CreditExchangeList;
   customer?: Maybe<Customer>;
   customerGroup?: Maybe<CustomerGroup>;
   customerGroups: CustomerGroupList;
@@ -4906,6 +5015,8 @@ export type Query = {
   jobs: JobList;
   jobsById: Array<Job>;
   me?: Maybe<CurrentUser>;
+  /** Get metrics for the given interval and metric types. */
+  metricSummary: Array<MetricSummary>;
   order?: Maybe<Order>;
   orders: OrderList;
   paymentMethod?: Maybe<PaymentMethod>;
@@ -5008,6 +5119,16 @@ export type QueryCountryArgs = {
 };
 
 
+export type QueryCreditExchangeArgs = {
+  id: Scalars['ID']['input'];
+};
+
+
+export type QueryCreditExchangesArgs = {
+  options?: InputMaybe<CreditExchangeListOptions>;
+};
+
+
 export type QueryCustomerArgs = {
   id: Scalars['ID']['input'];
 };
@@ -5070,6 +5191,11 @@ export type QueryJobsArgs = {
 
 export type QueryJobsByIdArgs = {
   jobIds: Array<Scalars['ID']['input']>;
+};
+
+
+export type QueryMetricSummaryArgs = {
+  input?: InputMaybe<MetricSummaryInput>;
 };
 
 
@@ -5557,7 +5683,7 @@ export type Seller = Node & {
 export type SellerCustomFields = {
   __typename?: 'SellerCustomFields';
   accountBalance?: Maybe<Scalars['Int']['output']>;
-  user?: Maybe<User>;
+  customer?: Maybe<Customer>;
 };
 
 export type SellerFilterParameter = {
@@ -5590,10 +5716,10 @@ export type SellerListOptions = {
 export type SellerSortParameter = {
   accountBalance?: InputMaybe<SortOrder>;
   createdAt?: InputMaybe<SortOrder>;
+  customer?: InputMaybe<SortOrder>;
   id?: InputMaybe<SortOrder>;
   name?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
-  user?: InputMaybe<SortOrder>;
 };
 
 export type ServerConfig = {
@@ -6418,7 +6544,7 @@ export type UpdateRoleInput = {
 };
 
 export type UpdateSellerCustomFieldsInput = {
-  userId?: InputMaybe<Scalars['ID']['input']>;
+  customerId?: InputMaybe<Scalars['ID']['input']>;
 };
 
 export type UpdateSellerInput = {
@@ -6533,6 +6659,8 @@ export type StoreCreditsFragment = { __typename?: 'StoreCredit', id: string, val
 
 export type AccountBalanceFragment = { __typename?: 'AccountBalance', customerAccountBalance?: number, sellerAccountBalance?: number };
 
+export type CreditExchangeFragment = { __typename?: 'CreditExchange', id: string, createdAt: any, updatedAt: any, amount: number, status: string, order?: { __typename?: 'Order', id: string, code: string }, seller: { __typename?: 'Seller', id: string, customFields?: { __typename?: 'SellerCustomFields', customer?: { __typename?: 'Customer', firstName: string, lastName: string } } } };
+
 export type TransferCreditfromSellerToCustomerMutationVariables = Exact<{
   value: Scalars['Int']['input'];
   sellerId: Scalars['ID']['input'];
@@ -6569,6 +6697,42 @@ export type DeleteStoreCreditMutationVariables = Exact<{
 
 export type DeleteStoreCreditMutation = { __typename?: 'Mutation', deleteSingleStoreCredit: { __typename?: 'DeletionResponse', result: DeletionResult, message?: string } };
 
+export type GetAllCreditExchangeQueryVariables = Exact<{
+  options?: InputMaybe<CreditExchangeListOptions>;
+}>;
+
+
+export type GetAllCreditExchangeQuery = { __typename?: 'Query', creditExchanges: { __typename?: 'CreditExchangeList', totalItems: number, items: Array<{ __typename?: 'CreditExchange', id: string, createdAt: any, updatedAt: any, amount: number, status: string, order?: { __typename?: 'Order', id: string, code: string }, seller: { __typename?: 'Seller', id: string, customFields?: { __typename?: 'SellerCustomFields', customer?: { __typename?: 'Customer', firstName: string, lastName: string } } } }> } };
+
+export type UpdateCreditExchangeStatusMutationVariables = Exact<{
+  ids: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
+  status: Scalars['String']['input'];
+}>;
+
+
+export type UpdateCreditExchangeStatusMutation = { __typename?: 'Mutation', updateCreditExchangeStatus: number };
+
+export type AcceptCreditExchangeMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type AcceptCreditExchangeMutation = { __typename?: 'Mutation', initiateCreditExchange: { __typename?: 'Order', id: string, code: string } };
+
+export type RefundCreditExchangeMutationVariables = Exact<{
+  id: Scalars['ID']['input'];
+}>;
+
+
+export type RefundCreditExchangeMutation = { __typename?: 'Mutation', refundCreditExchange: { __typename?: 'CreditExchange', id: string, createdAt: any, updatedAt: any, amount: number, status: string, order?: { __typename?: 'Order', id: string, code: string }, seller: { __typename?: 'Seller', id: string, customFields?: { __typename?: 'SellerCustomFields', customer?: { __typename?: 'Customer', firstName: string, lastName: string } } } } };
+
+export type RequestCreditExchangeMutationVariables = Exact<{
+  amount: Scalars['Int']['input'];
+}>;
+
+
+export type RequestCreditExchangeMutation = { __typename?: 'Mutation', requestCreditExchange: { __typename?: 'CreditExchange', id: string, createdAt: any, updatedAt: any, amount: number, status: string, order?: { __typename?: 'Order', id: string, code: string }, seller: { __typename?: 'Seller', id: string, customFields?: { __typename?: 'SellerCustomFields', customer?: { __typename?: 'Customer', firstName: string, lastName: string } } } } };
+
 export type UpdateStoreCreditMutationVariables = Exact<{
   input: StoreCreditUpdateInput;
 }>;
@@ -6585,10 +6749,16 @@ export type CreateStoreCreditMutation = { __typename?: 'Mutation', createStoreCr
 
 export const StoreCreditsFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StoreCredits"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCredit"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"variant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"productId"}},{"kind":"Field","name":{"kind":"Name","value":"featuredAsset"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"preview"}},{"kind":"Field","name":{"kind":"Name","value":"focalPoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"variantId"}}]}}]} as unknown as DocumentNode<StoreCreditsFragment, unknown>;
 export const AccountBalanceFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AccountBalance"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AccountBalance"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]} as unknown as DocumentNode<AccountBalanceFragment, unknown>;
+export const CreditExchangeFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CreditExchange"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreditExchange"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}},{"kind":"Field","name":{"kind":"Name","value":"seller"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]}}]}}]} as unknown as DocumentNode<CreditExchangeFragment, unknown>;
 export const TransferCreditfromSellerToCustomerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"transferCreditfromSellerToCustomer"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"value"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"transferCreditfromSellerToCustomer"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"value"},"value":{"kind":"Variable","name":{"kind":"Name","value":"value"}}},{"kind":"Argument","name":{"kind":"Name","value":"sellerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AccountBalance"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AccountBalance"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AccountBalance"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]} as unknown as DocumentNode<TransferCreditfromSellerToCustomerMutation, TransferCreditfromSellerToCustomerMutationVariables>;
 export const GetSellerAndCustomerStoreCreditsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"getSellerANDCustomerStoreCredits"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"getSellerANDCustomerStoreCredits"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sellerId"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sellerId"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"AccountBalance"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"AccountBalance"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"AccountBalance"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customerAccountBalance"}},{"kind":"Field","name":{"kind":"Name","value":"sellerAccountBalance"}}]}}]} as unknown as DocumentNode<GetSellerAndCustomerStoreCreditsQuery, GetSellerAndCustomerStoreCreditsQueryVariables>;
 export const GetAllStoreCreditsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllStoreCredits"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"options"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCreditListOptions"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"storeCredits"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"options"},"value":{"kind":"Variable","name":{"kind":"Name","value":"options"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StoreCredits"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalItems"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StoreCredits"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCredit"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"variant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"productId"}},{"kind":"Field","name":{"kind":"Name","value":"featuredAsset"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"preview"}},{"kind":"Field","name":{"kind":"Name","value":"focalPoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"variantId"}}]}}]} as unknown as DocumentNode<GetAllStoreCreditsQuery, GetAllStoreCreditsQueryVariables>;
 export const GetStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"storeCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StoreCredits"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StoreCredits"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCredit"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"variant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"productId"}},{"kind":"Field","name":{"kind":"Name","value":"featuredAsset"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"preview"}},{"kind":"Field","name":{"kind":"Name","value":"focalPoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"variantId"}}]}}]} as unknown as DocumentNode<GetStoreCreditQuery, GetStoreCreditQueryVariables>;
 export const DeleteStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"DeleteStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deleteSingleStoreCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"result"}},{"kind":"Field","name":{"kind":"Name","value":"message"}}]}}]}}]} as unknown as DocumentNode<DeleteStoreCreditMutation, DeleteStoreCreditMutationVariables>;
+export const GetAllCreditExchangeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetAllCreditExchange"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"options"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"CreditExchangeListOptions"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"creditExchanges"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"options"},"value":{"kind":"Variable","name":{"kind":"Name","value":"options"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"items"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CreditExchange"}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalItems"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CreditExchange"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreditExchange"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}},{"kind":"Field","name":{"kind":"Name","value":"seller"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]}}]}}]} as unknown as DocumentNode<GetAllCreditExchangeQuery, GetAllCreditExchangeQueryVariables>;
+export const UpdateCreditExchangeStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateCreditExchangeStatus"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"ids"}},"type":{"kind":"NonNullType","type":{"kind":"ListType","type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"status"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"String"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateCreditExchangeStatus"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"ids"},"value":{"kind":"Variable","name":{"kind":"Name","value":"ids"}}},{"kind":"Argument","name":{"kind":"Name","value":"status"},"value":{"kind":"Variable","name":{"kind":"Name","value":"status"}}}]}]}}]} as unknown as DocumentNode<UpdateCreditExchangeStatusMutation, UpdateCreditExchangeStatusMutationVariables>;
+export const AcceptCreditExchangeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"AcceptCreditExchange"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"initiateCreditExchange"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}}]}}]} as unknown as DocumentNode<AcceptCreditExchangeMutation, AcceptCreditExchangeMutationVariables>;
+export const RefundCreditExchangeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RefundCreditExchange"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"id"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ID"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"refundCreditExchange"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"id"},"value":{"kind":"Variable","name":{"kind":"Name","value":"id"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CreditExchange"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CreditExchange"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreditExchange"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}},{"kind":"Field","name":{"kind":"Name","value":"seller"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]}}]}}]} as unknown as DocumentNode<RefundCreditExchangeMutation, RefundCreditExchangeMutationVariables>;
+export const RequestCreditExchangeDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"RequestCreditExchange"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"amount"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"requestCreditExchange"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"amount"},"value":{"kind":"Variable","name":{"kind":"Name","value":"amount"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"CreditExchange"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CreditExchange"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreditExchange"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"order"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"code"}}]}},{"kind":"Field","name":{"kind":"Name","value":"seller"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"customFields"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"firstName"}},{"kind":"Field","name":{"kind":"Name","value":"lastName"}}]}}]}}]}}]}}]} as unknown as DocumentNode<RequestCreditExchangeMutation, RequestCreditExchangeMutationVariables>;
 export const UpdateStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"UpdateStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCreditUpdateInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"updateStoreCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StoreCredits"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StoreCredits"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCredit"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"variant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"productId"}},{"kind":"Field","name":{"kind":"Name","value":"featuredAsset"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"preview"}},{"kind":"Field","name":{"kind":"Name","value":"focalPoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"variantId"}}]}}]} as unknown as DocumentNode<UpdateStoreCreditMutation, UpdateStoreCreditMutationVariables>;
 export const CreateStoreCreditDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateStoreCredit"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCreditAddInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createStoreCredit"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"StoreCredits"}}]}}]}},{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StoreCredits"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"StoreCredit"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"perUserLimit"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"customer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"customerId"}},{"kind":"Field","name":{"kind":"Name","value":"variant"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"createdAt"}},{"kind":"Field","name":{"kind":"Name","value":"updatedAt"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"productId"}},{"kind":"Field","name":{"kind":"Name","value":"featuredAsset"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"preview"}},{"kind":"Field","name":{"kind":"Name","value":"focalPoint"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"x"}},{"kind":"Field","name":{"kind":"Name","value":"y"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"variantId"}}]}}]} as unknown as DocumentNode<CreateStoreCreditMutation, CreateStoreCreditMutationVariables>;

@@ -23,6 +23,9 @@ const npp_service_1 = require("./service/npp.service");
 const npp_resolver_1 = require("./resolvers/npp.resolver");
 const deepmerge_1 = __importDefault(require("deepmerge"));
 const constants_1 = require("./constants");
+const credit_exchange_service_1 = require("./service/credit-exchange.service");
+const exchange_request_entity_1 = require("./entity/exchange-request.entity");
+const credit_exchange_resolver_1 = require("./resolvers/credit-exchange.resolver");
 let StoreCreditPlugin = exports.StoreCreditPlugin = StoreCreditPlugin_1 = class StoreCreditPlugin {
     static init(options) {
         this.options = (0, deepmerge_1.default)(this.options, options);
@@ -35,35 +38,30 @@ StoreCreditPlugin.options = {
         slug: 'root-non-purchasable-product',
     },
     creditToCurrencyFactor: { default: 1 },
-    platformFee: { type: 'fixed', value: 100 },
+    platformFee: { type: 'fixed', value: 1 },
+    exchange: {
+        fee: { type: 'fixed', value: 0 },
+        maxAmount: 999,
+        payoutOption: { name: 'Payout', code: 'payout' },
+    },
 };
 StoreCreditPlugin.uiExtensions = {
+    id: 'store-credit',
     extensionPath: path_1.default.join(__dirname, 'ui'),
-    ngModules: [
-        {
-            type: 'lazy',
-            route: 'store-credit',
-            ngModuleFileName: 'store-credit-ui-lazy.module.ts',
-            ngModuleName: 'StoreCreditUIModule',
-        },
-        {
-            type: 'shared',
-            ngModuleFileName: 'store-credit-ui-extension.module.ts',
-            ngModuleName: 'StoreCreditExtensionModule',
-        },
-    ],
+    routes: [{ route: 'store-credit', filePath: 'routes.ts' }],
+    providers: ['providers.ts'],
 };
 exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate([
     (0, core_1.VendurePlugin)({
         imports: [core_1.PluginCommonModule],
-        entities: [store_credit_entity_1.StoreCredit],
+        entities: [store_credit_entity_1.StoreCredit, exchange_request_entity_1.CreditExchange],
         shopApiExtensions: {
             schema: api_extension_1.shopApiExtensions,
             resolvers: [store_credit_shop_resolver_1.ShopStoreCreditResolver, npp_resolver_1.NppShopResolver],
         },
         adminApiExtensions: {
             schema: api_extension_1.adminApiExtensions,
-            resolvers: [store_credit_admin_resolver_1.AdminStoreCreditResolver, npp_resolver_1.NppAdminResolver],
+            resolvers: [store_credit_admin_resolver_1.AdminStoreCreditResolver, npp_resolver_1.NppAdminResolver, credit_exchange_resolver_1.AdminCreditExchangeResolver],
         },
         configuration: config => {
             config.paymentOptions.paymentMethodHandlers.push(store_credit_payment_handler_1.StoreCreditPaymentHandler);
@@ -92,9 +90,11 @@ exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate
                 ],
             });
             config.customFields.Seller.push({
-                name: 'user',
+                name: 'customer',
                 type: 'relation',
-                entity: core_1.User,
+                label: [{ languageCode: core_1.LanguageCode.en, value: 'Customer' }],
+                ui: { component: 'seller-customer-input' },
+                entity: core_1.Customer,
                 nullable: true,
             });
             config.customFields.GlobalSettings.push({
@@ -120,7 +120,11 @@ exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate
         providers: [
             store_credit_service_1.StoreCreditService,
             npp_service_1.NPPService,
-            { provide: constants_1.STORE_CREDIT_PLUGIN_OPTIONS, useFactory: () => StoreCreditPlugin_1.options },
+            credit_exchange_service_1.CreditExchangeService,
+            {
+                provide: constants_1.STORE_CREDIT_PLUGIN_OPTIONS,
+                useFactory: () => StoreCreditPlugin_1.options,
+            },
         ],
         compatibility: '>0.0.0',
     })
