@@ -1,4 +1,5 @@
-import { gql } from 'apollo-server-core';
+// import { gql } from 'apollo-server-core';
+import gql from 'graphql-tag';
 
 const commonExtensions = gql`
     type StoreCredit implements Node {

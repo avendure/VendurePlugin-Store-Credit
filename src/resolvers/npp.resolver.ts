@@ -20,7 +20,9 @@ import {
     ListQueryOptions,
 } from '@vendure/core';
 import { NPPService } from '../service/npp.service';
-import { UserInputError } from 'apollo-server-core';
+// import { UserInputError } from 'apollo-server-core';
+
+import { GraphQLError } from 'graphql';
 
 @Resolver()
 export class NppAdminResolver {
@@ -100,7 +102,14 @@ export class NppShopResolver {
         } else if (args.slug) {
             result = await this.productService.findOneBySlug(ctx, args.slug, relations);
         } else {
-            throw new UserInputError('error.product-id-or-slug-must-be-provided');
+            // throw new UserInputError('error.product-id-or-slug-must-be-provided'); V3
+            //Upgrade to apollo server v4
+            throw new GraphQLError('error.product-id-or-slug-must-be-provided', {
+                extensions: {
+                    code: 'BAD_USER_INPUT',
+                    myExtension: 'foo',
+                },
+            });
         }
         const nppId = await this.nppService.getRootNPPId(ctx);
         if (!result || result.id == nppId || result.enabled === false) {

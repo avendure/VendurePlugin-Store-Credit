@@ -17,7 +17,8 @@ const graphql_1 = require("@nestjs/graphql");
 const generated_types_1 = require("@vendure/common/lib/generated-types");
 const core_1 = require("@vendure/core");
 const npp_service_1 = require("../service/npp.service");
-const apollo_server_core_1 = require("apollo-server-core");
+// import { UserInputError } from 'apollo-server-core';
+const graphql_2 = require("graphql");
 let NppAdminResolver = exports.NppAdminResolver = class NppAdminResolver {
     constructor(nppService, productService) {
         this.nppService = nppService;
@@ -96,7 +97,14 @@ let NppShopResolver = exports.NppShopResolver = class NppShopResolver {
             result = await this.productService.findOneBySlug(ctx, args.slug, relations);
         }
         else {
-            throw new apollo_server_core_1.UserInputError('error.product-id-or-slug-must-be-provided');
+            // throw new UserInputError('error.product-id-or-slug-must-be-provided'); V3
+            //Upgrade to apollo server v4
+            throw new graphql_2.GraphQLError('error.product-id-or-slug-must-be-provided', {
+                extensions: {
+                    code: 'BAD_USER_INPUT',
+                    myExtension: 'foo',
+                },
+            });
         }
         const nppId = await this.nppService.getRootNPPId(ctx);
         if (!result || result.id == nppId || result.enabled === false) {

@@ -1,6 +1,6 @@
 {
     "name": "@avendure/vendure-plugin-store-credit",
-    "version": "1.0.16",
+    "version": "1.0.17",
     "description": "Offers a store credit implementation plugin for users to transact using store credits",
     "author": "",
     "repository": "https://github.com/avendure/VendurePlugin-Store-Credit",
@@ -24,6 +24,7 @@
         "format": "prettier --write --ignore-unknown"
     },
     "devDependencies": {
+        "@apollo/server": "^4.10.0",
         "@graphql-codegen/add": "^5.0.0",
         "@graphql-codegen/cli": "^5.0.0",
         "@graphql-codegen/typed-document-node": "^5.0.1",
@@ -49,7 +50,6 @@
         "vitest": "^0.34.6"
     },
     "dependencies": {
-        "apollo-server-core": "^3.13.0",
         "copyfiles": "^2.4.1",
         "deepmerge": "^4.3.1"
     }

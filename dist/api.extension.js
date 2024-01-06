@@ -1,8 +1,12 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminApiExtensions = exports.shopApiExtensions = void 0;
-const apollo_server_core_1 = require("apollo-server-core");
-const commonExtensions = (0, apollo_server_core_1.gql) `
+// import { gql } from 'apollo-server-core';
+const graphql_tag_1 = __importDefault(require("graphql-tag"));
+const commonExtensions = (0, graphql_tag_1.default) `
     type StoreCredit implements Node {
         id: ID!
         value: Int
@@ -28,7 +32,7 @@ const commonExtensions = (0, apollo_server_core_1.gql) `
         storeCredit(id: ID!): StoreCredit
     }
 `;
-exports.shopApiExtensions = (0, apollo_server_core_1.gql) `
+exports.shopApiExtensions = (0, graphql_tag_1.default) `
     ${commonExtensions}
 
     extend type StoreCredit {
@@ -52,7 +56,7 @@ exports.shopApiExtensions = (0, apollo_server_core_1.gql) `
         claim(key: String!): ClaimResult!
     }
 `;
-exports.adminApiExtensions = (0, apollo_server_core_1.gql) `
+exports.adminApiExtensions = (0, graphql_tag_1.default) `
     ${commonExtensions}
 
     extend type StoreCredit {
