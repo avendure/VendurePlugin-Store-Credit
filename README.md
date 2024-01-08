@@ -8,6 +8,58 @@ Buyers and sellers can transact with store-credit. Platform Fee will diminish cr
 
 This plugin extends the admin-ui and adds a "store-credit" section to the side-nav menu. This should be only accessible by users with superadmin permissions
 
+##instructions
+
+1. Modify the mv.service.ts file in the default Multivendor plugin from Vendure
+You should include the following lines in the `registerNewSeller()` function. These will link the customer account with the seller account:
+```
+const sellerCustomer = await this.connection
+      .getRepository(ctx, Customer)
+      .findOne({
+        where: { emailAddress: input.seller.emailAddress },
+      });
+
+if (!sellerCustomer) {
+    throw new InternalServerError(
+     "Customer Account Is not created. Can't create Seller account.",
+    );
+}
+
+//Link Seller account with customer account
+await this.sellerService.update(ctx, {
+	id: channel.sellerId as ID,
+	customFields: {
+		customerId: sellerCustomer?.id,
+	},
+});
+```
+
+2. You must register the customer account before the seller account
+You must register the customer account before registering the seller. Pass them the same email address. This will link to two accounts so that credit can be transferred between them.
+
+E.g. On registration, you should call:
+```
+registerCustomerAccount(input: $input) {
+	__typename
+	... on Success {
+		success
+	}
+	... on ErrorResult {
+		errorCode
+		message
+	}
+}
+```
+Followed by:
+```
+registerNewSeller(input: $input) {
+	__typename
+	id
+	code
+	token
+}
+```
+
 ## Shop APIs
 
 `Query`
