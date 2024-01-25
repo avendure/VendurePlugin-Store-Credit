@@ -109,10 +109,10 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
 })
 export class StoreCreditPlugin {
     private static options: StoreCreditPluginOptions = {
-        npp: {
-            name: 'Root NPP Product',
-            slug: 'root-non-purchasable-product',
-        },
+        // npp: {
+        //     name: 'Root NPP Product',
+        //     slug: 'root-non-purchasable-product',
+        // },
         creditToCurrencyFactor: { default: 1 },
         platformFee: { type: 'fixed', value: 1 },
         exchange: {

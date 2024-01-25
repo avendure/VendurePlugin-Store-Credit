@@ -33,10 +33,10 @@ let StoreCreditPlugin = exports.StoreCreditPlugin = StoreCreditPlugin_1 = class 
     }
 };
 StoreCreditPlugin.options = {
-    npp: {
-        name: 'Root NPP Product',
-        slug: 'root-non-purchasable-product',
-    },
+    // npp: {
+    //     name: 'Root NPP Product',
+    //     slug: 'root-non-purchasable-product',
+    // },
     creditToCurrencyFactor: { default: 1 },
     platformFee: { type: 'fixed', value: 1 },
     exchange: {
