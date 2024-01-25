@@ -1,6 +1,6 @@
 {
     "name": "@avendure/vendure-plugin-store-credit",
-    "version": "1.0.17",
+    "version": "1.0.18",
     "description": "Offers a store credit implementation plugin for users to transact using store credits",
     "author": "",
     "repository": "https://github.com/avendure/VendurePlugin-Store-Credit",

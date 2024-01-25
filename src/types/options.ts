@@ -5,7 +5,7 @@ type CreditConversion = { [key in CurrencyCode]?: number } & {
 };
 
 export type StoreCreditPluginOptions = {
-    npp: {
+    npp?: {
         name: string;
         slug: string;
     };

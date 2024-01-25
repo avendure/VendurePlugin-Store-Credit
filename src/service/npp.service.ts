@@ -11,6 +11,7 @@ import {
     Order,
     OrderLine,
     OrderPlacedEvent,
+    Product,
     ProductOptionGroupService,
     ProductOptionService,
     ProductService,
@@ -46,39 +47,41 @@ export class NPPService implements OnApplicationBootstrap {
     ) {}
 
     onApplicationBootstrap() {
-        this.channelService.initChannels().then(async () => {
-            const ctx = await this.getSuperadminContext();
-            Logger.info('Bootstrapping Root Non Physical Product', 'NPPPlugin');
+        if (this.options.npp) {
+            this.channelService.initChannels().then(async () => {
+                const ctx = await this.getSuperadminContext();
+                Logger.info('Bootstrapping Root Non Physical Product', 'NPPPlugin');
 
-            await this.getOrCreateRootNPP(ctx);
-            await this.getOrCreateFacet(ctx);
-            await this.registerNppProductOption(
-                ctx,
-                this.options.exchange.payoutOption.code,
-                this.options.exchange.payoutOption.name,
-            );
-        });
-
-        this.eventBus.ofType(OrderPlacedEvent).subscribe(async ev => {
-            if (ev.toState != 'PaymentSettled') return;
-
-            const cbs: Promise<ReturnType<NppPurchaseCallback>>[] = [];
-
-            for (let line of ev.order.lines) {
-                const productVariant = await this.productVariantService.findOne(
-                    ev.ctx,
-                    line.productVariantId,
-                    ['facetValues'],
+                await this.getOrCreateRootNPP(ctx);
+                await this.getOrCreateFacet(ctx);
+                await this.registerNppProductOption(
+                    ctx,
+                    this.options.exchange.payoutOption.code,
+                    this.options.exchange.payoutOption.name,
                 );
-                if (!productVariant) continue;
-                for (let fv of productVariant.facetValues) {
-                    const cb = this.orderCallbacks.get(fv.code);
-                    if (cb) cbs.push(cb(ev.ctx, ev.order, line));
-                }
-            }
+            });
 
-            await Promise.all(cbs);
-        });
+            this.eventBus.ofType(OrderPlacedEvent).subscribe(async ev => {
+                if (ev.toState != 'PaymentSettled') return;
+
+                const cbs: Promise<ReturnType<NppPurchaseCallback>>[] = [];
+
+                for (let line of ev.order.lines) {
+                    const productVariant = await this.productVariantService.findOne(
+                        ev.ctx,
+                        line.productVariantId,
+                        ['facetValues'],
+                    );
+                    if (!productVariant) continue;
+                    for (let fv of productVariant.facetValues) {
+                        const cb = this.orderCallbacks.get(fv.code);
+                        if (cb) cbs.push(cb(ev.ctx, ev.order, line));
+                    }
+                }
+
+                await Promise.all(cbs);
+            });
+        }
     }
 
     public async addOrderCallback(code: string, callback: NppPurchaseCallback) {
@@ -172,45 +175,48 @@ export class NPPService implements OnApplicationBootstrap {
     }
 
     private async getOrCreateRootNPP(ctx: RequestContext) {
-        const globalSettings = await this.connection.getRepository(ctx, GlobalSettings).findOne({
-            where: {},
-            relations: {
-                customFields: {
-                    RootNonPhysicalProduct: true,
+        if (this.options.npp) {
+            const globalSettings = await this.connection.getRepository(ctx, GlobalSettings).findOne({
+                where: {},
+                relations: {
+                    customFields: {
+                        RootNonPhysicalProduct: true,
+                    },
                 },
-            },
-        });
-        const existingRootNPP = globalSettings?.customFields.RootNonPhysicalProduct;
-        if (existingRootNPP && existingRootNPP.deletedAt == null) return existingRootNPP;
+            });
+            const existingRootNPP = globalSettings?.customFields.RootNonPhysicalProduct;
+            if (existingRootNPP && existingRootNPP.deletedAt == null) return existingRootNPP;
 
-        const RootNPP = await this.productService.create(ctx, {
-            enabled: true,
-            customFields: {},
-            facetValueIds: [],
-            assetIds: [],
-            translations: [
-                {
-                    languageCode: LanguageCode.en,
-                    name: this.options.npp.name,
-                    slug: this.options.npp.slug,
-                    description: 'The root non physical product that holds other NPPs as variants',
-                },
-            ],
-        });
+            const RootNPP = await this.productService.create(ctx, {
+                enabled: true,
+                customFields: {},
+                facetValueIds: [],
+                assetIds: [],
+                translations: [
+                    {
+                        languageCode: LanguageCode.en,
+                        name: this.options.npp.name,
+                        slug: this.options.npp.slug,
+                        description: 'The root non physical product that holds other NPPs as variants',
+                    },
+                ],
+            });
 
-        const group = await this.productOptionGroupService.create(ctx, {
-            code: 'npps',
-            translations: [{ languageCode: LanguageCode.en, name: 'Npps' }],
-            options: [],
-        });
+            const group = await this.productOptionGroupService.create(ctx, {
+                code: 'npps',
+                translations: [{ languageCode: LanguageCode.en, name: 'Npps' }],
+                options: [],
+            });
 
-        await this.productService.addOptionGroupToProduct(ctx, RootNPP.id, group.id);
+            await this.productService.addOptionGroupToProduct(ctx, RootNPP.id, group.id);
 
-        await this.connection
-            .getRepository(ctx, GlobalSettings)
-            .update({ id: globalSettings?.id }, { customFields: { RootNonPhysicalProduct: RootNPP } });
+            await this.connection
+                .getRepository(ctx, GlobalSettings)
+                .update({ id: globalSettings?.id }, { customFields: { RootNonPhysicalProduct: RootNPP } });
 
-        return RootNPP;
+            return RootNPP;
+        }
+        return {} as Product;
     }
 
     private async getOrCreateFacet(ctx: RequestContext) {

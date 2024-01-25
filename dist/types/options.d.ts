@@ -5,7 +5,7 @@ type CreditConversion = {
     default: number;
 };
 export type StoreCreditPluginOptions = {
-    npp: {
+    npp?: {
         name: string;
         slug: string;
     };

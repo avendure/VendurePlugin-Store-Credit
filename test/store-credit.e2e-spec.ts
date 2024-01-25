@@ -2,6 +2,7 @@ import { SqljsInitializer, registerInitializer, createTestEnvironment, testConfi
 import { it, describe, afterAll, expect, beforeAll } from 'vitest';
 import { StoreCreditPlugin } from '../src/index';
 import { mergeConfig } from '@vendure/core';
+import { DataService } from '@vendure/admin-ui/core';
 import path from 'path';
 import { initialData } from './fixtures/initial-data';
 import {
@@ -24,6 +25,7 @@ import {
     CreateProductVariantDocument,
     GlobalFlag,
     UpdateCreditExchangeStatusDocument,
+    JobState,
 } from './graphql/generated-admin-types';
 import {
     AddProductToOrderDocument,
