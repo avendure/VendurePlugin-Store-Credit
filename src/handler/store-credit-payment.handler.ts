@@ -180,7 +180,8 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
-                accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
+                accountBalance:
+                    customerCreditBalance - (options.isFraction ? adjustedAmount : Math.ceil(adjustedAmount)),
             },
         });
 

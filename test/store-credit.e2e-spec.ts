@@ -41,6 +41,7 @@ import {
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
 describe('store-credits plugin', () => {
+    const isFraction = false;
     const devConfig = mergeConfig(testConfig, {
         plugins: [
             StoreCreditPlugin.init({
@@ -51,6 +52,7 @@ describe('store-credits plugin', () => {
                     payoutOption: { code: 'payout', name: 'Payout' },
                     maxAmount: 900,
                 },
+                isFraction: isFraction,
             }),
         ],
     });
@@ -293,7 +295,10 @@ describe('store-credits plugin', () => {
                     customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
                     "Credits should have been deducted from Buyer's account",
                 ).toEqual(
-                    customerClaimedBalance - Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                    customerClaimedBalance -
+                        (isFraction
+                            ? addPaymentReuslt.addPaymentToOrder.totalWithTax / 100
+                            : Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)),
                 );
 
                 expect(
