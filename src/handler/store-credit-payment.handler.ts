@@ -165,7 +165,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
-                    accountBalance: Math.ceil(newBalance),
+                    accountBalance: options.isFraction ? newBalance : Math.ceil(newBalance),
                 },
             });
         }

@@ -42,17 +42,19 @@ registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
 describe('store-credits plugin', () => {
     const isFraction = false;
+    const feeValue = 1;
     const devConfig = mergeConfig(testConfig, {
         plugins: [
             StoreCreditPlugin.init({
                 creditToCurrencyFactor: { default: 1 },
                 npp: { name: 'Store Credits', slug: 'store-credits' },
                 exchange: {
-                    fee: { type: 'fixed', value: 1 },
+                    fee: { type: 'fixed', value: feeValue },
                     payoutOption: { code: 'payout', name: 'Payout' },
                     maxAmount: 900,
                 },
                 isFraction: isFraction,
+                platformFee: { type: 'fixed', value: feeValue },
             }),
         ],
     });
@@ -270,6 +272,7 @@ describe('store-credits plugin', () => {
 
         it('Should add payment', async () => {
             await shopClient.asUserWithCredentials(customers[2].emailAddress, 'test');
+
             const addPaymentReuslt = await shopClient.query(AddPaymentToOrderDocument, {
                 input: { method: 'store-credit', metadata: {} },
             });
@@ -291,15 +294,35 @@ describe('store-credits plugin', () => {
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
 
-                expect(
-                    customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
-                    "Credits should have been deducted from Buyer's account",
-                ).toEqual(
-                    customerClaimedBalance -
-                        (isFraction
-                            ? addPaymentReuslt.addPaymentToOrder.totalWithTax / 100
-                            : Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)),
-                );
+                const totalPrce =
+                    (addPaymentReuslt.addPaymentToOrder.totalWithTax +
+                        addPaymentReuslt.addPaymentToOrder.shippingWithTax) /
+                    100;
+
+                if (isFraction) {
+                    expect(
+                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                        "Credits should have been deducted from Buyer's account",
+                    ).toEqual(customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100);
+
+                    expect(
+                        sellerResult.seller?.customFields?.accountBalance,
+                        "Credits should have been transferred to Seller's account",
+                    ).toEqual(totalPrce - feeValue);
+                } else {
+                    expect(
+                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                        "Credits should have been deducted from Buyer's account",
+                    ).toEqual(
+                        customerClaimedBalance -
+                            Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                    );
+
+                    expect(
+                        sellerResult.seller?.customFields?.accountBalance,
+                        "Credits should have been transferred to Seller's account",
+                    ).toEqual(Math.ceil(totalPrce - feeValue));
+                }
 
                 expect(
                     customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
