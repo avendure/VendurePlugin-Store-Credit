@@ -131,7 +131,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             }
 
             if (shippingLine) {
-                totalShippingCharge = shippingLine.discountedPriceWithTax;
+                totalShippingCharge = shippingLine.priceWithTax;
             }
             const totalPrice = productPriceWithTax + totalShippingCharge;
 
@@ -170,13 +170,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             });
         }
 
-        console.log('customerCreditBalance: ', customerCreditBalance);
-        console.log('amount: ', amount);
-        console.log('rounded amount: ', amount / conversion_factor);
-        console.log('conversion factor: ', conversion_factor);
-
         const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
-        console.log('newBalance: ', customerCreditBalance - adjustedAmount);
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {

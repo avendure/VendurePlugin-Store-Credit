@@ -26,6 +26,7 @@ import {
     GlobalFlag,
     UpdateCreditExchangeStatusDocument,
     JobState,
+    AssignShippingMethodToChannelDocument,
 } from './graphql/generated-admin-types';
 import {
     AddProductToOrderDocument,
@@ -155,6 +156,13 @@ describe('store-credits plugin', () => {
         expect(assignResult.assignProductVariantsToChannel[0].id).toEqual('T_1');
     });
 
+    it('Should assign Shipping method to channel', async () => {
+        const assignResult = await adminClient.query(AssignShippingMethodToChannelDocument, {
+            input: { channelId, shippingMethodIds: ['T_1'] },
+        });
+        expect(assignResult.assignShippingMethodsToChannel.length).greaterThan(0);
+    });
+
     it('Should create store credit for purchase', async () => {
         const createResult = await adminClient.query(CreateStoreCreditDocument, {
             input: {
@@ -241,7 +249,7 @@ describe('store-credits plugin', () => {
             });
             expect(billingAddressResult.setOrderBillingAddress.__typename).toEqual('Order');
 
-            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: 'T_1' });
+            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: ['T_1'] });
             expect(shippingMethodResult.setOrderShippingMethod.__typename).toEqual('Order');
 
             const transitionResult = await shopClient.query(TransitionToStateDocument, {
@@ -294,10 +302,7 @@ describe('store-credits plugin', () => {
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
 
-                const totalPrce =
-                    (addPaymentReuslt.addPaymentToOrder.totalWithTax +
-                        addPaymentReuslt.addPaymentToOrder.shippingWithTax) /
-                    100;
+                const totalPrce = addPaymentReuslt.addPaymentToOrder.totalWithTax / 100;
 
                 if (isFraction) {
                     expect(

@@ -20,6 +20,24 @@ export const GET_CUSTOMER_LIST = gql`
     }
 `;
 
+export const ASSIGN_SHIPPINGMETHOD_TO_CHANNEL = gql`
+    mutation assignShippingMethodToChannel($input: AssignShippingMethodsToChannelInput!) {
+        assignShippingMethodsToChannel(input: $input) {
+            __typename
+            id
+            code
+            name
+            fulfillmentHandlerCode
+            checker {
+                code
+            }
+            calculator {
+                code
+            }
+        }
+    }
+`;
+
 export const SET_SELLER_USER = gql`
     mutation SetSellerUser($input: UpdateSellerInput!) {
         updateSeller(input: $input) {

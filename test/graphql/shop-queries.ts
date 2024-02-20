@@ -29,6 +29,16 @@ const ORDER_FRAGMENT = gql`
         total
         totalWithTax
         shippingWithTax
+        shippingLines {
+            shippingMethod {
+                id
+                name
+            }
+            price
+            priceWithTax
+            discountedPrice
+            discountedPriceWithTax
+        }
         customer {
             emailAddress
         }
