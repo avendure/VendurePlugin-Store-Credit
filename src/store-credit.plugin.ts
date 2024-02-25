@@ -17,13 +17,12 @@ import { CreditExchange } from './entity/exchange-request.entity';
 import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolver';
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
-    interface CustomCustomerFields {
+    interface CustomUserFields {
         accountBalance: number;
     }
 
     interface CustomSellerFields {
         accountBalance: number;
-        customer?: Customer | null;
     }
 
     interface CustomGlobalSettingsFields {
@@ -44,7 +43,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     },
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
-        config.customFields.Seller.push({
+        config.customFields.User.push({
             name: 'accountBalance',
             type: 'int',
             defaultValue: 0,
@@ -55,26 +54,6 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
                     value: 'Account Balance',
                 },
             ],
-        });
-        config.customFields.Customer.push({
-            name: 'accountBalance',
-            type: 'int',
-            defaultValue: 0,
-            readonly: true,
-            label: [
-                {
-                    languageCode: LanguageCode.en,
-                    value: 'Account Balance',
-                },
-            ],
-        });
-        config.customFields.Seller.push({
-            name: 'customer',
-            type: 'relation',
-            label: [{ languageCode: LanguageCode.en, value: 'Customer' }],
-            ui: { component: 'seller-customer-input' },
-            entity: Customer,
-            nullable: true,
         });
         config.customFields.GlobalSettings.push({
             name: 'RootNonPhysicalProduct',

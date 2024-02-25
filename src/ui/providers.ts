@@ -8,6 +8,7 @@ import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsIn
 import { UpdateCreditExchangeStatus } from './components/credit-exchange-list/credit-exchange-bulk-actions';
 import { RequestExchange } from './components/request-exchange/request-exchange.component';
 import { SellerCustomerFormInputComponent } from './components/seller-customer/seller-customer.component';
+import { CustomerCreditInfoComponent } from './components/customer-credit-info/customer-credit-info-component';
 
 export default [
     addNavMenuSection(
@@ -40,6 +41,10 @@ export default [
     registerCustomDetailComponent({
         locationId: 'seller-detail',
         component: RequestExchange,
+    }),
+    registerCustomDetailComponent({
+        locationId: 'customer-detail',
+        component: CustomerCreditInfoComponent,
     }),
     registerBulkAction(UpdateCreditExchangeStatus),
     registerFormInputComponent('seller-customer-input', SellerCustomerFormInputComponent),

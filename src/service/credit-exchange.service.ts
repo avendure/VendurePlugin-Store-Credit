@@ -14,7 +14,7 @@ import {
     SellerService,
 } from '@vendure/core';
 import { CreditExchange } from '../entity/exchange-request.entity';
-import { CreditExchangeListOptions } from 'src/types/credits-admin-types';
+import { CreditExchangeListOptions } from '../types/credits-admin-types';
 import { StoreCreditPluginOptions } from '../types/options';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
 import { In } from 'typeorm';
@@ -120,12 +120,9 @@ export class CreditExchangeService {
         const defaultChannel = await this.channelService.getDefaultChannel(ctx);
         const superAdminSeller = await this.connection.getRepository(ctx, Seller).findOne({
             where: { id: defaultChannel.sellerId },
-            relations: { customFields: { customer: { user: true } } },
         });
-        if (!superAdminSeller?.customFields.customer?.user?.id)
-            throw new Error('Superadmin seller has no customer account linked');
 
-        const order = await this.orderService.create(ctx, superAdminSeller.customFields.customer.user?.id);
+        const order = await this.orderService.create(ctx, ''); // need to work here
 
         const nppId = await this.nppService.getRootNPPId(ctx);
 

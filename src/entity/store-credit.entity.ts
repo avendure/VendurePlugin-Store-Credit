@@ -1,4 +1,4 @@
-import { VendureEntity, ID, ProductVariant, DeepPartial, Customer } from '@vendure/core';
+import { VendureEntity, ID, ProductVariant, DeepPartial, Customer, User } from '@vendure/core';
 import { Entity, Column, Generated, ManyToOne, JoinColumn, OneToOne } from 'typeorm';
 import { EntityId } from '@vendure/core/dist/entity/entity-id.decorator';
 
@@ -34,9 +34,9 @@ export class StoreCredit extends VendureEntity {
         nullable: true,
         onDelete: 'CASCADE',
     })
-    @JoinColumn({ name: 'customerId' })
-    customer: Customer | null;
+    @JoinColumn({ name: 'userId' })
+    user: User | null;
 
     @EntityId({ nullable: true })
-    customerId: ID | null;
+    userId: ID | null;
 }

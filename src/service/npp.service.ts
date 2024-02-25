@@ -23,7 +23,7 @@ import {
 
 import { Injectable, Inject, OnApplicationBootstrap } from '@nestjs/common';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
-import { StoreCreditPluginOptions } from 'src/types/options';
+import { StoreCreditPluginOptions } from '../types/options';
 
 export type NppPurchaseCallback = (ctx: RequestContext, order: Order, line: OrderLine) => Promise<any>;
 

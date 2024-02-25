@@ -8,7 +8,7 @@ import {
     QueryStoreCreditArgs,
     MutationClaimArgs,
     ClaimResult,
-} from 'src/types/credits-shop-types';
+} from '../types/credits-shop-types';
 
 type ActiveOrderArgs = { [ACTIVE_ORDER_INPUT_FIELD_NAME]?: any };
 

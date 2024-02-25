@@ -18,6 +18,8 @@ import {
     ProductVariant,
     EntityHydrator,
     UnauthorizedError,
+    UserService,
+    User,
 } from '@vendure/core';
 import { StoreCredit } from '../entity/store-credit.entity';
 import { IsNull, Not } from 'typeorm';
@@ -30,7 +32,7 @@ import {
     StoreCreditUpdateInput,
 } from '../types/credits-admin-types';
 import { NPPService } from './npp.service';
-import { ClaimResult } from 'src/types/credits-shop-types';
+import { ClaimResult } from '../types/credits-shop-types';
 
 @Injectable()
 export class StoreCreditService {
@@ -40,6 +42,7 @@ export class StoreCreditService {
         private connection: TransactionalConnection,
         private listQueryBuilder: ListQueryBuilder,
         private customerService: CustomerService,
+        private userService: UserService,
         private sellerService: SellerService,
         private orderService: OrderService,
         private productVariantService: ProductVariantService,
@@ -57,14 +60,17 @@ export class StoreCreditService {
             .findOne({ where: { variantId: line.productVariantId } });
         if (!storeCredit) throw new EntityNotFoundError('StoreCredit', 0);
 
-        const newBalance =
-            (order.customer.customFields.accountBalance || 0) + storeCredit.value * line.quantity;
+        const theCustomer = await this.customerService.findOne(ctx, order.customer.id, ['user']);
+        if (!theCustomer) throw new EntityNotFoundError('Customer', order.customer.id);
+        if (!theCustomer.user) throw new Error(`User not found for customer : ${theCustomer.id}`);
 
-        await this.customerService.update(ctx, {
-            id: order.customer.id,
+        const newBalance =
+            (theCustomer.user.customFields.accountBalance || 0) + storeCredit.value * line.quantity;
+
+        await this.connection.getRepository(ctx, User).update({ id: theCustomer.user.id }, {
             customFields: {
                 accountBalance: newBalance,
-            },
+            }
         });
 
         return newBalance;
@@ -143,9 +149,9 @@ export class StoreCreditService {
         const resp = await this.connection.getRepository(ctx, StoreCredit).delete({ id });
         return resp.affected
             ? {
-                  result: DeletionResult.DELETED,
-                  message: 'Store Credit deleted successfully',
-              }
+                result: DeletionResult.DELETED,
+                message: 'Store Credit deleted successfully',
+            }
             : { result: DeletionResult.NOT_DELETED, message: 'Something went wrong' };
     }
 
@@ -189,7 +195,11 @@ export class StoreCreditService {
 
         if (!order.customer) throw new Error('Order customer not set');
 
-        if (order.customer.customFields.accountBalance >= cred.perUserLimit)
+        const theCustomer = await this.customerService.findOne(ctx, order.customer.id, ['user']);
+        if (!theCustomer) throw new EntityNotFoundError('Customer', order.customer.id);
+        if (!theCustomer.user) throw new Error(`User not found for customer : ${theCustomer.id}`);
+
+        if (theCustomer.user.customFields.accountBalance >= cred.perUserLimit)
             throw new Error('User cannot buy this credit.');
 
         return this.orderService.addItemToOrder(ctx, order.id, cred.variantId, quantity);
@@ -199,19 +209,23 @@ export class StoreCreditService {
         if (!ctx.activeUserId) return { success: false, message: 'Not logged in' };
 
         const credit = await this.connection.getRepository(ctx, StoreCredit).findOne({ where: { key } });
-        if (!credit || credit.customerId) return { success: false, message: 'Invalid key' };
+        if (!credit || credit.userId) return { success: false, message: 'Invalid key' };
 
         const customer = await this.customerService.findOneByUserId(ctx, ctx.activeUserId);
         if (!customer) return { success: false, message: 'Invalid customer' };
 
-        const currentBalance = customer.customFields.accountBalance;
+        const user = await this.userService.getUserById(ctx, ctx.activeUserId);
+        if (!user) return { success: false, message: 'Invalid user' };
+
+        const currentBalance = user.customFields.accountBalance || 0;
         const newBalance = currentBalance + credit.value;
 
-        await this.customerService.update(ctx, {
-            id: customer.id,
-            customFields: { accountBalance: newBalance },
+        await this.connection.getRepository(ctx, User).update({ id: user.id }, {
+            customFields: {
+                accountBalance: newBalance,
+            }
         });
-        credit.customer = customer;
+        credit.user = user;
         await this.connection.getRepository(ctx, StoreCredit).save(credit, { reload: false });
 
         return {
@@ -223,15 +237,13 @@ export class StoreCreditService {
     }
 
     async transferCreditfromSellerToCustomerWithSameEmail(ctx: RequestContext, value: number, sellerId: ID) {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { customer: true } },
-        });
+        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId);
 
-        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
+        //if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
 
-        if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
+        //if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
 
-        const updateSeller = await this.sellerService.update(ctx, {
+        /*const updateSeller = await this.sellerService.update(ctx, {
             id: sellerId,
             customFields: {
                 accountBalance: seller.customFields.accountBalance - value,
@@ -248,19 +260,25 @@ export class StoreCreditService {
         return {
             customerAccountBalance: updateCustomer.customFields.accountBalance,
             sellerAccountBalance: updateSeller.customFields.accountBalance,
+        };*/
+
+        return {
+            customerAccountBalance: 0,
+            sellerAccountBalance: 0,
         };
     }
 
     async getSellerANDCustomerStoreCredits(ctx: RequestContext, sellerId: ID) {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, {
-            relations: { customFields: { customer: true } },
-        });
+        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, );
 
-        if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
-
-        return {
+        /*return {
             customerAccountBalance: seller.customFields.customer.customFields.accountBalance,
             sellerAccountBalance: seller.customFields.accountBalance,
+        };*/
+
+        return {
+            customerAccountBalance: 0,
+            sellerAccountBalance: 0,
         };
     }
 
@@ -274,7 +292,7 @@ export class StoreCreditService {
             },
         });
         if (!customer) throw new UnauthorizedError();
-        const seller = await this.connection.getRepository(ctx, Seller).findOne({
+        /*const seller = await this.connection.getRepository(ctx, Seller).findOne({
             where: {
                 customFields: {
                     customer: {
@@ -286,6 +304,10 @@ export class StoreCreditService {
         return {
             customerAccountBalance: customer?.customFields.accountBalance || 0,
             sellerAccountBalance: seller?.customFields.accountBalance || 0,
+        };*/
+        return {
+            customerAccountBalance: 0,
+            sellerAccountBalance: 0,
         };
     }
 }

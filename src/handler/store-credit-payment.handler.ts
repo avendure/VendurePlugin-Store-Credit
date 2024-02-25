@@ -11,7 +11,7 @@ import {
     EntityHydrator,
 } from '@vendure/core';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
-import { StoreCreditPluginOptions } from 'src/types/options';
+import { StoreCreditPluginOptions } from '../types/options';
 
 let customerService: CustomerService;
 let sellerService: SellerService;
@@ -58,7 +58,20 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             };
         }
 
-        const customerCreditBalance = customer.customFields.accountBalance || 0;
+        const theCustomer = await customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer || !theCustomer?.user) {
+            return {
+                amount: amount,
+                state: 'Declined',
+                metadata: {
+                    public: {
+                        errorMessage: 'Customer or its user not found',
+                    },
+                },
+            };
+        }
+
+        const customerCreditBalance = theCustomer.user.customFields.accountBalance || 0;
         const conversion_factor =
             options.creditToCurrencyFactor[order.currencyCode] || options.creditToCurrencyFactor['default'];
 

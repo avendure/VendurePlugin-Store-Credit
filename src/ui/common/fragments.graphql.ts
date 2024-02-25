@@ -54,12 +54,6 @@ export const CREDIT_EXCHANGE_FRAGMENT = gql`
         }
         seller {
             id
-            customFields {
-                customer {
-                    firstName
-                    lastName
-                }
-            }
         }
     }
 `;
