@@ -1,5 +1,5 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
-import { ActiveOrderService, Ctx, Permission, Allow, RequestContext, Transaction } from '@vendure/core';
+import { Resolver, Query, Mutation, Args, Parent, ResolveField } from '@nestjs/graphql';
+import { ActiveOrderService, Ctx, Permission, Allow, RequestContext, Transaction, CustomerService, Customer, Seller } from '@vendure/core';
 import { StoreCreditService } from '../service/store-credit.service';
 import { ACTIVE_ORDER_INPUT_FIELD_NAME } from '@vendure/core/dist/config/order/active-order-strategy';
 import {
@@ -50,10 +50,33 @@ export class ShopStoreCreditResolver {
         return this.storeCreditService.claim(ctx, args.key);
     }
 
-    @Query()
-    @Allow(Permission.Authenticated)
-    @Transaction()
-    async getSellerANDCustomerStoreCredits(@Ctx() ctx: RequestContext) {
-        return this.storeCreditService.getSellerANDCustomerStoreCreditsShop(ctx);
+}
+
+@Resolver('Seller')
+export class SellerEntityShopResolver {
+    constructor(private storeCreditService: StoreCreditService) { }
+
+    @ResolveField()
+    async storeCredit(@Ctx() ctx: RequestContext, @Parent() seller: Seller) {
+        const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+        return theUser.customFields?.accountBalance;
+    }
+}
+
+@Resolver('Customer')
+export class CustomerEntityShopResolver {
+    constructor(private customerService: CustomerService) { }
+
+    @ResolveField()
+    async storeCredit(@Ctx() ctx: RequestContext, @Parent() customer: Customer) {
+        const theCustomer = await this.customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer) {
+            throw new Error('Customer not found');
+        }
+        const theUser = theCustomer.user;
+        if (!theUser) {
+            throw new Error('Customer user not found');
+        }
+        return theUser.customFields?.accountBalance;
     }
 }

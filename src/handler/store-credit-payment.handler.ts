@@ -9,9 +9,12 @@ import {
     ChannelService,
     Logger,
     EntityHydrator,
+    TransactionalConnection,
+    User,
 } from '@vendure/core';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
 import { StoreCreditPluginOptions } from '../types/options';
+import { StoreCreditService } from '../service/store-credit.service';
 
 let customerService: CustomerService;
 let sellerService: SellerService;
@@ -20,6 +23,8 @@ let shippingMethodService: ShippingMethodService;
 let channelService: ChannelService;
 let entityHydrator: EntityHydrator;
 let options: StoreCreditPluginOptions;
+let storeCreditService: StoreCreditService;
+let connection: TransactionalConnection;
 
 // Vendure doesn't use decimals so I scale it so it's comparing values at the same magnitude
 const SCALING_FACTOR = 100;
@@ -41,6 +46,8 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
         shippingMethodService = injector.get(ShippingMethodService);
         channelService = injector.get(ChannelService);
         entityHydrator = injector.get(EntityHydrator);
+        storeCreditService = injector.get(StoreCreditService);
+        connection = injector.get(TransactionalConnection);
         options = injector.get(STORE_CREDIT_PLUGIN_OPTIONS);
     },
 
@@ -167,18 +174,18 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             // and needs to be scaled to deliver the correct number of credits based on the priced
             const adjustedTotalPrice = totalPrice / (SCALING_FACTOR * conversion_factor);
 
-            const sellerCustomFields = seller.customFields;
-            const sellerAccountBalance = sellerCustomFields?.accountBalance || 0;
+            const theSellerUser = await storeCreditService.getSellerUser(ctx, sellerId);
+
+            const sellerAccountBalance = theSellerUser.customFields?.accountBalance || 0;
             let platFormFee =
                 options.platformFee.type == 'fixed'
                     ? options.platformFee.value
                     : options.platformFee.value * (orderline.listPrice / SCALING_FACTOR);
             const newBalance = sellerAccountBalance - platFormFee + adjustedTotalPrice;
 
-            await sellerService.update(ctx, {
-                id: seller.id,
+            await connection.getRepository(ctx, User).update(theSellerUser.id, {
                 customFields: {
-                    accountBalance: Math.ceil(newBalance),
+                    accountBalance: newBalance,
                 },
             });
         }

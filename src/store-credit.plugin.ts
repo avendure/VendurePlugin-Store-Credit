@@ -1,8 +1,8 @@
 import { Customer, LanguageCode, PluginCommonModule, Product, VendurePlugin } from '@vendure/core';
 import { StoreCredit } from './entity/store-credit.entity';
 import { adminApiExtensions, shopApiExtensions } from './api.extension';
-import { ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
-import { AdminStoreCreditResolver } from './resolvers/store-credit-admin.resolver';
+import { CustomerEntityShopResolver, SellerEntityShopResolver, ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
+import { AdminStoreCreditResolver, CustomerEntityAdminResolver, SellerEntityAdminResolver } from './resolvers/store-credit-admin.resolver';
 import { StoreCreditService } from './service/store-credit.service';
 import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
 import path from 'path';
@@ -21,10 +21,6 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
         accountBalance: number;
     }
 
-    interface CustomSellerFields {
-        accountBalance: number;
-    }
-
     interface CustomGlobalSettingsFields {
         RootNonPhysicalProduct: Product | null;
     }
@@ -35,11 +31,22 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     entities: [StoreCredit, CreditExchange],
     shopApiExtensions: {
         schema: shopApiExtensions,
-        resolvers: [ShopStoreCreditResolver, NppShopResolver],
+        resolvers: [
+            ShopStoreCreditResolver, 
+            NppShopResolver,
+            SellerEntityShopResolver,
+            CustomerEntityShopResolver,
+        ],
     },
     adminApiExtensions: {
         schema: adminApiExtensions,
-        resolvers: [AdminStoreCreditResolver, NppAdminResolver, AdminCreditExchangeResolver],
+        resolvers: [
+            AdminStoreCreditResolver, 
+            NppAdminResolver, 
+            AdminCreditExchangeResolver,
+            SellerEntityAdminResolver,
+            CustomerEntityAdminResolver
+        ],
     },
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);

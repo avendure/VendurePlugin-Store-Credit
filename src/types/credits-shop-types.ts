@@ -750,6 +750,7 @@ export type Customer = Node & {
   lastName: Scalars['String'];
   orders: OrderList;
   phoneNumber?: Maybe<Scalars['String']>;
+  storeCredit: Scalars['Int'];
   title?: Maybe<Scalars['String']>;
   updatedAt: Scalars['DateTime'];
   user?: Maybe<User>;
@@ -767,6 +768,7 @@ export type CustomerFilterParameter = {
   id?: InputMaybe<IdOperators>;
   lastName?: InputMaybe<StringOperators>;
   phoneNumber?: InputMaybe<StringOperators>;
+  storeCredit?: InputMaybe<NumberOperators>;
   title?: InputMaybe<StringOperators>;
   updatedAt?: InputMaybe<DateOperators>;
 };
@@ -812,6 +814,7 @@ export type CustomerSortParameter = {
   id?: InputMaybe<SortOrder>;
   lastName?: InputMaybe<SortOrder>;
   phoneNumber?: InputMaybe<SortOrder>;
+  storeCredit?: InputMaybe<SortOrder>;
   title?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
 };
@@ -2840,7 +2843,6 @@ export type Query = {
   facet?: Maybe<Facet>;
   /** A list of Facets available to the shop */
   facets: FacetList;
-  getSellerANDCustomerStoreCredits: AccountBalance;
   locationSearch: SearchResponse;
   /** Returns information about the current authenticated User */
   me?: Maybe<CurrentUser>;
@@ -3111,6 +3113,7 @@ export type Seller = Node & {
   id: Scalars['ID'];
   name: Scalars['String'];
   stockLocations?: Maybe<Array<Maybe<StockLocation>>>;
+  storeCredit: Scalars['Int'];
   updatedAt: Scalars['DateTime'];
 };
 

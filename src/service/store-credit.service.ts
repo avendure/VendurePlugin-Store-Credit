@@ -20,6 +20,9 @@ import {
     UnauthorizedError,
     UserService,
     User,
+    Channel,
+    Administrator,
+    Role,
 } from '@vendure/core';
 import { StoreCredit } from '../entity/store-credit.entity';
 import { IsNull, Not } from 'typeorm';
@@ -236,78 +239,34 @@ export class StoreCreditService {
         };
     }
 
-    async transferCreditfromSellerToCustomerWithSameEmail(ctx: RequestContext, value: number, sellerId: ID) {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId);
 
-        //if (!seller.customFields.customer) throw new Error("Seller's customer account not set.");
-
-        //if (seller.customFields.accountBalance < value) throw new Error('Insufficient balance');
-
-        /*const updateSeller = await this.sellerService.update(ctx, {
-            id: sellerId,
-            customFields: {
-                accountBalance: seller.customFields.accountBalance - value,
-            },
-        });
-
-        const updateCustomer = await this.customerService.update(ctx, {
-            id: seller.customFields.customer.id,
-            customFields: {
-                accountBalance: seller.customFields.customer.customFields.accountBalance + value,
-            },
-        });
-
-        return {
-            customerAccountBalance: updateCustomer.customFields.accountBalance,
-            sellerAccountBalance: updateSeller.customFields.accountBalance,
-        };*/
-
-        return {
-            customerAccountBalance: 0,
-            sellerAccountBalance: 0,
-        };
-    }
-
-    async getSellerANDCustomerStoreCredits(ctx: RequestContext, sellerId: ID) {
-        const seller = await this.connection.getEntityOrThrow(ctx, Seller, sellerId, );
-
-        /*return {
-            customerAccountBalance: seller.customFields.customer.customFields.accountBalance,
-            sellerAccountBalance: seller.customFields.accountBalance,
-        };*/
-
-        return {
-            customerAccountBalance: 0,
-            sellerAccountBalance: 0,
-        };
-    }
-
-    async getSellerANDCustomerStoreCreditsShop(ctx: RequestContext) {
-        if (!ctx.activeUserId) throw new UnauthorizedError();
-        const customer = await this.connection.getRepository(ctx, Customer).findOne({
+    async getSellerUser(ctx: RequestContext, sellerId: ID) {
+        const theChannel = await this.connection.getRepository(ctx, Channel).findOne({
             where: {
-                user: {
-                    id: ctx.activeUserId,
+                sellerId: sellerId,
+            }
+        });
+        if (!theChannel) throw new EntityNotFoundError('Channel', 0);
+        const theRole = await this.connection.getRepository(ctx, Role).findOne({
+            where: {
+                channels: {
+                    id: theChannel.id,
                 },
             },
+            relations: ['channels']
         });
-        if (!customer) throw new UnauthorizedError();
-        /*const seller = await this.connection.getRepository(ctx, Seller).findOne({
+        if (!theRole) throw new EntityNotFoundError('Role', 0);
+        const theUser = await this.connection.getRepository(ctx, User).findOne({
             where: {
-                customFields: {
-                    customer: {
-                        id: customer?.id,
-                    },
+                roles: {
+                    id: theRole.id,
                 },
+                deletedAt: IsNull(),
             },
+            relations: ['roles']
         });
-        return {
-            customerAccountBalance: customer?.customFields.accountBalance || 0,
-            sellerAccountBalance: seller?.customFields.accountBalance || 0,
-        };*/
-        return {
-            customerAccountBalance: 0,
-            sellerAccountBalance: 0,
-        };
+        if (!theUser) throw new EntityNotFoundError('User', 0);
+        return theUser;
     }
+
 }

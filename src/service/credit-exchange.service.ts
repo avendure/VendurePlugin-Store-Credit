@@ -12,6 +12,7 @@ import {
     ProductVariant,
     isGraphQlErrorResult,
     SellerService,
+    User,
 } from '@vendure/core';
 import { CreditExchange } from '../entity/exchange-request.entity';
 import { CreditExchangeListOptions } from '../types/credits-admin-types';
@@ -19,6 +20,7 @@ import { StoreCreditPluginOptions } from '../types/options';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
 import { In } from 'typeorm';
 import { NPPService } from './npp.service';
+import { StoreCreditService } from './store-credit.service';
 
 @Injectable()
 export class CreditExchangeService {
@@ -32,6 +34,7 @@ export class CreditExchangeService {
         private orderService: OrderService,
         private nppService: NPPService,
         private sellerService: SellerService,
+        private storeCreditService: StoreCreditService,
     ) {}
 
     async findAll(
@@ -77,15 +80,17 @@ export class CreditExchangeService {
             throw new Error('Seller not found');
         }
 
-        if (seller?.customFields.accountBalance < amount) {
+        const theSellerUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+
+        if (theSellerUser.customFields?.accountBalance < amount) {
             throw new Error('Insufficient Balance');
         }
 
-        await this.connection.getRepository(ctx, Seller).update(
-            { id: seller.id },
+        await this.connection.getRepository(ctx, User).update(
+            { id: theSellerUser.id },
             {
                 customFields: {
-                    accountBalance: seller.customFields.accountBalance - amount,
+                    accountBalance: theSellerUser.customFields.accountBalance - amount,
                 },
             },
         );
@@ -164,16 +169,20 @@ export class CreditExchangeService {
         if (exchange.status != 'Pending') {
             throw new Error('Exchange not in pending state');
         }
+        const theSellerUser = await this.storeCreditService.getSellerUser(ctx, exchange.seller.id);
         const requestedAmount =
             this.options.exchange.fee.type == 'fixed'
                 ? this.options.exchange.fee.value + exchange.amount
                 : (100 * exchange.amount) / (100 - this.options.exchange.fee.value);
-        await this.sellerService.update(ctx, {
-            id: exchange.sellerId,
-            customFields: {
-                accountBalance: exchange.seller.customFields.accountBalance + requestedAmount,
+
+        await this.connection.getRepository(ctx, User).update(
+            { id: theSellerUser.id },
+            {
+                customFields: {
+                    accountBalance: theSellerUser.customFields.accountBalance + requestedAmount,
+                },
             },
-        });
+        );
 
         exchange.status = 'Refunded';
         return this.connection.getRepository(ctx, CreditExchange).save(exchange);

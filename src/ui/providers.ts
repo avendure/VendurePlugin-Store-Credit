@@ -4,11 +4,10 @@ import {
     registerFormInputComponent,
     registerBulkAction,
 } from '@vendure/admin-ui/core';
-import { CreditsInSellerComponent } from './components/CreditsInSeller/creditsInSeller';
 import { UpdateCreditExchangeStatus } from './components/credit-exchange-list/credit-exchange-bulk-actions';
 import { RequestExchange } from './components/request-exchange/request-exchange.component';
-import { SellerCustomerFormInputComponent } from './components/seller-customer/seller-customer.component';
 import { CustomerCreditInfoComponent } from './components/customer-credit-info/customer-credit-info-component';
+import { SellerCreditInfoComponent } from './components/seller-credit-info/seller-credit-info-component';
 
 export default [
     addNavMenuSection(
@@ -36,16 +35,15 @@ export default [
     ),
     registerCustomDetailComponent({
         locationId: 'seller-detail',
-        component: CreditsInSellerComponent,
-    }),
-    registerCustomDetailComponent({
-        locationId: 'seller-detail',
         component: RequestExchange,
     }),
     registerCustomDetailComponent({
         locationId: 'customer-detail',
         component: CustomerCreditInfoComponent,
     }),
+    registerCustomDetailComponent({
+        locationId: 'seller-detail',
+        component: SellerCreditInfoComponent,
+    }),
     registerBulkAction(UpdateCreditExchangeStatus),
-    registerFormInputComponent('seller-customer-input', SellerCustomerFormInputComponent),
 ];

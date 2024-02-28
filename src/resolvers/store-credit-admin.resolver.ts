@@ -1,20 +1,18 @@
-import { Resolver, Query, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, ResolveField, Parent } from '@nestjs/graphql';
 import { StoreCredit } from '../entity/store-credit.entity';
-import { Allow, Ctx, Permission, RelationPaths, Relations, RequestContext, Transaction } from '@vendure/core';
+import { Allow, Ctx, Customer, CustomerService, Permission, RelationPaths, Relations, RequestContext, Seller, Transaction } from '@vendure/core';
 import { StoreCreditService } from '../service/store-credit.service';
 import {
     MutationCreateStoreCreditArgs,
     MutationDeleteSingleStoreCreditArgs,
-    MutationTransferCreditfromSellerToCustomerArgs,
     MutationUpdateStoreCreditArgs,
     QueryStoreCreditArgs,
-    QueryStoreCreditsArgs,
-    QueryGetSellerAndCustomerStoreCreditsArgs,
+    QueryStoreCreditsArgs
 } from '../types/credits-admin-types';
 
 @Resolver()
 export class AdminStoreCreditResolver {
-    constructor(private storeCreditService: StoreCreditService) {}
+    constructor(private storeCreditService: StoreCreditService) { }
 
     @Query()
     async storeCredit(
@@ -61,24 +59,33 @@ export class AdminStoreCreditResolver {
         return this.storeCreditService.deleteOne(ctx, args.id);
     }
 
-    @Mutation()
-    @Transaction()
-    transferCreditfromSellerToCustomer(
-        @Ctx() ctx: RequestContext,
-        @Args() args: MutationTransferCreditfromSellerToCustomerArgs,
-    ) {
-        return this.storeCreditService.transferCreditfromSellerToCustomerWithSameEmail(
-            ctx,
-            args.value,
-            args.sellerId,
-        );
-    }
+}
 
-    @Query()
-    getSellerANDCustomerStoreCredits(
-        @Ctx() ctx: RequestContext,
-        @Args() args: QueryGetSellerAndCustomerStoreCreditsArgs,
-    ) {
-        return this.storeCreditService.getSellerANDCustomerStoreCredits(ctx, args.sellerId);
+@Resolver('Seller')
+export class SellerEntityAdminResolver {
+    constructor(private storeCreditService: StoreCreditService) { }
+
+    @ResolveField()
+    async storeCredit(@Ctx() ctx: RequestContext, @Parent() seller: Seller) {
+        const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+        return theUser.customFields?.accountBalance;
+    }
+}
+
+@Resolver('Customer')
+export class CustomerEntityAdminResolver {
+    constructor(private customerService: CustomerService) { }
+
+    @ResolveField()
+    async storeCredit(@Ctx() ctx: RequestContext, @Parent() customer: Customer) {
+        const theCustomer = await this.customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer) {
+            throw new Error('Customer not found');
+        }
+        const theUser = theCustomer.user;
+        if (!theUser) {
+            throw new Error('Customer user not found');
+        }
+        return theUser.customFields?.accountBalance;
     }
 }

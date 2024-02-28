@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Observable, switchMap } from 'rxjs';
 import { FormGroup } from '@angular/forms';
 import { CustomDetailComponent, SharedModule, DataService } from '@vendure/admin-ui/core';
-import { Customer, GetCustomerCreditsQuery, GetCustomerCreditsQueryVariables } from '../../generated-types';
-import { GET_CUSTOMER_CREDITS } from './customer-credit-info.graphql';
+import { GetSellerCreditsQuery, GetSellerCreditsQueryVariables } from '../../generated-types';
+import { GET_SELLER_CREDITS } from './seller-credit-info.graphql';
+import { Seller } from '@vendure/core';
 
 @Component({
     template: `
@@ -13,9 +14,9 @@ import { GET_CUSTOMER_CREDITS } from './customer-credit-info.graphql';
     standalone: true,
     imports: [SharedModule],
 })
-export class CustomerCreditInfoComponent implements CustomDetailComponent, OnInit {
+export class SellerCreditInfoComponent implements CustomDetailComponent, OnInit {
 
-    entity$: Observable<Customer>
+    entity$: Observable<Seller>
     detailForm: FormGroup;
 
     creditBalance$: Observable<number>;
@@ -27,9 +28,9 @@ export class CustomerCreditInfoComponent implements CustomDetailComponent, OnIni
     ngOnInit() {
         this.creditBalance$ = this.entity$.pipe(
             switchMap(entity => {
-                return this.dataService.query<GetCustomerCreditsQuery, GetCustomerCreditsQueryVariables>(GET_CUSTOMER_CREDITS, {
-                    id: entity.id,
-                }).mapSingle(data => data.customer?.storeCredit || 0);
+                return this.dataService.query<GetSellerCreditsQuery, GetSellerCreditsQueryVariables>(GET_SELLER_CREDITS, {
+                    id: entity.id.toString(),
+                }).mapSingle(data => data.seller?.storeCredit || 0);
             }),
         );
     }

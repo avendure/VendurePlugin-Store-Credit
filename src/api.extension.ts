@@ -26,6 +26,14 @@ const commonExtensions = gql`
         storeCredits(options: StoreCreditListOptions): StoreCreditList!
         storeCredit(id: ID!): StoreCredit
     }
+
+    extend type Customer {
+        storeCredit: Int!
+    }
+
+    extend type Seller {
+        storeCredit: Int!
+    }
 `;
 
 export const shopApiExtensions = gql`
@@ -41,10 +49,6 @@ export const shopApiExtensions = gql`
         message: String!
         addedCredit: Int
         currentBalance: Int
-    }
-
-    extend type Query {
-        getSellerANDCustomerStoreCredits: AccountBalance!
     }
 
     extend type Mutation {
@@ -98,7 +102,6 @@ export const adminApiExtensions = gql`
     input CreditExchangeListOptions
 
     extend type Query {
-        getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
         creditExchanges(options: CreditExchangeListOptions): CreditExchangeList!
         creditExchange(id: ID!): CreditExchange!
     }

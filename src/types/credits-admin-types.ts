@@ -1412,6 +1412,7 @@ export type Customer = Node & {
   lastName: Scalars['String'];
   orders: OrderList;
   phoneNumber?: Maybe<Scalars['String']>;
+  storeCredit: Scalars['Int'];
   title?: Maybe<Scalars['String']>;
   updatedAt: Scalars['DateTime'];
   user?: Maybe<User>;
@@ -1435,6 +1436,7 @@ export type CustomerFilterParameter = {
   lastName?: InputMaybe<StringOperators>;
   phoneNumber?: InputMaybe<StringOperators>;
   postalCode?: InputMaybe<StringOperators>;
+  storeCredit?: InputMaybe<NumberOperators>;
   title?: InputMaybe<StringOperators>;
   updatedAt?: InputMaybe<DateOperators>;
 };
@@ -1513,6 +1515,7 @@ export type CustomerSortParameter = {
   id?: InputMaybe<SortOrder>;
   lastName?: InputMaybe<SortOrder>;
   phoneNumber?: InputMaybe<SortOrder>;
+  storeCredit?: InputMaybe<SortOrder>;
   title?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
 };
@@ -5021,7 +5024,6 @@ export type Query = {
   facetValues: FacetValueList;
   facets: FacetList;
   fulfillmentHandlers: Array<ConfigurableOperationDefinition>;
-  getSellerANDCustomerStoreCredits: AccountBalance;
   globalSettings: GlobalSettings;
   job?: Maybe<Job>;
   jobBufferSize: Array<JobBufferSize>;
@@ -5185,11 +5187,6 @@ export type QueryFacetValuesArgs = {
 
 export type QueryFacetsArgs = {
   options?: InputMaybe<FacetListOptions>;
-};
-
-
-export type QueryGetSellerAndCustomerStoreCreditsArgs = {
-  sellerId: Scalars['ID'];
 };
 
 
@@ -5698,6 +5695,7 @@ export type Seller = Node & {
   customFields?: Maybe<SellerCustomFields>;
   id: Scalars['ID'];
   name: Scalars['String'];
+  storeCredit: Scalars['Int'];
   updatedAt: Scalars['DateTime'];
 };
 
@@ -5711,6 +5709,7 @@ export type SellerFilterParameter = {
   id?: InputMaybe<IdOperators>;
   name?: InputMaybe<StringOperators>;
   sellingRadius?: InputMaybe<NumberOperators>;
+  storeCredit?: InputMaybe<NumberOperators>;
   updatedAt?: InputMaybe<DateOperators>;
 };
 
@@ -5738,6 +5737,7 @@ export type SellerSortParameter = {
   id?: InputMaybe<SortOrder>;
   name?: InputMaybe<SortOrder>;
   sellingRadius?: InputMaybe<SortOrder>;
+  storeCredit?: InputMaybe<SortOrder>;
   updatedAt?: InputMaybe<SortOrder>;
 };
 
