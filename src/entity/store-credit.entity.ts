@@ -29,11 +29,6 @@ export class StoreCredit extends VendureEntity {
     @Generated('uuid')
     key: string;
 
-    @ManyToOne(() => Customer, {
-        eager: true,
-        nullable: true,
-        onDelete: 'CASCADE',
-    })
     @JoinColumn({ name: 'userId' })
     user: User | null;
 
