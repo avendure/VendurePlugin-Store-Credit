@@ -78,7 +78,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             };
         }
 
-        const customerCreditBalance = theCustomer.user.customFields.accountBalance || 0;
+        const customerCreditBalance = theCustomer.user.customFields.customerAccountBalance || 0;
         const conversion_factor =
             options.creditToCurrencyFactor[order.currencyCode] || options.creditToCurrencyFactor['default'];
 
@@ -176,7 +176,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 
             const theSellerUser = await storeCreditService.getSellerUser(ctx, sellerId);
 
-            const sellerAccountBalance = theSellerUser.customFields?.accountBalance || 0;
+            const sellerAccountBalance = theSellerUser.customFields?.sellerAccountBalance || 0;
             let platFormFee =
                 options.platformFee.type == 'fixed'
                     ? options.platformFee.value
@@ -185,7 +185,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 
             await connection.getRepository(ctx, User).update(theSellerUser.id, {
                 customFields: {
-                    accountBalance: newBalance,
+                    sellerAccountBalance: newBalance,
                 },
             });
         }

@@ -18,7 +18,8 @@ import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolve
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomUserFields {
-        accountBalance: number;
+        customerAccountBalance: number;
+        sellerAccountBalance: number;
     }
 
     interface CustomGlobalSettingsFields {
@@ -51,14 +52,25 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
         config.customFields.User.push({
-            name: 'accountBalance',
+            name: 'customerAccountBalance',
             type: 'int',
             defaultValue: 0,
             readonly: true,
             label: [
                 {
                     languageCode: LanguageCode.en,
-                    value: 'Account Balance',
+                    value: 'Customer Account Balance',
+                },
+            ],
+        },{
+            name: 'sellerAccountBalance',
+            type: 'int',
+            defaultValue: 0,
+            readonly: true,
+            label: [
+                {
+                    languageCode: LanguageCode.en,
+                    value: 'Seller Account Balance',
                 },
             ],
         });

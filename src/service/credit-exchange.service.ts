@@ -82,7 +82,7 @@ export class CreditExchangeService {
 
         const theSellerUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
 
-        if (theSellerUser.customFields?.accountBalance < amount) {
+        if (theSellerUser.customFields?.sellerAccountBalance < amount) {
             throw new Error('Insufficient Balance');
         }
 
@@ -90,7 +90,7 @@ export class CreditExchangeService {
             { id: theSellerUser.id },
             {
                 customFields: {
-                    accountBalance: theSellerUser.customFields.accountBalance - amount,
+                    sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance - amount,
                 },
             },
         );
@@ -179,7 +179,7 @@ export class CreditExchangeService {
             { id: theSellerUser.id },
             {
                 customFields: {
-                    accountBalance: theSellerUser.customFields.accountBalance + requestedAmount,
+                    sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance + requestedAmount,
                 },
             },
         );

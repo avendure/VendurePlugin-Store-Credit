@@ -68,7 +68,7 @@ export class SellerEntityAdminResolver {
     @ResolveField()
     async storeCredit(@Ctx() ctx: RequestContext, @Parent() seller: Seller) {
         const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
-        return theUser.customFields?.accountBalance;
+        return theUser.customFields?.sellerAccountBalance;
     }
 }
 
@@ -86,6 +86,6 @@ export class CustomerEntityAdminResolver {
         if (!theUser) {
             throw new Error('Customer user not found');
         }
-        return theUser.customFields?.accountBalance;
+        return theUser.customFields?.customerAccountBalance;
     }
 }
