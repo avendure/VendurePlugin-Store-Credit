@@ -18,8 +18,7 @@ import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolve
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomUserFields {
-        customerAccountBalance: number;
-        sellerAccountBalance: number;
+        accountBalance: number;
     }
 
     interface CustomGlobalSettingsFields {
@@ -33,7 +32,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     shopApiExtensions: {
         schema: shopApiExtensions,
         resolvers: [
-            ShopStoreCreditResolver, 
+            ShopStoreCreditResolver,
             NppShopResolver,
             SellerEntityShopResolver,
             CustomerEntityShopResolver,
@@ -42,8 +41,8 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     adminApiExtensions: {
         schema: adminApiExtensions,
         resolvers: [
-            AdminStoreCreditResolver, 
-            NppAdminResolver, 
+            AdminStoreCreditResolver,
+            NppAdminResolver,
             AdminCreditExchangeResolver,
             SellerEntityAdminResolver,
             CustomerEntityAdminResolver
@@ -52,7 +51,7 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
         config.customFields.User.push({
-            name: 'customerAccountBalance',
+            name: 'accountBalance',
             type: 'int',
             defaultValue: 0,
             readonly: true,
@@ -60,17 +59,6 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
                 {
                     languageCode: LanguageCode.en,
                     value: 'Customer Account Balance',
-                },
-            ],
-        },{
-            name: 'sellerAccountBalance',
-            type: 'int',
-            defaultValue: 0,
-            readonly: true,
-            label: [
-                {
-                    languageCode: LanguageCode.en,
-                    value: 'Seller Account Balance',
                 },
             ],
         });

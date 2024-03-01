@@ -68,11 +68,11 @@ export class StoreCreditService {
         if (!theCustomer.user) throw new Error(`User not found for customer : ${theCustomer.id}`);
 
         const newBalance =
-            (theCustomer.user.customFields.customerAccountBalance || 0) + storeCredit.value * line.quantity;
+            (theCustomer.user.customFields.accountBalance || 0) + storeCredit.value * line.quantity;
 
         await this.connection.getRepository(ctx, User).update({ id: theCustomer.user.id }, {
             customFields: {
-                customerAccountBalance: newBalance,
+                accountBalance: newBalance,
             }
         });
 
@@ -202,7 +202,7 @@ export class StoreCreditService {
         if (!theCustomer) throw new EntityNotFoundError('Customer', order.customer.id);
         if (!theCustomer.user) throw new Error(`User not found for customer : ${theCustomer.id}`);
 
-        if (theCustomer.user.customFields.customerAccountBalance >= cred.perUserLimit)
+        if (theCustomer.user.customFields.accountBalance >= cred.perUserLimit)
             throw new Error('User cannot buy this credit.');
 
         return this.orderService.addItemToOrder(ctx, order.id, cred.variantId, quantity);
@@ -220,12 +220,12 @@ export class StoreCreditService {
         const user = await this.userService.getUserById(ctx, ctx.activeUserId);
         if (!user) return { success: false, message: 'Invalid user' };
 
-        const currentBalance = user.customFields.customerAccountBalance || 0;
+        const currentBalance = user.customFields.accountBalance || 0;
         const newBalance = currentBalance + credit.value;
 
         await this.connection.getRepository(ctx, User).update({ id: user.id }, {
             customFields: {
-                customerAccountBalance: newBalance,
+                accountBalance: newBalance,
             }
         });
         credit.user = user;

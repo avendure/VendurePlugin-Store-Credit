@@ -35,7 +35,7 @@ export class CreditExchangeService {
         private nppService: NPPService,
         private sellerService: SellerService,
         private storeCreditService: StoreCreditService,
-    ) {}
+    ) { }
 
     async findAll(
         ctx: RequestContext,
@@ -82,7 +82,7 @@ export class CreditExchangeService {
 
         const theSellerUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
 
-        if (theSellerUser.customFields?.sellerAccountBalance < amount) {
+        if (theSellerUser.customFields?.accountBalance < amount) {
             throw new Error('Insufficient Balance');
         }
 
@@ -90,7 +90,7 @@ export class CreditExchangeService {
             { id: theSellerUser.id },
             {
                 customFields: {
-                    sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance - amount,
+                    accountBalance: theSellerUser.customFields.accountBalance - amount,
                 },
             },
         );
@@ -179,7 +179,7 @@ export class CreditExchangeService {
             { id: theSellerUser.id },
             {
                 customFields: {
-                    sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance + requestedAmount,
+                    accountBalance: theSellerUser.customFields.accountBalance + requestedAmount,
                 },
             },
         );
