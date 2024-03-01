@@ -26,6 +26,9 @@ const commonExtensions = gql`
         storeCredits(options: StoreCreditListOptions): StoreCreditList!
         storeCredit(id: ID!): StoreCredit
     }
+    extend type SearchResult {
+        seller: Seller
+    }
 `;
 
 export const shopApiExtensions = gql`

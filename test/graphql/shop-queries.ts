@@ -29,6 +29,16 @@ const ORDER_FRAGMENT = gql`
         total
         totalWithTax
         shippingWithTax
+        shippingLines {
+            shippingMethod {
+                id
+                name
+            }
+            price
+            priceWithTax
+            discountedPrice
+            discountedPriceWithTax
+        }
         customer {
             emailAddress
         }
@@ -128,4 +138,33 @@ export const ADD_PAYMENT_TO_ORDER = gql`
         }
     }
     ${ORDER_FRAGMENT}
+`;
+
+export const SEARCH_PRODUCTS = gql`
+    query search($input: SearchInput!) {
+        search(input: $input) {
+            totalItems
+            items {
+                productId
+                productName
+                productVariantId
+                slug
+                seller {
+                    id
+                    name
+                }
+            }
+            facetValues {
+                count
+                facetValue {
+                    id
+                    name
+                    facet {
+                        id
+                        name
+                    }
+                }
+            }
+        }
+    }
 `;
