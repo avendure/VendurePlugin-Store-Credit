@@ -188,7 +188,6 @@ describe('store-credits plugin', () => {
         await vi.waitFor(
             async () => {
                 const searchResult = await shopClient.query(SearchDocument, { input: {} });
-                console.log('searchResult: ', JSON.stringify(searchResult, null, 2));
                 const hasStoreCredits = searchResult.search.items.some(item => item.slug === 'store-credits');
                 expect(hasStoreCredits).toEqual(true);
             },
