@@ -23,6 +23,7 @@ import {
     Channel,
     Administrator,
     Role,
+    ChannelService,
 } from '@vendure/core';
 import { StoreCredit } from '../entity/store-credit.entity';
 import { IsNull, Not } from 'typeorm';
@@ -51,6 +52,7 @@ export class StoreCreditService {
         private productVariantService: ProductVariantService,
         private entityHydrator: EntityHydrator,
         private nppService: NPPService,
+        private channelService: ChannelService,
     ) {
         this.nppService.addOrderCallback(this.nppCode, this.addCredits.bind(this));
     }
@@ -237,6 +239,27 @@ export class StoreCreditService {
             addedCredit: credit.value,
             currentBalance: newBalance,
         };
+    }
+
+    async testIfSameSellerAndCustomer(ctx: RequestContext, productVariantId:ID) {
+        const theVariant = await this.productVariantService.findOne(ctx, productVariantId, ['channels', 'channels.seller']);
+        if (!theVariant) throw new EntityNotFoundError('ProductVariant', productVariantId);
+        const defaultChannel = await this.channelService.getDefaultChannel();
+        const theVariantChannel = theVariant.channels.find(c => c.id != defaultChannel.id);
+        if(!theVariantChannel){
+            // allow order if no seller channel is found since its default channel
+            return;
+        }
+        if(!theVariantChannel.sellerId){
+            throw new Error('No seller found for the product');
+        }
+        const sellerUser = await this.getSellerUser(ctx, theVariantChannel.sellerId);
+        if (!sellerUser){
+            throw new Error('No user found for the seller');
+        }
+        if(sellerUser.id == ctx.activeUserId){
+           throw new Error('Seller and customer cannot be the same');
+        }
     }
 
 

@@ -1,5 +1,5 @@
 import { Resolver, Query, Mutation, Args, Parent, ResolveField } from '@nestjs/graphql';
-import { ActiveOrderService, Ctx, Permission, Allow, RequestContext, Transaction, CustomerService, Customer, Seller } from '@vendure/core';
+import { ActiveOrderService, Ctx, Permission, Allow, RequestContext, Transaction, CustomerService, Customer, Seller, ErrorResultUnion, Order, OrderService } from '@vendure/core';
 import { StoreCreditService } from '../service/store-credit.service';
 import { ACTIVE_ORDER_INPUT_FIELD_NAME } from '@vendure/core/dist/config/order/active-order-strategy';
 import {
@@ -8,6 +8,8 @@ import {
     QueryStoreCreditArgs,
     MutationClaimArgs,
     ClaimResult,
+    MutationAddItemToOrderArgs,
+    UpdateOrderItemsResult,
 } from '../types/credits-shop-types';
 
 type ActiveOrderArgs = { [ACTIVE_ORDER_INPUT_FIELD_NAME]?: any };
@@ -17,7 +19,8 @@ export class ShopStoreCreditResolver {
     constructor(
         private storeCreditService: StoreCreditService,
         private activeOrderService: ActiveOrderService,
-    ) {}
+        private orderService: OrderService,
+    ) { }
 
     @Query()
     async storeCredit(@Ctx() ctx: RequestContext, @Args() args: QueryStoreCreditArgs) {
@@ -48,6 +51,28 @@ export class ShopStoreCreditResolver {
     @Transaction()
     async claim(@Ctx() ctx: RequestContext, @Args() args: MutationClaimArgs): Promise<ClaimResult> {
         return this.storeCreditService.claim(ctx, args.key);
+    }
+
+    @Transaction()
+    @Mutation()
+    @Allow(Permission.UpdateOrder, Permission.Owner)
+    async addItemToOrder(
+        @Ctx() ctx: RequestContext,
+        @Args() args: MutationAddItemToOrderArgs & ActiveOrderArgs,
+    ) {
+        await this.storeCreditService.testIfSameSellerAndCustomer(ctx, args.productVariantId);
+        const order = await this.activeOrderService.getActiveOrder(
+            ctx,
+            args[ACTIVE_ORDER_INPUT_FIELD_NAME],
+            true,
+        );
+        return this.orderService.addItemToOrder(
+            ctx,
+            order.id,
+            args.productVariantId,
+            args.quantity,
+            (args as any).customFields,
+        );
     }
 
 }
