@@ -31,6 +31,14 @@ const commonExtensions = (0, graphql_tag_1.default) `
         storeCredits(options: StoreCreditListOptions): StoreCreditList!
         storeCredit(id: ID!): StoreCredit
     }
+
+    extend type Customer {
+        storeCredit: Int!
+    }
+
+    extend type Seller {
+        storeCredit: Int!
+    }
 `;
 exports.shopApiExtensions = (0, graphql_tag_1.default) `
     ${commonExtensions}
@@ -45,10 +53,6 @@ exports.shopApiExtensions = (0, graphql_tag_1.default) `
         message: String!
         addedCredit: Int
         currentBalance: Int
-    }
-
-    extend type Query {
-        getSellerANDCustomerStoreCredits: AccountBalance!
     }
 
     extend type Mutation {
@@ -101,7 +105,6 @@ exports.adminApiExtensions = (0, graphql_tag_1.default) `
     input CreditExchangeListOptions
 
     extend type Query {
-        getSellerANDCustomerStoreCredits(sellerId: ID!): AccountBalance!
         creditExchanges(options: CreditExchangeListOptions): CreditExchangeList!
         creditExchange(id: ID!): CreditExchange!
     }

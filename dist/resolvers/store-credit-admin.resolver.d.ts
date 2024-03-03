@@ -1,7 +1,7 @@
 import { StoreCredit } from '../entity/store-credit.entity';
-import { RelationPaths, RequestContext } from '@vendure/core';
+import { Customer, CustomerService, RelationPaths, RequestContext, Seller } from '@vendure/core';
 import { StoreCreditService } from '../service/store-credit.service';
-import { MutationCreateStoreCreditArgs, MutationDeleteSingleStoreCreditArgs, MutationTransferCreditfromSellerToCustomerArgs, MutationUpdateStoreCreditArgs, QueryStoreCreditArgs, QueryStoreCreditsArgs, QueryGetSellerAndCustomerStoreCreditsArgs } from '../types/credits-admin-types';
+import { MutationCreateStoreCreditArgs, MutationDeleteSingleStoreCreditArgs, MutationUpdateStoreCreditArgs, QueryStoreCreditArgs, QueryStoreCreditsArgs } from '../types/credits-admin-types';
 export declare class AdminStoreCreditResolver {
     private storeCreditService;
     constructor(storeCreditService: StoreCreditService);
@@ -16,12 +16,14 @@ export declare class AdminStoreCreditResolver {
         result: import("../types/credits-admin-types").DeletionResult;
         message: string;
     }>;
-    transferCreditfromSellerToCustomer(ctx: RequestContext, args: MutationTransferCreditfromSellerToCustomerArgs): Promise<{
-        customerAccountBalance: number;
-        sellerAccountBalance: number;
-    }>;
-    getSellerANDCustomerStoreCredits(ctx: RequestContext, args: QueryGetSellerAndCustomerStoreCreditsArgs): Promise<{
-        customerAccountBalance: number;
-        sellerAccountBalance: number;
-    }>;
+}
+export declare class SellerEntityAdminResolver {
+    private storeCreditService;
+    constructor(storeCreditService: StoreCreditService);
+    storeCredit(ctx: RequestContext, seller: Seller): Promise<number>;
+}
+export declare class CustomerEntityAdminResolver {
+    private customerService;
+    constructor(customerService: CustomerService);
+    storeCredit(ctx: RequestContext, customer: Customer): Promise<number>;
 }

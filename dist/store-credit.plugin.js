@@ -57,45 +57,47 @@ exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate
         entities: [store_credit_entity_1.StoreCredit, exchange_request_entity_1.CreditExchange],
         shopApiExtensions: {
             schema: api_extension_1.shopApiExtensions,
-            resolvers: [store_credit_shop_resolver_1.ShopStoreCreditResolver, npp_resolver_1.NppShopResolver],
+            resolvers: [
+                store_credit_shop_resolver_1.ShopStoreCreditResolver,
+                npp_resolver_1.NppShopResolver,
+                store_credit_shop_resolver_1.SellerEntityShopResolver,
+                store_credit_shop_resolver_1.CustomerEntityShopResolver,
+            ],
         },
         adminApiExtensions: {
             schema: api_extension_1.adminApiExtensions,
-            resolvers: [store_credit_admin_resolver_1.AdminStoreCreditResolver, npp_resolver_1.NppAdminResolver, credit_exchange_resolver_1.AdminCreditExchangeResolver],
+            resolvers: [
+                store_credit_admin_resolver_1.AdminStoreCreditResolver,
+                npp_resolver_1.NppAdminResolver,
+                credit_exchange_resolver_1.AdminCreditExchangeResolver,
+                store_credit_admin_resolver_1.SellerEntityAdminResolver,
+                store_credit_admin_resolver_1.CustomerEntityAdminResolver
+            ],
         },
         configuration: config => {
             config.paymentOptions.paymentMethodHandlers.push(store_credit_payment_handler_1.StoreCreditPaymentHandler);
-            config.customFields.Seller.push({
-                name: 'accountBalance',
+            config.customFields.User.push({
+                name: 'customerAccountBalance',
                 type: 'int',
                 defaultValue: 0,
                 readonly: true,
                 label: [
                     {
                         languageCode: core_1.LanguageCode.en,
-                        value: 'Account Balance',
+                        value: 'Customer Account Balance',
                     },
                 ],
-            });
-            config.customFields.Customer.push({
-                name: 'accountBalance',
+            }, {
+                name: 'sellerAccountBalance',
                 type: 'int',
                 defaultValue: 0,
                 readonly: true,
                 label: [
                     {
                         languageCode: core_1.LanguageCode.en,
-                        value: 'Account Balance',
+                        value: 'Seller Account Balance',
                     },
                 ],
-            });
-            config.customFields.Seller.push({
-                name: 'customer',
-                type: 'relation',
-                label: [{ languageCode: core_1.LanguageCode.en, value: 'Customer' }],
-                ui: { component: 'seller-customer-input' },
-                entity: core_1.Customer,
-                nullable: true,
             });
             config.customFields.GlobalSettings.push({
                 name: 'RootNonPhysicalProduct',

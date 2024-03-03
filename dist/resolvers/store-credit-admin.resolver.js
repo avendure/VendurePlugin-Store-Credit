@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AdminStoreCreditResolver = void 0;
+exports.CustomerEntityAdminResolver = exports.SellerEntityAdminResolver = exports.AdminStoreCreditResolver = void 0;
 const graphql_1 = require("@nestjs/graphql");
 const store_credit_entity_1 = require("../entity/store-credit.entity");
 const core_1 = require("@vendure/core");
@@ -35,12 +35,6 @@ let AdminStoreCreditResolver = exports.AdminStoreCreditResolver = class AdminSto
     }
     async deleteSingleStoreCredit(ctx, args) {
         return this.storeCreditService.deleteOne(ctx, args.id);
-    }
-    transferCreditfromSellerToCustomer(ctx, args) {
-        return this.storeCreditService.transferCreditfromSellerToCustomerWithSameEmail(ctx, args.value, args.sellerId);
-    }
-    getSellerANDCustomerStoreCredits(ctx, args) {
-        return this.storeCreditService.getSellerANDCustomerStoreCredits(ctx, args.sellerId);
     }
 };
 __decorate([
@@ -90,24 +84,58 @@ __decorate([
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", Promise)
 ], AdminStoreCreditResolver.prototype, "deleteSingleStoreCredit", null);
-__decorate([
-    (0, graphql_1.Mutation)(),
-    (0, core_1.Transaction)(),
-    __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
-    __metadata("design:returntype", void 0)
-], AdminStoreCreditResolver.prototype, "transferCreditfromSellerToCustomer", null);
-__decorate([
-    (0, graphql_1.Query)(),
-    __param(0, (0, core_1.Ctx)()),
-    __param(1, (0, graphql_1.Args)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
-    __metadata("design:returntype", void 0)
-], AdminStoreCreditResolver.prototype, "getSellerANDCustomerStoreCredits", null);
 exports.AdminStoreCreditResolver = AdminStoreCreditResolver = __decorate([
     (0, graphql_1.Resolver)(),
     __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService])
 ], AdminStoreCreditResolver);
+let SellerEntityAdminResolver = exports.SellerEntityAdminResolver = class SellerEntityAdminResolver {
+    constructor(storeCreditService) {
+        this.storeCreditService = storeCreditService;
+    }
+    async storeCredit(ctx, seller) {
+        var _a;
+        const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance;
+    }
+};
+__decorate([
+    (0, graphql_1.ResolveField)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Parent)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, core_1.Seller]),
+    __metadata("design:returntype", Promise)
+], SellerEntityAdminResolver.prototype, "storeCredit", null);
+exports.SellerEntityAdminResolver = SellerEntityAdminResolver = __decorate([
+    (0, graphql_1.Resolver)('Seller'),
+    __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService])
+], SellerEntityAdminResolver);
+let CustomerEntityAdminResolver = exports.CustomerEntityAdminResolver = class CustomerEntityAdminResolver {
+    constructor(customerService) {
+        this.customerService = customerService;
+    }
+    async storeCredit(ctx, customer) {
+        var _a;
+        const theCustomer = await this.customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer) {
+            throw new Error('Customer not found');
+        }
+        const theUser = theCustomer.user;
+        if (!theUser) {
+            throw new Error('Customer user not found');
+        }
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.customerAccountBalance;
+    }
+};
+__decorate([
+    (0, graphql_1.ResolveField)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Parent)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, core_1.Customer]),
+    __metadata("design:returntype", Promise)
+], CustomerEntityAdminResolver.prototype, "storeCredit", null);
+exports.CustomerEntityAdminResolver = CustomerEntityAdminResolver = __decorate([
+    (0, graphql_1.Resolver)('Customer'),
+    __metadata("design:paramtypes", [core_1.CustomerService])
+], CustomerEntityAdminResolver);

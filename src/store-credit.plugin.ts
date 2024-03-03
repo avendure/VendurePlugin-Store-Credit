@@ -21,6 +21,10 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
         accountBalance: number;
     }
 
+    // interface CustomSellerFields {
+    //     accountBalance: number;
+    // }
+
     interface CustomGlobalSettingsFields {
         RootNonPhysicalProduct: Product | null;
     }

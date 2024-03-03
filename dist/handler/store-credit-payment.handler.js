@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.StoreCreditPaymentHandler = void 0;
 const core_1 = require("@vendure/core");
 const constants_1 = require("../constants");
+const store_credit_service_1 = require("../service/store-credit.service");
 let customerService;
 let sellerService;
 let productService;
@@ -10,6 +11,8 @@ let shippingMethodService;
 let channelService;
 let entityHydrator;
 let options;
+let storeCreditService;
+let connection;
 // Vendure doesn't use decimals so I scale it so it's comparing values at the same magnitude
 const SCALING_FACTOR = 100;
 exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
@@ -28,9 +31,12 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         shippingMethodService = injector.get(core_1.ShippingMethodService);
         channelService = injector.get(core_1.ChannelService);
         entityHydrator = injector.get(core_1.EntityHydrator);
+        storeCreditService = injector.get(store_credit_service_1.StoreCreditService);
+        connection = injector.get(core_1.TransactionalConnection);
         options = injector.get(constants_1.STORE_CREDIT_PLUGIN_OPTIONS);
     },
     async createPayment(ctx, order, amount, args, metadata) {
+        var _a;
         const customer = order.customer;
         if (!customer) {
             return {
@@ -43,7 +49,19 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
                 },
             };
         }
-        const customerCreditBalance = customer.customFields.accountBalance || 0;
+        const theCustomer = await customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer || !(theCustomer === null || theCustomer === void 0 ? void 0 : theCustomer.user)) {
+            return {
+                amount: amount,
+                state: 'Declined',
+                metadata: {
+                    public: {
+                        errorMessage: 'Customer or its user not found',
+                    },
+                },
+            };
+        }
+        const customerCreditBalance = theCustomer.user.customFields.customerAccountBalance || 0;
         const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] || options.creditToCurrencyFactor['default'];
         // Scale the currencyBalance Up to match magnitude of `amount`
         // then we multiply by the conversion factor to convert from credit to dollar value
@@ -118,16 +136,15 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
             // The total price doesn't include decimals so is divided by the scaling_factor
             // and needs to be scaled to deliver the correct number of credits based on the priced
             const adjustedTotalPrice = totalPrice / (SCALING_FACTOR * conversion_factor);
-            const sellerCustomFields = seller.customFields;
-            const sellerAccountBalance = (sellerCustomFields === null || sellerCustomFields === void 0 ? void 0 : sellerCustomFields.accountBalance) || 0;
+            const theSellerUser = await storeCreditService.getSellerUser(ctx, sellerId);
+            const sellerAccountBalance = ((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance) || 0;
             let platFormFee = options.platformFee.type == 'fixed'
                 ? options.platformFee.value
                 : options.platformFee.value * (orderline.listPrice / SCALING_FACTOR);
             const newBalance = sellerAccountBalance - platFormFee + adjustedTotalPrice;
-            await sellerService.update(ctx, {
-                id: seller.id,
+            await connection.getRepository(ctx, core_1.User).update(theSellerUser.id, {
                 customFields: {
-                    accountBalance: Math.ceil(newBalance),
+                    sellerAccountBalance: newBalance,
                 },
             });
         }

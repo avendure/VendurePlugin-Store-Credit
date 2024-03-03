@@ -16,7 +16,6 @@ import {
     CurrencyCode,
     AssignProductVariantsToChannelDocument,
     GetSellerDocument,
-    UpdateSellerDocument,
     RequestCreditExchangeDocument,
     RefundCreditExchangeDocument,
     GetChannelsDocument,
@@ -35,7 +34,6 @@ import {
     SetShippingMethodDocument,
     TransitionToStateDocument,
     AddPaymentToOrderDocument,
-    GetBalanceDocument,
 } from './graphql/generated-shop-types';
 
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
@@ -93,30 +91,13 @@ describe('store-credits plugin', () => {
         expect(customers).toHaveLength(3);
     });
 
-    it("Should set superadmin's customer", async () => {
-        const updateResult = await adminClient.query(UpdateSellerDocument, {
-            input: {
-                id: '1',
-                customFields: {
-                    customerId: customers[0].id,
-                },
-            },
-        });
-        expect(updateResult.updateSeller.customFields?.customer?.id).toEqual(customers[0].id);
-    });
-
     it('Should create new seller', async () => {
         const createSellerResult = await adminClient.query(CreateSellerDocument, {
             input: {
                 name: 'Seller 2',
-                customFields: { customerId: customers[1].id },
             },
         });
         expect(createSellerResult.createSeller.id).toBeDefined();
-        expect(createSellerResult.createSeller.customFields?.customer).toEqual({
-            id: customers[1].id,
-            emailAddress: customers[1].emailAddress,
-        });
         sellerId = createSellerResult.createSeller.id;
     });
 
@@ -194,7 +175,7 @@ describe('store-credits plugin', () => {
                 value: 1000,
                 sellerId,
             });
-        }).rejects.toThrowError('Insufficient balance');
+        }).rejects.toThrowError('Insufficient Balance');
     });
 
     describe('Purchase with store-credit', async () => {

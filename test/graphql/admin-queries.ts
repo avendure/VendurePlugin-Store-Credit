@@ -23,12 +23,7 @@ export const GET_CUSTOMER_LIST = gql`
 export const SET_SELLER_USER = gql`
     mutation SetSellerUser($input: UpdateSellerInput!) {
         updateSeller(input: $input) {
-            customFields {
-                customer {
-                    id
-                    emailAddress
-                }
-            }
+            id
         }
     }
 `;
@@ -48,7 +43,7 @@ export const TRANSFER_FROM_SELLER_TO_CUSTOMER = gql`
     mutation TransferFromSellerToCustomer($value: Int!, $sellerId: ID!) {
         transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
             customerAccountBalance
-            sellerAccountBalance
+            # sellerAccountBalance
         }
     }
 `;
@@ -57,12 +52,6 @@ export const CREATE_SELLER = gql`
     mutation CreateSeller($input: CreateSellerInput!) {
         createSeller(input: $input) {
             id
-            customFields {
-                customer {
-                    id
-                    emailAddress
-                }
-            }
         }
     }
 `;
@@ -107,25 +96,17 @@ export const GET_SELLER = gql`
     query GetSeller($id: ID!) {
         seller(id: $id) {
             id
-            customFields {
-                accountBalance
-            }
         }
     }
 `;
 
-export const UPDATE_SELLER = gql`
-    mutation UpdateSeller($input: UpdateSellerInput!) {
-        updateSeller(input: $input) {
-            id
-            customFields {
-                customer {
-                    id
-                }
-            }
-        }
-    }
-`;
+// export const UPDATE_SELLER = gql`
+//     mutation UpdateSeller($input: UpdateSellerInput!) {
+//         updateSeller(input: $input) {
+//             id
+//         }
+//     }
+// `;
 
 export const REQUEST_CREDIT_EXCHANGE = gql`
     mutation RequestCreditExchange($amount: Int!) {

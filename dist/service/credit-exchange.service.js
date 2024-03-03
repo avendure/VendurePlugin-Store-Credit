@@ -19,8 +19,9 @@ const exchange_request_entity_1 = require("../entity/exchange-request.entity");
 const constants_1 = require("../constants");
 const typeorm_1 = require("typeorm");
 const npp_service_1 = require("./npp.service");
+const store_credit_service_1 = require("./store-credit.service");
 let CreditExchangeService = exports.CreditExchangeService = class CreditExchangeService {
-    constructor(listQueryBuilder, connection, entityHydrator, options, channelService, orderService, nppService, sellerService) {
+    constructor(listQueryBuilder, connection, entityHydrator, options, channelService, orderService, nppService, sellerService, storeCreditService) {
         this.listQueryBuilder = listQueryBuilder;
         this.connection = connection;
         this.entityHydrator = entityHydrator;
@@ -29,6 +30,7 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         this.orderService = orderService;
         this.nppService = nppService;
         this.sellerService = sellerService;
+        this.storeCreditService = storeCreditService;
     }
     async findAll(ctx, options, relations) {
         return this.listQueryBuilder
@@ -53,6 +55,7 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         });
     }
     async requestCreditExchange(ctx, amount) {
+        var _a;
         if (amount > this.options.exchange.maxAmount) {
             throw new Error(`Request amount exceed the max amount which is ${this.options.exchange.maxAmount}`);
         }
@@ -63,12 +66,13 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         if (!seller) {
             throw new Error('Seller not found');
         }
-        if ((seller === null || seller === void 0 ? void 0 : seller.customFields.accountBalance) < amount) {
+        const theSellerUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+        if (((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance) < amount) {
             throw new Error('Insufficient Balance');
         }
-        await this.connection.getRepository(ctx, core_1.Seller).update({ id: seller.id }, {
+        await this.connection.getRepository(ctx, core_1.User).update({ id: theSellerUser.id }, {
             customFields: {
-                accountBalance: seller.customFields.accountBalance - amount,
+                sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance - amount,
             },
         });
         const exchangeFee = this.options.exchange.fee.type == 'fixed'
@@ -86,7 +90,6 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         return this.connection.getRepository(ctx, exchange_request_entity_1.CreditExchange).update({ id: (0, typeorm_1.In)(ids) }, { status });
     }
     async initiateCreditExchange(ctx, id) {
-        var _a, _b, _c;
         const exchange = await this.connection.getEntityOrThrow(ctx, exchange_request_entity_1.CreditExchange, id);
         if (exchange.orderId) {
             throw new Error('Order already created for this exchange');
@@ -97,11 +100,8 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         const defaultChannel = await this.channelService.getDefaultChannel(ctx);
         const superAdminSeller = await this.connection.getRepository(ctx, core_1.Seller).findOne({
             where: { id: defaultChannel.sellerId },
-            relations: { customFields: { customer: { user: true } } },
         });
-        if (!((_b = (_a = superAdminSeller === null || superAdminSeller === void 0 ? void 0 : superAdminSeller.customFields.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.id))
-            throw new Error('Superadmin seller has no customer account linked');
-        const order = await this.orderService.create(ctx, (_c = superAdminSeller.customFields.customer.user) === null || _c === void 0 ? void 0 : _c.id);
+        const order = await this.orderService.create(ctx, ''); // need to work here
         const nppId = await this.nppService.getRootNPPId(ctx);
         const payoutCode = this.options.exchange.payoutOption.code;
         const payoutVariant = await this.connection
@@ -128,13 +128,13 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
         if (exchange.status != 'Pending') {
             throw new Error('Exchange not in pending state');
         }
+        const theSellerUser = await this.storeCreditService.getSellerUser(ctx, exchange.seller.id);
         const requestedAmount = this.options.exchange.fee.type == 'fixed'
             ? this.options.exchange.fee.value + exchange.amount
             : (100 * exchange.amount) / (100 - this.options.exchange.fee.value);
-        await this.sellerService.update(ctx, {
-            id: exchange.sellerId,
+        await this.connection.getRepository(ctx, core_1.User).update({ id: theSellerUser.id }, {
             customFields: {
-                accountBalance: exchange.seller.customFields.accountBalance + requestedAmount,
+                sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance + requestedAmount,
             },
         });
         exchange.status = 'Refunded';
@@ -149,5 +149,6 @@ exports.CreditExchangeService = CreditExchangeService = __decorate([
         core_1.EntityHydrator, Object, core_1.ChannelService,
         core_1.OrderService,
         npp_service_1.NPPService,
-        core_1.SellerService])
+        core_1.SellerService,
+        store_credit_service_1.StoreCreditService])
 ], CreditExchangeService);

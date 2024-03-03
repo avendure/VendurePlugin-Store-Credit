@@ -12,7 +12,7 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
     return function (target, key) { decorator(target, key, paramIndex); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ShopStoreCreditResolver = void 0;
+exports.CustomerEntityShopResolver = exports.SellerEntityShopResolver = exports.ShopStoreCreditResolver = void 0;
 const graphql_1 = require("@nestjs/graphql");
 const core_1 = require("@vendure/core");
 const store_credit_service_1 = require("../service/store-credit.service");
@@ -34,9 +34,6 @@ let ShopStoreCreditResolver = exports.ShopStoreCreditResolver = class ShopStoreC
     }
     async claim(ctx, args) {
         return this.storeCreditService.claim(ctx, args.key);
-    }
-    async getSellerANDCustomerStoreCredits(ctx) {
-        return this.storeCreditService.getSellerANDCustomerStoreCreditsShop(ctx);
     }
 };
 __decorate([
@@ -74,17 +71,59 @@ __decorate([
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", Promise)
 ], ShopStoreCreditResolver.prototype, "claim", null);
-__decorate([
-    (0, graphql_1.Query)(),
-    (0, core_1.Allow)(core_1.Permission.Authenticated),
-    (0, core_1.Transaction)(),
-    __param(0, (0, core_1.Ctx)()),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [core_1.RequestContext]),
-    __metadata("design:returntype", Promise)
-], ShopStoreCreditResolver.prototype, "getSellerANDCustomerStoreCredits", null);
 exports.ShopStoreCreditResolver = ShopStoreCreditResolver = __decorate([
     (0, graphql_1.Resolver)(),
     __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService,
         core_1.ActiveOrderService])
 ], ShopStoreCreditResolver);
+let SellerEntityShopResolver = exports.SellerEntityShopResolver = class SellerEntityShopResolver {
+    constructor(storeCreditService) {
+        this.storeCreditService = storeCreditService;
+    }
+    async storeCredit(ctx, seller) {
+        var _a;
+        const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance;
+    }
+};
+__decorate([
+    (0, graphql_1.ResolveField)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Parent)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, core_1.Seller]),
+    __metadata("design:returntype", Promise)
+], SellerEntityShopResolver.prototype, "storeCredit", null);
+exports.SellerEntityShopResolver = SellerEntityShopResolver = __decorate([
+    (0, graphql_1.Resolver)('Seller'),
+    __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService])
+], SellerEntityShopResolver);
+let CustomerEntityShopResolver = exports.CustomerEntityShopResolver = class CustomerEntityShopResolver {
+    constructor(customerService) {
+        this.customerService = customerService;
+    }
+    async storeCredit(ctx, customer) {
+        var _a;
+        const theCustomer = await this.customerService.findOne(ctx, customer.id, ['user']);
+        if (!theCustomer) {
+            throw new Error('Customer not found');
+        }
+        const theUser = theCustomer.user;
+        if (!theUser) {
+            throw new Error('Customer user not found');
+        }
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.customerAccountBalance;
+    }
+};
+__decorate([
+    (0, graphql_1.ResolveField)(),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Parent)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, core_1.Customer]),
+    __metadata("design:returntype", Promise)
+], CustomerEntityShopResolver.prototype, "storeCredit", null);
+exports.CustomerEntityShopResolver = CustomerEntityShopResolver = __decorate([
+    (0, graphql_1.Resolver)('Customer'),
+    __metadata("design:paramtypes", [core_1.CustomerService])
+], CustomerEntityShopResolver);

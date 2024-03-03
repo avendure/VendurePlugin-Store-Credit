@@ -1,7 +1,7 @@
-import { ActiveOrderService, RequestContext } from '@vendure/core';
+import { ActiveOrderService, RequestContext, CustomerService, Customer, Seller } from '@vendure/core';
 import { StoreCreditService } from '../service/store-credit.service';
 import { ACTIVE_ORDER_INPUT_FIELD_NAME } from '@vendure/core/dist/config/order/active-order-strategy';
-import { MutationAddCreditToOrderArgs, QueryStoreCreditsArgs, QueryStoreCreditArgs, MutationClaimArgs, ClaimResult } from 'src/types/credits-shop-types';
+import { MutationAddCreditToOrderArgs, QueryStoreCreditsArgs, QueryStoreCreditArgs, MutationClaimArgs, ClaimResult } from '../types/credits-shop-types';
 type ActiveOrderArgs = {
     [ACTIVE_ORDER_INPUT_FIELD_NAME]?: any;
 };
@@ -16,9 +16,15 @@ export declare class ShopStoreCreditResolver {
     }>;
     addCreditToOrder(ctx: RequestContext, args: MutationAddCreditToOrderArgs & ActiveOrderArgs): Promise<import("@vendure/core").ErrorResultUnion<import("@vendure/common/lib/generated-shop-types").UpdateOrderItemsResult, import("@vendure/core").Order>>;
     claim(ctx: RequestContext, args: MutationClaimArgs): Promise<ClaimResult>;
-    getSellerANDCustomerStoreCredits(ctx: RequestContext): Promise<{
-        customerAccountBalance: number;
-        sellerAccountBalance: number;
-    }>;
+}
+export declare class SellerEntityShopResolver {
+    private storeCreditService;
+    constructor(storeCreditService: StoreCreditService);
+    storeCredit(ctx: RequestContext, seller: Seller): Promise<number>;
+}
+export declare class CustomerEntityShopResolver {
+    private customerService;
+    constructor(customerService: CustomerService);
+    storeCredit(ctx: RequestContext, customer: Customer): Promise<number>;
 }
 export {};

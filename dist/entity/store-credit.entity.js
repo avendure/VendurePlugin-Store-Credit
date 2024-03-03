@@ -45,18 +45,13 @@ __decorate([
     __metadata("design:type", String)
 ], StoreCredit.prototype, "key", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => core_1.Customer, {
-        eager: true,
-        nullable: true,
-        onDelete: 'CASCADE',
-    }),
-    (0, typeorm_1.JoinColumn)({ name: 'customerId' }),
+    (0, typeorm_1.JoinColumn)({ name: 'userId' }),
     __metadata("design:type", Object)
-], StoreCredit.prototype, "customer", void 0);
+], StoreCredit.prototype, "user", void 0);
 __decorate([
     (0, entity_id_decorator_1.EntityId)({ nullable: true }),
     __metadata("design:type", Object)
-], StoreCredit.prototype, "customerId", void 0);
+], StoreCredit.prototype, "userId", void 0);
 exports.StoreCredit = StoreCredit = __decorate([
     (0, typeorm_1.Entity)(),
     __metadata("design:paramtypes", [Object])

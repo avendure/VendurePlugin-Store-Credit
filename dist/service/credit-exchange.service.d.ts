@@ -1,8 +1,9 @@
 import { TransactionalConnection, RequestContext, ListQueryBuilder, ID, RelationPaths, EntityHydrator, ChannelService, OrderService, SellerService } from '@vendure/core';
 import { CreditExchange } from '../entity/exchange-request.entity';
-import { CreditExchangeListOptions } from 'src/types/credits-admin-types';
+import { CreditExchangeListOptions } from '../types/credits-admin-types';
 import { StoreCreditPluginOptions } from '../types/options';
 import { NPPService } from './npp.service';
+import { StoreCreditService } from './store-credit.service';
 export declare class CreditExchangeService {
     private listQueryBuilder;
     private connection;
@@ -12,7 +13,8 @@ export declare class CreditExchangeService {
     private orderService;
     private nppService;
     private sellerService;
-    constructor(listQueryBuilder: ListQueryBuilder, connection: TransactionalConnection, entityHydrator: EntityHydrator, options: StoreCreditPluginOptions, channelService: ChannelService, orderService: OrderService, nppService: NPPService, sellerService: SellerService);
+    private storeCreditService;
+    constructor(listQueryBuilder: ListQueryBuilder, connection: TransactionalConnection, entityHydrator: EntityHydrator, options: StoreCreditPluginOptions, channelService: ChannelService, orderService: OrderService, nppService: NPPService, sellerService: SellerService, storeCreditService: StoreCreditService);
     findAll(ctx: RequestContext, options?: CreditExchangeListOptions, relations?: RelationPaths<CreditExchange>): Promise<{
         items: CreditExchange[];
         totalItems: number;

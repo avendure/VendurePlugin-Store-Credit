@@ -1,6 +1,6 @@
 import { ChannelService, ConfigService, EventBus, FacetService, FacetValueService, ID, Order, OrderLine, ProductOptionGroupService, ProductOptionService, ProductService, ProductVariantService, RequestContext, TransactionalConnection } from '@vendure/core';
 import { OnApplicationBootstrap } from '@nestjs/common';
-import { StoreCreditPluginOptions } from 'src/types/options';
+import { StoreCreditPluginOptions } from '../types/options';
 export type NppPurchaseCallback = (ctx: RequestContext, order: Order, line: OrderLine) => Promise<any>;
 export declare class NPPService implements OnApplicationBootstrap {
     private connection;
