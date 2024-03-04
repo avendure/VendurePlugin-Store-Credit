@@ -228,10 +228,10 @@ describe('store-credits plugin', () => {
         });
 
         it('Should fail to add payment with no credits', async () => {
-            const addPaymentReuslt = await shopClient.query(AddPaymentToOrderDocument, {
+            const addPaymentResult = await shopClient.query(AddPaymentToOrderDocument, {
                 input: { method: 'store-credit', metadata: {} },
             });
-            expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual('PaymentDeclinedError');
+            expect(addPaymentResult.addPaymentToOrder.__typename).toEqual('PaymentDeclinedError');
         });
 
         it('Should claim store credit', async () => {

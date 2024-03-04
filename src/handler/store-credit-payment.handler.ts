@@ -88,17 +88,20 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 
         // This `amount` doesn't have decimals
         if (customerCurrencyBalance < amount) {
-            return {
-                amount: amount,
-                state: 'Declined',
-                errorMessage: 'Insufficient Balance',
-                metadata: {
-                    public: {
-                        errorMessage: 'Insufficient Balance',
-                    },
-                },
-            };
+            throw new Error('Insufficient Balance');
         }
+
+        //     return {
+        //         amount: amount,
+        //         state: 'Declined',
+        //         errorMessage: 'Insufficient Balance',
+        //         metadata: {
+        //             public: {
+        //                 errorMessage: 'Insufficient Balance',
+        //             },
+        //         },
+        //     };
+        // }
 
         const orderShippingLines = order.shippingLines;
         const defaultChannel = await channelService.getDefaultChannel();

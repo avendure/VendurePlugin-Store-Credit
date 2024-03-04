@@ -43,7 +43,7 @@ export const TRANSFER_FROM_SELLER_TO_CUSTOMER = gql`
     mutation TransferFromSellerToCustomer($value: Int!, $sellerId: ID!) {
         transferCreditfromSellerToCustomer(value: $value, sellerId: $sellerId) {
             customerAccountBalance
-            # sellerAccountBalance
+            sellerAccountBalance
         }
     }
 `;
