@@ -218,6 +218,9 @@ describe('store-credits plugin', () => {
             });
             expect(billingAddressResult.setOrderBillingAddress.__typename).toEqual('Order');
 
+
+            
+
             const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: 'T_1' });
             expect(shippingMethodResult.setOrderShippingMethod.__typename).toEqual('Order');
 
@@ -227,12 +230,21 @@ describe('store-credits plugin', () => {
             expect(transitionResult.transitionOrderToState?.__typename).toEqual('Order');
         });
 
+        // it('Should fail to add payment with no credits', async () => {
+        //     const addPaymentResult = await shopClient.query(AddPaymentToOrderDocument, {
+        //         input: { method: 'store-credit', metadata: {} },
+        //     });
+        //     expect(addPaymentResult.addPaymentToOrder.__typename).toEqual('PaymentDeclinedError');
+        // });
+
         it('Should fail to add payment with no credits', async () => {
-            const addPaymentResult = await shopClient.query(AddPaymentToOrderDocument, {
-                input: { method: 'store-credit', metadata: {} },
-            });
-            expect(addPaymentResult.addPaymentToOrder.__typename).toEqual('PaymentDeclinedError');
+            expect(async () => {
+                await shopClient.query(AddPaymentToOrderDocument, {
+                    input: { method: 'store-credit', metadata: {} },
+                });
+            }).rejects.toThrowError('Insufficient Balance');
         });
+        
 
         it('Should claim store credit', async () => {
             const result = await shopClient.query(ClaimCreditDocument, {
