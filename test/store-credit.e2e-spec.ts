@@ -43,7 +43,7 @@ registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
 describe('store-credits plugin', () => {
     const isFraction = false;
-    const feeValue = 1;
+    const feeValue = 100;
     const devConfig = mergeConfig(testConfig, {
         plugins: [
             StoreCreditPlugin.init({
@@ -52,7 +52,7 @@ describe('store-credits plugin', () => {
                 exchange: {
                     fee: { type: 'fixed', value: feeValue },
                     payoutOption: { code: 'payout', name: 'Payout' },
-                    maxAmount: 900,
+                    maxAmount: 90000,
                 },
                 isFraction: isFraction,
                 platformFee: { type: 'fixed', value: feeValue },
@@ -308,25 +308,32 @@ describe('store-credits plugin', () => {
                     expect(
                         customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
                         "Credits should have been deducted from Buyer's account",
-                    ).toEqual(customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100);
-
-                    expect(
-                        sellerResult.seller?.customFields?.accountBalance,
-                        "Credits should have been transferred to Seller's account",
-                    ).toEqual(totalPrce - feeValue);
-                } else {
-                    expect(
-                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
-                        "Credits should have been deducted from Buyer's account",
                     ).toEqual(
-                        customerClaimedBalance -
-                            Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                        Math.round(
+                            100 *
+                                (customerClaimedBalance -
+                                    addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                        ),
                     );
 
                     expect(
                         sellerResult.seller?.customFields?.accountBalance,
                         "Credits should have been transferred to Seller's account",
-                    ).toEqual(Math.ceil(totalPrce - feeValue));
+                    ).toEqual((totalPrce - feeValue) * 100);
+                } else {
+                    expect(
+                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                        "Credits should have been deducted from Buyer's account",
+                    ).toEqual(
+                        100 *
+                            (customerClaimedBalance -
+                                Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)),
+                    );
+
+                    expect(
+                        sellerResult.seller?.customFields?.accountBalance,
+                        "Credits should have been transferred to Seller's account",
+                    ).toEqual(Math.ceil((totalPrce - feeValue) * 100));
                 }
 
                 expect(
@@ -349,7 +356,7 @@ describe('store-credits plugin', () => {
     it('Should fail for credit exchange above max amount', async () => {
         adminClient.setChannelToken('seller2ch');
         expect(async () => {
-            await adminClient.query(RequestCreditExchangeDocument, { amount: 1000 });
+            await adminClient.query(RequestCreditExchangeDocument, { amount: 100000 });
         }).rejects.toThrowError();
     });
 
@@ -360,15 +367,15 @@ describe('store-credits plugin', () => {
         const beforeBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
-        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, { amount: 500 });
+        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, { amount: 50000 });
         const afterBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
 
         expect(exchangeResponse.requestCreditExchange.id).toBeDefined();
         expect(exchangeResponse.requestCreditExchange.status).toBe('Pending');
-        expect(beforeBalance - afterBalance, 'Balance must be deducted').toBe(500);
-        expect(exchangeResponse.requestCreditExchange.amount, 'Should deduct exchange fee').toBe(499);
+        expect(beforeBalance - afterBalance, 'Balance must be deducted').toBe(50000);
+        expect(exchangeResponse.requestCreditExchange.amount, 'Should deduct exchange fee').toBe(49900);
         exchangeId = exchangeResponse.requestCreditExchange.id;
         adminClient.setChannelToken('');
     });
@@ -436,6 +443,6 @@ describe('store-credits plugin', () => {
             .then(res => res.seller?.customFields?.accountBalance || 0);
 
         expect(refundResult.refundCreditExchange.status).toBe('Refunded');
-        expect(afterBalance - beforeBalance, 'Balance must be refunded').toBe(500);
+        expect(afterBalance - beforeBalance, 'Balance must be refunded').toBe(50000);
     });
 });
