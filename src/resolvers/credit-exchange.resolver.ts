@@ -9,6 +9,7 @@ import {
     Relations,
     RequestContext,
     Transaction,
+    UserInputError,
 } from '@vendure/core';
 import {
     MutationRequestCreditExchangeArgs,
@@ -84,10 +85,25 @@ export class AdminCreditExchangeResolver {
         return this.creditExchangeService.initiateCreditExchange(ctx, args.id);
     }
 
-    @Transaction()
-    @Mutation()
-    @Allow(Permission.SuperAdmin)
-    async refundCreditExchange(@Ctx() ctx: RequestContext, @Args() args: { id: ID }) {
-        return this.creditExchangeService.refund(ctx, args.id);
+//     @Transaction()
+//     @Mutation()
+//     @Allow(Permission.SuperAdmin)
+//     async refundCreditExchange(@Ctx() ctx: RequestContext, @Args() args: { id: ID }) {
+//         return this.creditExchangeService.refund(ctx, args.id);
+//     }
+// }
+
+@Transaction()
+@Mutation()
+@Allow(Permission.SuperAdmin)
+async refundCreditExchange(@Ctx() ctx: RequestContext, @Args() args: { id: ID }) {
+    // Validate if the CreditExchange exists
+    const creditExchange = await this.creditExchangeService.findOne(ctx, args.id);
+    if (!creditExchange) {
+        throw new UserInputError(`No CreditExchange with the id "${args.id}" could be found`);
     }
+    
+    // Perform the refund operation
+    return this.creditExchangeService.refund(ctx, args.id);
+}
 }
