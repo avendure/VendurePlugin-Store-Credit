@@ -258,51 +258,26 @@ describe('store-credits plugin', () => {
         });
 
         it('Should add payment', async () => {
-            console.log(customers);
             await shopClient.asUserWithCredentials(customers[2].emailAddress, 'test');
-            console.log(
-                await shopClient.query(gql`
-                    query {
-                        eligiblePaymentMethods {
-                            code
-                            name
-                        }
-                    }
-                `),
-            );
             const addPaymentReuslt = await shopClient.query(AddPaymentToOrderDocument, {
                 input: { method: 'store-credit', metadata: {} },
             });
-            console.log({ addPaymentReuslt });
             expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual('Order');
             if (addPaymentReuslt.addPaymentToOrder.__typename == 'Order') {
                 expect(
                     addPaymentReuslt.addPaymentToOrder.state,
                     'Order state should have transitioned',
                 ).toEqual('PaymentSettled');
-                console.log({ sellerId });
                 const customerResult = await adminClient.query(GetCustomerDocument, {
                     id: customers[2].id,
                 });
-                console.log({ customerResult: customerResult.customer?.user?.customFields });
                 const sellerResult = await adminClient.query(GetSellerDocument, {
                     id: sellerId,
                 });
-                console.log({ sellerResult });
                 expect(
                     sellerResult.seller?.storeCredit,
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
-                console.log(
-                    customerClaimedBalance,
-                    addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
-                    Math.floor(
-                        customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
-                    ),
-                );
-                console.log({
-                    customerStoreCredt: customerResult.customer?.user?.customFields?.accountBalance,
-                });
                 expect(
                     Math.floor(customerResult.customer?.user?.customFields?.accountBalance || 0),
                     "Credits should have been deducted from Buyer's account",

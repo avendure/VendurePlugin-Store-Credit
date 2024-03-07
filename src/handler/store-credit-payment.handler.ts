@@ -201,17 +201,11 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
         const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
         console.log('newBalance: ', customerCreditBalance - adjustedAmount);
 
-        // const updatedUser = await connection.getRepository(ctx, User).update(customer.id, {
-        //     customFields: {
-        //         accountBalance: customerCreditBalance - adjustedAmount,
-        //     },
-        // });
         const user = await connection.getRepository(ctx, User).update(customer.user!.id, {
             customFields: {
                 accountBalance: customerCreditBalance - adjustedAmount,
             },
         });
-        console.log({ user });
         return {
             amount: amount,
             state: 'Settled',
