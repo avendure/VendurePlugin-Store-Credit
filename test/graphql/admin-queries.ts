@@ -19,6 +19,13 @@ export const GET_CUSTOMER_LIST = gql`
         }
     }
 `;
+export const GET_CUSTOMER = gql`
+    query GetCustomer($id: ID!) {
+        customer(id: $id) {
+            storeCredit
+        }
+    }
+`;
 
 // export const SET_SELLER_USER = gql`
 //     mutation SetSellerUser($input: UpdateSellerInput!) {
@@ -92,13 +99,13 @@ export const ASSIGN_PRODUCT_VARIANT_TO_CHANNEL = gql`
     }
 `;
 
-// export const GET_SELLER = gql`
-//     query GetSeller($id: ID!) {
-//         seller(id: $id) {
-//             id
-//         }
-//     }
-// `;
+export const GET_SELLER = gql`
+    query GetSeller($id: ID!) {
+        seller(id: $id) {
+            storeCredit
+        }
+    }
+`;
 
 // export const UPDATE_SELLER = gql`
 //     mutation UpdateSeller($input: UpdateSellerInput!) {

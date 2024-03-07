@@ -28,11 +28,11 @@ const commonExtensions = gql`
     }
 
     extend type Customer {
-        storeCredit: Int!
+        storeCredit: Float!
     }
 
     extend type Seller {
-        storeCredit: Int!
+        storeCredit: Float!
     }
 `;
 

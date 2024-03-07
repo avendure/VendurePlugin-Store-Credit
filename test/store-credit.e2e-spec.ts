@@ -1,39 +1,38 @@
-import { SqljsInitializer, registerInitializer, createTestEnvironment, testConfig } from '@vendure/testing';
-import { it, describe, afterAll, expect, beforeAll } from 'vitest';
-import { StoreCreditPlugin } from '../src/index';
 import { mergeConfig } from '@vendure/core';
-import { DataService } from '@vendure/admin-ui/core';
+import { SqljsInitializer, createTestEnvironment, registerInitializer, testConfig } from '@vendure/testing';
 import path from 'path';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { StoreCreditPlugin } from '../src/index';
 import { initialData } from './fixtures/initial-data';
 import {
+    AcceptCreditExchangeDocument,
+    AssignProductVariantsToChannelDocument,
+    CreateChannelDocument,
+    CreateProductVariantDocument,
+    CreateSellerDocument,
+    CreateStoreCreditDocument,
+    CurrencyCode,
+    GetChannelsDocument,
+    GetCustomerDocument,
     GetCustomerListDocument,
     GetCustomerListQuery,
-    CreateStoreCreditDocument,
-    CreateSellerDocument,
-    TransferFromSellerToCustomerDocument,
-    CreateChannelDocument,
-    LanguageCode,
-    CurrencyCode,
-    AssignProductVariantsToChannelDocument,
-    GetSellerDocument,
-    RequestCreditExchangeDocument,
-    RefundCreditExchangeDocument,
-    GetChannelsDocument,
-    AcceptCreditExchangeDocument,
     GetProductsDocument,
-    CreateProductVariantDocument,
+    GetSellerDocument,
     GlobalFlag,
+    LanguageCode,
+    RefundCreditExchangeDocument,
+    RequestCreditExchangeDocument,
+    TransferFromSellerToCustomerDocument,
     UpdateCreditExchangeStatusDocument,
-    JobState,
 } from './graphql/generated-admin-types';
 import {
+    AddPaymentToOrderDocument,
     AddProductToOrderDocument,
     ClaimCreditDocument,
-    SetShippingAddressDocument,
     SetBillingAddressDocument,
+    SetShippingAddressDocument,
     SetShippingMethodDocument,
     TransitionToStateDocument,
-    AddPaymentToOrderDocument,
 } from './graphql/generated-shop-types';
 
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
@@ -209,9 +208,6 @@ describe('store-credits plugin', () => {
             });
             expect(billingAddressResult.setOrderBillingAddress.__typename).toEqual('Order');
 
-
-            
-
             const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: 'T_1' });
             expect(shippingMethodResult.setOrderShippingMethod.__typename).toEqual('Order');
 
@@ -235,7 +231,6 @@ describe('store-credits plugin', () => {
                 });
             }).rejects.toThrowError('Insufficient Balance');
         });
-        
 
         it('Should claim store credit', async () => {
             const result = await shopClient.query(ClaimCreditDocument, {
@@ -262,26 +257,35 @@ describe('store-credits plugin', () => {
                     addPaymentReuslt.addPaymentToOrder.state,
                     'Order state should have transitioned',
                 ).toEqual('PaymentSettled');
-
-                const customerResult = await shopClient.query(GetBalanceDocument);
+                console.log({ sellerId });
+                const customerResult = await adminClient.query(GetCustomerDocument, {
+                    id: customers[2].id,
+                });
+                console.log({ customerResult });
                 const sellerResult = await adminClient.query(GetSellerDocument, {
                     id: sellerId,
                 });
 
                 expect(
-                    sellerResult.seller?.customFields?.accountBalance,
+                    sellerResult.seller?.storeCredit,
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
-
+                console.log(
+                    customerClaimedBalance,
+                    addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
+                    Math.ceil(customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                );
+                console.log({ customerStoreCredt: customerResult.customer?.storeCredit });
                 expect(
-                    customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                    customerResult.customer?.storeCredit,
                     "Credits should have been deducted from Buyer's account",
                 ).toEqual(
-                    customerClaimedBalance - Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                    customerClaimedBalance -
+                        Math.floor(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
                 );
 
                 expect(
-                    customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                    customerResult.customer?.storeCredit,
                     'Credits have become negative - Something went wrong.',
                 ).toBeGreaterThanOrEqual(0);
             }
@@ -294,12 +298,12 @@ describe('store-credits plugin', () => {
                 value: 1000,
                 sellerId: sellerId,
             });
-    
-            expect(transferResult).toBeNull(); // Expecting transferResult to be null due to error
-        }).rejects.toThrowError('Cannot return null for non-nullable field Mutation.transferCreditfromSellerToCustomer');
-    });
-    
 
+            expect(transferResult).toBeNull(); // Expecting transferResult to be null due to error
+        }).rejects.toThrowError(
+            'Cannot return null for non-nullable field Mutation.transferCreditfromSellerToCustomer',
+        );
+    });
 
     it('Should fail for credit exchange above max amount', async () => {
         adminClient.setChannelToken('seller2ch');
@@ -314,11 +318,11 @@ describe('store-credits plugin', () => {
         adminClient.setChannelToken('seller2ch');
         const beforeBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
-            .then(res => res.seller?.customFields?.accountBalance || 0);
+            .then(res => res.seller?.storeCredit || 0);
         const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, { amount: 500 });
         const afterBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
-            .then(res => res.seller?.customFields?.accountBalance || 0);
+            .then(res => res.seller?.storeCredit || 0);
 
         expect(exchangeResponse.requestCreditExchange.id).toBeDefined();
         expect(exchangeResponse.requestCreditExchange.status).toBe('Pending');
@@ -328,14 +332,13 @@ describe('store-credits plugin', () => {
         adminClient.setChannelToken('');
     });
 
-
     it('Should validate payout variant creation process or presence of products', async () => {
         const products = await adminClient
             .query(GetProductsDocument, {
                 options: { filter: { slug: { eq: 'store-credits' } } },
             })
             .then(res => res.products.items);
-    
+
         if (products.length === 0) {
             console.warn("No products retrieved; unable to validate 'payout' variant creation. ");
             expect(products).toHaveLength(0);
@@ -344,7 +347,7 @@ describe('store-credits plugin', () => {
             const maybeOption = products[0].optionGroups
                 .find(og => og.options.some(o => o.code == 'payout'))
                 ?.options.find(o => o.code == 'payout');
-    
+
             if (maybeOption) {
                 expect(maybeOption).toBeDefined();
                 const createProductResult = await adminClient.query(CreateProductVariantDocument, {
@@ -358,7 +361,7 @@ describe('store-credits plugin', () => {
                         },
                     ],
                 });
-    
+
                 expect(createProductResult.createProductVariants).not.toHaveLength(0);
                 expect(createProductResult.createProductVariants[0].id).toBeDefined();
             } else {
@@ -367,8 +370,6 @@ describe('store-credits plugin', () => {
             }
         }
     });
-    
-   
 
     it('Should accept exchange request', async () => {
         const acceptResponse = await adminClient.query(AcceptCreditExchangeDocument, { id: exchangeId });

@@ -18,7 +18,7 @@
     "scripts": {
         "start": "ts-node test/dev-server.ts",
         "build": "rimraf dist && tsc && cp -r src/ui dist/",
-        "test": "vitest run",
+        "test": "vitest --silent=false",
         "db_test": "rimraf __data__ && vitest run",
         "codegen": "graphql-codegen --config ./codegen.json",
         "format": "prettier --write --ignore-unknown"
