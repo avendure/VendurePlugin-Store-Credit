@@ -33,11 +33,11 @@ const commonExtensions = (0, graphql_tag_1.default) `
     }
 
     extend type Customer {
-        storeCredit: Int!
+        storeCredit: Float!
     }
 
     extend type Seller {
-        storeCredit: Int!
+        storeCredit: Float!
     }
 `;
 exports.shopApiExtensions = (0, graphql_tag_1.default) `

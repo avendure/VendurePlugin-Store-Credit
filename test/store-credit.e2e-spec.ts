@@ -1,5 +1,6 @@
 import { mergeConfig } from '@vendure/core';
 import { SqljsInitializer, createTestEnvironment, registerInitializer, testConfig } from '@vendure/testing';
+import gql from 'graphql-tag';
 import path from 'path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { StoreCreditPlugin } from '../src/index';
@@ -66,6 +67,17 @@ describe('store-credits plugin', () => {
             initialData: initialData,
             customerCount: 3,
         });
+
+        console.log(
+            await shopClient.query(gql`
+                query {
+                    eligiblePaymentMethods {
+                        code
+                        name
+                    }
+                }
+            `),
+        );
         await adminClient.asSuperAdmin();
 
         defaultChannelToken = await adminClient
@@ -246,11 +258,22 @@ describe('store-credits plugin', () => {
         });
 
         it('Should add payment', async () => {
+            console.log(customers);
             await shopClient.asUserWithCredentials(customers[2].emailAddress, 'test');
+            console.log(
+                await shopClient.query(gql`
+                    query {
+                        eligiblePaymentMethods {
+                            code
+                            name
+                        }
+                    }
+                `),
+            );
             const addPaymentReuslt = await shopClient.query(AddPaymentToOrderDocument, {
                 input: { method: 'store-credit', metadata: {} },
             });
-
+            console.log({ addPaymentReuslt });
             expect(addPaymentReuslt.addPaymentToOrder.__typename).toEqual('Order');
             if (addPaymentReuslt.addPaymentToOrder.__typename == 'Order') {
                 expect(
@@ -261,11 +284,11 @@ describe('store-credits plugin', () => {
                 const customerResult = await adminClient.query(GetCustomerDocument, {
                     id: customers[2].id,
                 });
-                console.log({ customerResult });
+                console.log({ customerResult: customerResult.customer?.user?.customFields });
                 const sellerResult = await adminClient.query(GetSellerDocument, {
                     id: sellerId,
                 });
-
+                console.log({ sellerResult });
                 expect(
                     sellerResult.seller?.storeCredit,
                     "Credits should have been transferred to Seller's account",
@@ -273,19 +296,24 @@ describe('store-credits plugin', () => {
                 console.log(
                     customerClaimedBalance,
                     addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
-                    Math.ceil(customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                    Math.floor(
+                        customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
+                    ),
                 );
-                console.log({ customerStoreCredt: customerResult.customer?.storeCredit });
+                console.log({
+                    customerStoreCredt: customerResult.customer?.user?.customFields?.accountBalance,
+                });
                 expect(
-                    customerResult.customer?.storeCredit,
+                    Math.floor(customerResult.customer?.user?.customFields?.accountBalance || 0),
                     "Credits should have been deducted from Buyer's account",
                 ).toEqual(
-                    customerClaimedBalance -
-                        Math.floor(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                    Math.floor(
+                        customerClaimedBalance - addPaymentReuslt.addPaymentToOrder.totalWithTax / 100,
+                    ),
                 );
 
                 expect(
-                    customerResult.customer?.storeCredit,
+                    customerResult.customer?.user?.customFields?.accountBalance,
                     'Credits have become negative - Something went wrong.',
                 ).toBeGreaterThanOrEqual(0);
             }

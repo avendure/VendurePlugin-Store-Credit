@@ -61,24 +61,26 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
                 },
             };
         }
-        const customerCreditBalance = theCustomer.user.customFields.customerAccountBalance || 0;
+        const customerCreditBalance = theCustomer.user.customFields.accountBalance || 0;
         const conversion_factor = options.creditToCurrencyFactor[order.currencyCode] || options.creditToCurrencyFactor['default'];
         // Scale the currencyBalance Up to match magnitude of `amount`
         // then we multiply by the conversion factor to convert from credit to dollar value
         const customerCurrencyBalance = customerCreditBalance * SCALING_FACTOR * conversion_factor;
         // This `amount` doesn't have decimals
         if (customerCurrencyBalance < amount) {
-            return {
-                amount: amount,
-                state: 'Declined',
-                errorMessage: 'Insufficient Balance',
-                metadata: {
-                    public: {
-                        errorMessage: 'Insufficient Balance',
-                    },
-                },
-            };
+            throw new Error('Insufficient Balance');
         }
+        //     return {
+        //         amount: amount,
+        //         state: 'Declined',
+        //         errorMessage: 'Insufficient Balance',
+        //         metadata: {
+        //             public: {
+        //                 errorMessage: 'Insufficient Balance',
+        //             },
+        //         },
+        //     };
+        // }
         const orderShippingLines = order.shippingLines;
         const defaultChannel = await channelService.getDefaultChannel();
         for (let orderline of order.lines) {
@@ -137,14 +139,14 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
             // and needs to be scaled to deliver the correct number of credits based on the priced
             const adjustedTotalPrice = totalPrice / (SCALING_FACTOR * conversion_factor);
             const theSellerUser = await storeCreditService.getSellerUser(ctx, sellerId);
-            const sellerAccountBalance = ((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance) || 0;
+            const sellerAccountBalance = ((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance) || 0;
             let platFormFee = options.platformFee.type == 'fixed'
                 ? options.platformFee.value
                 : options.platformFee.value * (orderline.listPrice / SCALING_FACTOR);
             const newBalance = sellerAccountBalance - platFormFee + adjustedTotalPrice;
             await connection.getRepository(ctx, core_1.User).update(theSellerUser.id, {
                 customFields: {
-                    sellerAccountBalance: newBalance,
+                    accountBalance: newBalance,
                 },
             });
         }
@@ -154,10 +156,15 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
         console.log('conversion factor: ', conversion_factor);
         const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
         console.log('newBalance: ', customerCreditBalance - adjustedAmount);
-        await customerService.update(ctx, {
-            id: customer.id,
+        // await customerService.update(ctx, {
+        //     id: customer.id,
+        //     customFields: {
+        //         accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
+        //     },
+        // });
+        await connection.getRepository(ctx, core_1.User).update(customer.id, {
             customFields: {
-                accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
+                accountBalance: customerCreditBalance - adjustedAmount,
             },
         });
         return {

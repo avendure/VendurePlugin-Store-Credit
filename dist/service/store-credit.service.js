@@ -17,7 +17,7 @@ const typeorm_1 = require("typeorm");
 const credits_admin_types_1 = require("../types/credits-admin-types");
 const npp_service_1 = require("./npp.service");
 let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
-    constructor(connection, listQueryBuilder, customerService, userService, sellerService, orderService, productVariantService, entityHydrator, nppService) {
+    constructor(connection, listQueryBuilder, customerService, userService, sellerService, orderService, productVariantService, entityHydrator, nppService, channelService) {
         this.connection = connection;
         this.listQueryBuilder = listQueryBuilder;
         this.customerService = customerService;
@@ -27,6 +27,7 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
         this.productVariantService = productVariantService;
         this.entityHydrator = entityHydrator;
         this.nppService = nppService;
+        this.channelService = channelService;
         this.nppCode = 'storecredit';
         this.nppService.addOrderCallback(this.nppCode, this.addCredits.bind(this));
     }
@@ -43,10 +44,10 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
             throw new core_1.EntityNotFoundError('Customer', order.customer.id);
         if (!theCustomer.user)
             throw new Error(`User not found for customer : ${theCustomer.id}`);
-        const newBalance = (theCustomer.user.customFields.customerAccountBalance || 0) + storeCredit.value * line.quantity;
+        const newBalance = (theCustomer.user.customFields.accountBalance || 0) + storeCredit.value * line.quantity;
         await this.connection.getRepository(ctx, core_1.User).update({ id: theCustomer.user.id }, {
             customFields: {
-                customerAccountBalance: newBalance,
+                accountBalance: newBalance,
             }
         });
         return newBalance;
@@ -154,7 +155,7 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
             throw new core_1.EntityNotFoundError('Customer', order.customer.id);
         if (!theCustomer.user)
             throw new Error(`User not found for customer : ${theCustomer.id}`);
-        if (theCustomer.user.customFields.customerAccountBalance >= cred.perUserLimit)
+        if (theCustomer.user.customFields.accountBalance >= cred.perUserLimit)
             throw new Error('User cannot buy this credit.');
         return this.orderService.addItemToOrder(ctx, order.id, cred.variantId, quantity);
     }
@@ -170,11 +171,11 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
         const user = await this.userService.getUserById(ctx, ctx.activeUserId);
         if (!user)
             return { success: false, message: 'Invalid user' };
-        const currentBalance = user.customFields.customerAccountBalance || 0;
+        const currentBalance = user.customFields.accountBalance || 0;
         const newBalance = currentBalance + credit.value;
         await this.connection.getRepository(ctx, core_1.User).update({ id: user.id }, {
             customFields: {
-                customerAccountBalance: newBalance,
+                accountBalance: newBalance,
             }
         });
         credit.user = user;
@@ -185,6 +186,27 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
             addedCredit: credit.value,
             currentBalance: newBalance,
         };
+    }
+    async testIfSameSellerAndCustomer(ctx, productVariantId) {
+        const theVariant = await this.productVariantService.findOne(ctx, productVariantId, ['channels', 'channels.seller']);
+        if (!theVariant)
+            throw new core_1.EntityNotFoundError('ProductVariant', productVariantId);
+        const defaultChannel = await this.channelService.getDefaultChannel();
+        const theVariantChannel = theVariant.channels.find(c => c.id != defaultChannel.id);
+        if (!theVariantChannel) {
+            // allow order if no seller channel is found since its default channel
+            return;
+        }
+        if (!theVariantChannel.sellerId) {
+            throw new Error('No seller found for the product');
+        }
+        const sellerUser = await this.getSellerUser(ctx, theVariantChannel.sellerId);
+        if (!sellerUser) {
+            throw new Error('No user found for the seller');
+        }
+        if (sellerUser.id == ctx.activeUserId) {
+            throw new Error('Seller and customer cannot be the same');
+        }
     }
     async getSellerUser(ctx, sellerId) {
         const theChannel = await this.connection.getRepository(ctx, core_1.Channel).findOne({
@@ -228,5 +250,6 @@ exports.StoreCreditService = StoreCreditService = __decorate([
         core_1.OrderService,
         core_1.ProductVariantService,
         core_1.EntityHydrator,
-        npp_service_1.NPPService])
+        npp_service_1.NPPService,
+        core_1.ChannelService])
 ], StoreCreditService);

@@ -95,7 +95,7 @@ let SellerEntityAdminResolver = exports.SellerEntityAdminResolver = class Seller
     async storeCredit(ctx, seller) {
         var _a;
         const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
-        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance;
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance;
     }
 };
 __decorate([
@@ -124,7 +124,7 @@ let CustomerEntityAdminResolver = exports.CustomerEntityAdminResolver = class Cu
         if (!theUser) {
             throw new Error('Customer user not found');
         }
-        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.customerAccountBalance;
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance;
     }
 };
 __decorate([

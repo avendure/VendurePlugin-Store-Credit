@@ -67,12 +67,12 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
             throw new Error('Seller not found');
         }
         const theSellerUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
-        if (((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance) < amount) {
+        if (((_a = theSellerUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance) < amount) {
             throw new Error('Insufficient Balance');
         }
         await this.connection.getRepository(ctx, core_1.User).update({ id: theSellerUser.id }, {
             customFields: {
-                sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance - amount,
+                accountBalance: theSellerUser.customFields.accountBalance - amount,
             },
         });
         const exchangeFee = this.options.exchange.fee.type == 'fixed'
@@ -134,7 +134,7 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
             : (100 * exchange.amount) / (100 - this.options.exchange.fee.value);
         await this.connection.getRepository(ctx, core_1.User).update({ id: theSellerUser.id }, {
             customFields: {
-                sellerAccountBalance: theSellerUser.customFields.sellerAccountBalance + requestedAmount,
+                accountBalance: theSellerUser.customFields.accountBalance + requestedAmount,
             },
         });
         exchange.status = 'Refunded';

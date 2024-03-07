@@ -56,7 +56,20 @@ let AdminCreditExchangeResolver = exports.AdminCreditExchangeResolver = class Ad
     async initiateCreditExchange(ctx, args) {
         return this.creditExchangeService.initiateCreditExchange(ctx, args.id);
     }
+    //     @Transaction()
+    //     @Mutation()
+    //     @Allow(Permission.SuperAdmin)
+    //     async refundCreditExchange(@Ctx() ctx: RequestContext, @Args() args: { id: ID }) {
+    //         return this.creditExchangeService.refund(ctx, args.id);
+    //     }
+    // }
     async refundCreditExchange(ctx, args) {
+        // Validate if the CreditExchange exists
+        const creditExchange = await this.creditExchangeService.findOne(ctx, args.id);
+        if (!creditExchange) {
+            throw new core_1.UserInputError(`No CreditExchange with the id "${args.id}" could be found`);
+        }
+        // Perform the refund operation
         return this.creditExchangeService.refund(ctx, args.id);
     }
 };

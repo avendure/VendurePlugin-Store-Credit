@@ -3,8 +3,7 @@ import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
 import { StoreCreditPluginOptions } from './types/options';
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomUserFields {
-        customerAccountBalance: number;
-        sellerAccountBalance: number;
+        accountBalance: number;
     }
     interface CustomGlobalSettingsFields {
         RootNonPhysicalProduct: Product | null;

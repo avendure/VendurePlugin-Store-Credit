@@ -22,7 +22,11 @@ export const GET_CUSTOMER_LIST = gql`
 export const GET_CUSTOMER = gql`
     query GetCustomer($id: ID!) {
         customer(id: $id) {
-            storeCredit
+            user {
+                customFields {
+                    accountBalance
+                }
+            }
         }
     }
 `;

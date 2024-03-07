@@ -751,7 +751,7 @@ export type Customer = Node & {
   lastName: Scalars['String']['output'];
   orders: OrderList;
   phoneNumber?: Maybe<Scalars['String']['output']>;
-  storeCredit: Scalars['Int']['output'];
+  storeCredit: Scalars['Float']['output'];
   title?: Maybe<Scalars['String']['output']>;
   updatedAt: Scalars['DateTime']['output'];
   user?: Maybe<User>;
@@ -3092,7 +3092,7 @@ export type Seller = Node & {
   customFields?: Maybe<Scalars['JSON']['output']>;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
-  storeCredit: Scalars['Int']['output'];
+  storeCredit: Scalars['Float']['output'];
   updatedAt: Scalars['DateTime']['output'];
 };
 

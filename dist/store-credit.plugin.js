@@ -77,7 +77,7 @@ exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate
         configuration: config => {
             config.paymentOptions.paymentMethodHandlers.push(store_credit_payment_handler_1.StoreCreditPaymentHandler);
             config.customFields.User.push({
-                name: 'customerAccountBalance',
+                name: 'accountBalance',
                 type: 'int',
                 defaultValue: 0,
                 readonly: true,
@@ -85,17 +85,6 @@ exports.StoreCreditPlugin = StoreCreditPlugin = StoreCreditPlugin_1 = __decorate
                     {
                         languageCode: core_1.LanguageCode.en,
                         value: 'Customer Account Balance',
-                    },
-                ],
-            }, {
-                name: 'sellerAccountBalance',
-                type: 'int',
-                defaultValue: 0,
-                readonly: true,
-                label: [
-                    {
-                        languageCode: core_1.LanguageCode.en,
-                        value: 'Seller Account Balance',
                     },
                 ],
             });

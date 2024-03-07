@@ -1,20 +1,28 @@
-import { Customer, LanguageCode, PluginCommonModule, Product, VendurePlugin } from '@vendure/core';
-import { StoreCredit } from './entity/store-credit.entity';
-import { adminApiExtensions, shopApiExtensions } from './api.extension';
-import { CustomerEntityShopResolver, SellerEntityShopResolver, ShopStoreCreditResolver } from './resolvers/store-credit-shop.resolver';
-import { AdminStoreCreditResolver, CustomerEntityAdminResolver, SellerEntityAdminResolver } from './resolvers/store-credit-admin.resolver';
-import { StoreCreditService } from './service/store-credit.service';
+import { LanguageCode, PluginCommonModule, Product, VendurePlugin } from '@vendure/core';
 import { AdminUiExtension } from '@vendure/ui-devkit/compiler';
-import path from 'path';
-import { StoreCreditPaymentHandler } from './handler/store-credit-payment.handler';
-import { NPPService } from './service/npp.service';
-import { NppAdminResolver, NppShopResolver } from './resolvers/npp.resolver';
-import { StoreCreditPluginOptions } from './types/options';
 import deepmerge from 'deepmerge';
+import path from 'path';
+import { adminApiExtensions, shopApiExtensions } from './api.extension';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from './constants';
-import { CreditExchangeService } from './service/credit-exchange.service';
 import { CreditExchange } from './entity/exchange-request.entity';
+import { StoreCredit } from './entity/store-credit.entity';
+import { StoreCreditPaymentHandler } from './handler/store-credit-payment.handler';
 import { AdminCreditExchangeResolver } from './resolvers/credit-exchange.resolver';
+import { NppAdminResolver, NppShopResolver } from './resolvers/npp.resolver';
+import {
+    AdminStoreCreditResolver,
+    CustomerEntityAdminResolver,
+    SellerEntityAdminResolver,
+} from './resolvers/store-credit-admin.resolver';
+import {
+    CustomerEntityShopResolver,
+    SellerEntityShopResolver,
+    ShopStoreCreditResolver,
+} from './resolvers/store-credit-shop.resolver';
+import { CreditExchangeService } from './service/credit-exchange.service';
+import { NPPService } from './service/npp.service';
+import { StoreCreditService } from './service/store-credit.service';
+import { StoreCreditPluginOptions } from './types/options';
 
 declare module '@vendure/core/dist/entity/custom-entity-fields' {
     interface CustomUserFields {
@@ -49,14 +57,14 @@ declare module '@vendure/core/dist/entity/custom-entity-fields' {
             NppAdminResolver,
             AdminCreditExchangeResolver,
             SellerEntityAdminResolver,
-            CustomerEntityAdminResolver
+            CustomerEntityAdminResolver,
         ],
     },
     configuration: config => {
         config.paymentOptions.paymentMethodHandlers.push(StoreCreditPaymentHandler);
         config.customFields.User.push({
             name: 'accountBalance',
-            type: 'int',
+            type: 'float',
             defaultValue: 0,
             readonly: true,
             label: [

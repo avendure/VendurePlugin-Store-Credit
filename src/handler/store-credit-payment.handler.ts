@@ -1,20 +1,20 @@
 import {
-    PaymentMethodHandler,
-    LanguageCode,
-    CustomerService,
-    SellerService,
-    Injector,
-    ProductService,
-    ShippingMethodService,
     ChannelService,
-    Logger,
+    CustomerService,
     EntityHydrator,
+    Injector,
+    LanguageCode,
+    Logger,
+    PaymentMethodHandler,
+    ProductService,
+    SellerService,
+    ShippingMethodService,
     TransactionalConnection,
     User,
 } from '@vendure/core';
 import { STORE_CREDIT_PLUGIN_OPTIONS } from '../constants';
-import { StoreCreditPluginOptions } from '../types/options';
 import { StoreCreditService } from '../service/store-credit.service';
+import { StoreCreditPluginOptions } from '../types/options';
 
 let customerService: CustomerService;
 let sellerService: SellerService;
@@ -200,13 +200,18 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
 
         const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
         console.log('newBalance: ', customerCreditBalance - adjustedAmount);
-        await customerService.update(ctx, {
-            id: customer.id,
+
+        // const updatedUser = await connection.getRepository(ctx, User).update(customer.id, {
+        //     customFields: {
+        //         accountBalance: customerCreditBalance - adjustedAmount,
+        //     },
+        // });
+        const user = await connection.getRepository(ctx, User).update(customer.user!.id, {
             customFields: {
-                accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
+                accountBalance: customerCreditBalance - adjustedAmount,
             },
         });
-
+        console.log({ user });
         return {
             amount: amount,
             state: 'Settled',

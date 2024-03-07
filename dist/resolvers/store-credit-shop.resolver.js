@@ -18,9 +18,10 @@ const core_1 = require("@vendure/core");
 const store_credit_service_1 = require("../service/store-credit.service");
 const active_order_strategy_1 = require("@vendure/core/dist/config/order/active-order-strategy");
 let ShopStoreCreditResolver = exports.ShopStoreCreditResolver = class ShopStoreCreditResolver {
-    constructor(storeCreditService, activeOrderService) {
+    constructor(storeCreditService, activeOrderService, orderService) {
         this.storeCreditService = storeCreditService;
         this.activeOrderService = activeOrderService;
+        this.orderService = orderService;
     }
     async storeCredit(ctx, args) {
         return this.storeCreditService.findOne(ctx, args.id);
@@ -34,6 +35,11 @@ let ShopStoreCreditResolver = exports.ShopStoreCreditResolver = class ShopStoreC
     }
     async claim(ctx, args) {
         return this.storeCreditService.claim(ctx, args.key);
+    }
+    async addItemToOrder(ctx, args) {
+        await this.storeCreditService.testIfSameSellerAndCustomer(ctx, args.productVariantId);
+        const order = await this.activeOrderService.getActiveOrder(ctx, args[active_order_strategy_1.ACTIVE_ORDER_INPUT_FIELD_NAME], true);
+        return this.orderService.addItemToOrder(ctx, order.id, args.productVariantId, args.quantity, args.customFields);
     }
 };
 __decorate([
@@ -71,10 +77,21 @@ __decorate([
     __metadata("design:paramtypes", [core_1.RequestContext, Object]),
     __metadata("design:returntype", Promise)
 ], ShopStoreCreditResolver.prototype, "claim", null);
+__decorate([
+    (0, core_1.Transaction)(),
+    (0, graphql_1.Mutation)(),
+    (0, core_1.Allow)(core_1.Permission.UpdateOrder, core_1.Permission.Owner),
+    __param(0, (0, core_1.Ctx)()),
+    __param(1, (0, graphql_1.Args)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [core_1.RequestContext, Object]),
+    __metadata("design:returntype", Promise)
+], ShopStoreCreditResolver.prototype, "addItemToOrder", null);
 exports.ShopStoreCreditResolver = ShopStoreCreditResolver = __decorate([
     (0, graphql_1.Resolver)(),
     __metadata("design:paramtypes", [store_credit_service_1.StoreCreditService,
-        core_1.ActiveOrderService])
+        core_1.ActiveOrderService,
+        core_1.OrderService])
 ], ShopStoreCreditResolver);
 let SellerEntityShopResolver = exports.SellerEntityShopResolver = class SellerEntityShopResolver {
     constructor(storeCreditService) {
@@ -83,7 +100,7 @@ let SellerEntityShopResolver = exports.SellerEntityShopResolver = class SellerEn
     async storeCredit(ctx, seller) {
         var _a;
         const theUser = await this.storeCreditService.getSellerUser(ctx, seller.id);
-        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.sellerAccountBalance;
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance;
     }
 };
 __decorate([
@@ -112,7 +129,7 @@ let CustomerEntityShopResolver = exports.CustomerEntityShopResolver = class Cust
         if (!theUser) {
             throw new Error('Customer user not found');
         }
-        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.customerAccountBalance;
+        return (_a = theUser.customFields) === null || _a === void 0 ? void 0 : _a.accountBalance;
     }
 };
 __decorate([
