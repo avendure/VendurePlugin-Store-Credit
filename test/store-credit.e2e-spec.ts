@@ -1,7 +1,7 @@
 import { SqljsInitializer, registerInitializer, createTestEnvironment, testConfig } from '@vendure/testing';
-import { it, describe, afterAll, expect, beforeAll } from 'vitest';
+import { it, describe, afterAll, expect, beforeAll, vi } from 'vitest';
 import { StoreCreditPlugin } from '../src/index';
-import { mergeConfig } from '@vendure/core';
+import { DefaultSearchPlugin, mergeConfig } from '@vendure/core';
 import { DataService } from '@vendure/admin-ui/core';
 import path from 'path';
 import { initialData } from './fixtures/initial-data';
@@ -37,6 +37,7 @@ import {
     TransitionToStateDocument,
     AddPaymentToOrderDocument,
     GetBalanceDocument,
+    SearchDocument,
 } from './graphql/generated-shop-types';
 
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
@@ -45,7 +46,11 @@ describe('store-credits plugin', () => {
     const isFraction = false;
     const feeValue = 100;
     const devConfig = mergeConfig(testConfig, {
+        dbConnectionOptions: {
+            synchronize: true,
+        },
         plugins: [
+            DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: false }),
             StoreCreditPlugin.init({
                 creditToCurrencyFactor: { default: 1 },
                 npp: { name: 'Store Credits', slug: 'store-credits' },
@@ -164,22 +169,37 @@ describe('store-credits plugin', () => {
     });
 
     it('Should create store credit for purchase', async () => {
-        const createResult = await adminClient.query(CreateStoreCreditDocument, {
-            input: {
-                name: '100 Store Credits',
+        await vi.waitFor(async () => {
+            const createResult = await adminClient.query(CreateStoreCreditDocument, {
+                input: {
+                    name: '100 Store Credits',
+                    value: 100,
+                    price: 90,
+                    perUserLimit: 200,
+                },
+            });
+
+            expect(createResult.createStoreCredit.key).toBeTruthy();
+            expect(createResult.createStoreCredit).toEqual({
+                key: createResult.createStoreCredit.key,
                 value: 100,
-                price: 90,
+                customerId: null,
                 perUserLimit: 200,
-            },
+            });
         });
 
-        expect(createResult.createStoreCredit.key).toBeTruthy();
-        expect(createResult.createStoreCredit).toEqual({
-            key: createResult.createStoreCredit.key,
-            value: 100,
-            customerId: null,
-            perUserLimit: 200,
-        });
+        //See if credits will be returned by search
+        await vi.waitFor(
+            async () => {
+                const searchResult = await shopClient.query(SearchDocument, { input: {} });
+                const hasStoreCredits = searchResult.search.items.some(item => item.slug === 'store-credits');
+                expect(hasStoreCredits).toEqual(true);
+            },
+            {
+                timeout: 2000, // default is 1000
+                interval: 500, // default is 50
+            },
+        );
     });
 
     it('Should create store credit for claim by key', async () => {

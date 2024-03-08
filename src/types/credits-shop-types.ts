@@ -3035,6 +3035,7 @@ export type SearchInput = {
   collectionSlug?: InputMaybe<Scalars['String']['input']>;
   facetValueFilters?: InputMaybe<Array<FacetValueFilterInput>>;
   groupByProduct?: InputMaybe<Scalars['Boolean']['input']>;
+  inStock?: InputMaybe<Scalars['Boolean']['input']>;
   skip?: InputMaybe<Scalars['Int']['input']>;
   sort?: InputMaybe<SearchResultSortParameter>;
   take?: InputMaybe<Scalars['Int']['input']>;
@@ -3062,6 +3063,7 @@ export type SearchResult = {
   description: Scalars['String']['output'];
   facetIds: Array<Scalars['ID']['output']>;
   facetValueIds: Array<Scalars['ID']['output']>;
+  inStock: Scalars['Boolean']['output'];
   price: SearchResultPrice;
   priceWithTax: SearchResultPrice;
   productAsset?: Maybe<SearchResultAsset>;
@@ -3072,6 +3074,7 @@ export type SearchResult = {
   productVariantName: Scalars['String']['output'];
   /** A relevance score for the result. Differs between database implementations */
   score: Scalars['Float']['output'];
+  seller?: Maybe<Seller>;
   sku: Scalars['String']['output'];
   slug: Scalars['String']['output'];
 };

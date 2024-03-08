@@ -110,4 +110,4 @@ deleteSingleStoreCredit(id: ID!): DeletionResponse!
 ## Errors
 
 I commonly see `Serialized Error: { code: 'EADDRINUSE', errno: -98, syscall: 'listen', address: '::', port: 3050 }`
-To get around this, I have to run: `sudo lsof -i :3050` to find which process is using 3050. Then I run, `kill -9 pid` where pid is the process id.
+To get around this, run: `fuser -k 3050/tcp` to find/kill the process using 3050.

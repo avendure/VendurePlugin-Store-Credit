@@ -26,7 +26,7 @@ import { initialData } from './fixtures/initial-data';
             shopApiPlayground: true,
         },
         plugins: [
-            DefaultSearchPlugin,
+            DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: true }),
             StoreCreditPlugin.init({
                 npp: { name: 'Store credits', slug: 'store-credits' },
                 platformFee: { type: 'percent', value: 0.01 },
