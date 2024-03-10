@@ -45,6 +45,8 @@ registerInitializer('sqljs', new SqljsInitializer('__data__'));
 describe('store-credits plugin', () => {
     const isFraction = false;
     const feeValue = 100;
+    let customerClaimedBalance = 1650;
+
     const devConfig = mergeConfig(testConfig, {
         dbConnectionOptions: {
             synchronize: true,
@@ -71,7 +73,6 @@ describe('store-credits plugin', () => {
     let channelId: string = '';
     let creditKey: string = '';
     let defaultChannelToken: string = '';
-    let customerClaimedBalance = 1600;
 
     beforeAll(async () => {
         await server.init({
