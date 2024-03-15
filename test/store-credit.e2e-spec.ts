@@ -50,7 +50,6 @@ import {
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
 describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plugin', ({ isFraction }) => {
-    // const isFraction = true;
     const feeValue = 100;
     let customerClaimedBalance = 1650;
 
