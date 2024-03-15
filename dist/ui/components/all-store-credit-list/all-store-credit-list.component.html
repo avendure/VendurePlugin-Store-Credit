@@ -73,7 +73,7 @@
 
     <vdr-dt2-column [heading]="'Value'" [sort]="sorts.get('value')">
         <ng-template let-storeCredit="item">
-            {{ storeCredit.value }}
+            {{ storeCredit.value | localeCurrency }}
         </ng-template>
     </vdr-dt2-column>
 
