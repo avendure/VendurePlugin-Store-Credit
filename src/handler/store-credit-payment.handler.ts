@@ -131,7 +131,7 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             }
 
             if (shippingLine) {
-                totalShippingCharge = shippingLine.priceWithTax;
+                totalShippingCharge = shippingLine.discountedPriceWithTax;
             }
             const totalPrice = productPriceWithTax + totalShippingCharge;
 
