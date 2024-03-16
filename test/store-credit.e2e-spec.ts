@@ -1,5 +1,12 @@
-import { SqljsInitializer, registerInitializer, createTestEnvironment, testConfig } from '@vendure/testing';
-import { it, describe, afterAll, expect, beforeAll, vi } from 'vitest';
+import {
+    SqljsInitializer,
+    registerInitializer,
+    createTestEnvironment,
+    testConfig,
+    TestServer,
+    SimpleGraphQLClient,
+} from '@vendure/testing';
+import { it, describe, afterAll, expect, beforeAll, vi, beforeEach, afterEach } from 'vitest';
 import { StoreCreditPlugin } from '../src/index';
 import { DefaultSearchPlugin, mergeConfig } from '@vendure/core';
 import { DataService } from '@vendure/admin-ui/core';
@@ -42,39 +49,46 @@ import {
 
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
-describe('store-credits plugin', () => {
-    const isFraction = false;
+describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plugin', ({ isFraction }) => {
     const feeValue = 100;
     let customerClaimedBalance = 1650;
 
-    const devConfig = mergeConfig(testConfig, {
-        dbConnectionOptions: {
-            synchronize: true,
-        },
-        plugins: [
-            DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: false }),
-            StoreCreditPlugin.init({
-                creditToCurrencyFactor: { default: 1 },
-                npp: { name: 'Store Credits', slug: 'store-credits' },
-                exchange: {
-                    fee: { type: 'fixed', value: feeValue },
-                    payoutOption: { code: 'payout', name: 'Payout' },
-                    maxAmount: 90000,
-                },
-                isFraction: isFraction,
-                platformFee: { type: 'fixed', value: feeValue },
-            }),
-        ],
-    });
-    const { server, adminClient, shopClient } = createTestEnvironment(devConfig);
     let started = false;
     let customers: GetCustomerListQuery['customers']['items'] = [];
     let sellerId: string = '';
     let channelId: string = '';
     let creditKey: string = '';
     let defaultChannelToken: string = '';
+    let server: TestServer;
+    let adminClient: SimpleGraphQLClient;
+    let shopClient: SimpleGraphQLClient;
 
     beforeAll(async () => {
+        const devConfig = mergeConfig(testConfig, {
+            dbConnectionOptions: {
+                synchronize: true,
+            },
+            plugins: [
+                DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: false }),
+                StoreCreditPlugin.init({
+                    creditToCurrencyFactor: { default: 1 },
+                    npp: { name: 'Store Credits', slug: 'store-credits' },
+                    exchange: {
+                        fee: { type: 'fixed', value: feeValue },
+                        payoutOption: { code: 'payout', name: 'Payout' },
+                        maxAmount: 90000,
+                    },
+                    isFraction: isFraction,
+                    platformFee: { type: 'fixed', value: feeValue },
+                }),
+            ],
+        });
+
+        const newTestEnv = createTestEnvironment(devConfig);
+        server = newTestEnv.server;
+        adminClient = newTestEnv.adminClient;
+        shopClient = newTestEnv.shopClient;
+
         await server.init({
             productsCsvPath: path.join(__dirname, 'fixtures/products.csv'),
             initialData: initialData,
@@ -270,7 +284,9 @@ describe('store-credits plugin', () => {
             });
             expect(billingAddressResult.setOrderBillingAddress.__typename).toEqual('Order');
 
-            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: ['T_1'] });
+            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, {
+                ids: ['T_1'],
+            });
             expect(shippingMethodResult.setOrderShippingMethod.__typename).toEqual('Order');
 
             const transitionResult = await shopClient.query(TransitionToStateDocument, {
@@ -388,7 +404,9 @@ describe('store-credits plugin', () => {
         const beforeBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
-        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, { amount: 50000 });
+        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, {
+            amount: 50000,
+        });
         const afterBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
