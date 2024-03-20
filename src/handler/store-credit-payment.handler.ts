@@ -150,46 +150,65 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
                 };
             }
 
-            // The total price doesn't include decimals so is divided by the scaling_factor
-            // and needs to be scaled to deliver the correct number of credits based on the priced
-            const adjustedTotalPrice = totalPrice / (SCALING_FACTOR * conversion_factor);
-
-            const sellerCustomFields = seller.customFields;
-            const sellerAccountBalance = sellerCustomFields?.accountBalance || 0;
+            // isFraction case
+            let adjustedTotalPrice = totalPrice / conversion_factor;
+            if (!options.isFraction) {
+                adjustedTotalPrice = Math.ceil(adjustedTotalPrice / SCALING_FACTOR) * SCALING_FACTOR;
+            }
             let platFormFee =
                 options.platformFee.type == 'fixed'
                     ? options.platformFee.value
                     : options.platformFee.value * (orderline.listPrice / SCALING_FACTOR);
-            const newBalance = sellerAccountBalance - platFormFee + adjustedTotalPrice;
 
+            const newBalance = seller.customFields?.accountBalance - platFormFee + adjustedTotalPrice;
+
+            if (newBalance < 0) {
+                return {
+                    amount: amount,
+                    state: 'Declined',
+                    errorMessage: 'Insufficient Balance',
+                    metadata: {
+                        public: {
+                            errorMessage: 'Insufficient Balance',
+                        },
+                    },
+                };
+            }
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
-                    accountBalance: options.isFraction
-                        ? newBalance * SCALING_FACTOR
-                        : Math.ceil(newBalance * SCALING_FACTOR),
+                    accountBalance: newBalance,
                 },
             });
         }
 
-        const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
-        const newCreditBalance =
-            SCALING_FACTOR *
-            (customerCreditBalance - (options.isFraction ? adjustedAmount : Math.ceil(adjustedAmount)));
+        let adjustedAmount = amount / conversion_factor;
 
-        console.log('updating customer balance');
-        console.log('amount', amount);
-        console.log('adjustedAmount', adjustedAmount);
-        console.log('newCreditBalance', newCreditBalance);
-        console.log('customerCreditBalance', customerCreditBalance);
-        console.log('conversion_factor', conversion_factor);
-        console.log('SCALING_FACTOR', SCALING_FACTOR);
-        console.log('rounded', Math.round(newCreditBalance));
+        if (!options.isFraction) {
+            //put zeros in the last two digits
+            const wholeNumber = Math.ceil(adjustedAmount / SCALING_FACTOR) * SCALING_FACTOR;
+            adjustedAmount = wholeNumber / conversion_factor;
+        }
+
+        let newCreditBalance = customerCreditBalance - adjustedAmount;
+
+        if (newCreditBalance < 0) {
+            return {
+                amount: amount,
+                state: 'Declined',
+                errorMessage: 'Insufficient Balance',
+                metadata: {
+                    public: {
+                        errorMessage: 'Insufficient Balance',
+                    },
+                },
+            };
+        }
 
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
-                accountBalance: Math.round(newCreditBalance),
+                accountBalance: newCreditBalance,
             },
         });
 

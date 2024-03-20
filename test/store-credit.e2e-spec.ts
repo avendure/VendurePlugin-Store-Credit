@@ -50,8 +50,11 @@ import {
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
 describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plugin', ({ isFraction }) => {
-    const feeValue = 100;
-    let customerClaimedBalance = 1650;
+    const feeValue = {
+        type: 'fixed' as 'fixed' | 'percent',
+        value: 100,
+    };
+    let customerClaimedBalance = 165000;
 
     let started = false;
     let customers: GetCustomerListQuery['customers']['items'] = [];
@@ -74,12 +77,12 @@ describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plug
                     creditToCurrencyFactor: { default: 1 },
                     npp: { name: 'Store Credits', slug: 'store-credits' },
                     exchange: {
-                        fee: { type: 'fixed', value: feeValue },
+                        fee: { type: feeValue.type, value: feeValue.value },
                         payoutOption: { code: 'payout', name: 'Payout' },
                         maxAmount: 90000,
                     },
                     isFraction: isFraction,
-                    platformFee: { type: 'fixed', value: feeValue },
+                    platformFee: { type: feeValue.type, value: feeValue.value },
                 }),
             ],
         });
@@ -339,38 +342,31 @@ describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plug
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
 
-                const totalPrce = addPaymentReuslt.addPaymentToOrder.totalWithTax / 100;
+                const totalPrce = addPaymentReuslt.addPaymentToOrder.totalWithTax;
+                const totalPriceCeil = Math.ceil(totalPrce / 100) * 100;
+                const currFee =
+                    feeValue.type == 'fixed' ? feeValue.value : (feeValue.value / 100) * totalPrce;
 
                 if (isFraction) {
                     expect(
                         customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
                         "Credits should have been deducted from Buyer's account",
-                    ).toEqual(
-                        Math.round(
-                            100 *
-                                (customerClaimedBalance -
-                                    addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
-                        ),
-                    );
+                    ).toEqual(customerClaimedBalance - totalPrce);
 
                     expect(
                         sellerResult.seller?.customFields?.accountBalance,
                         "Credits should have been transferred to Seller's account",
-                    ).toEqual((totalPrce - feeValue) * 100);
+                    ).toEqual(totalPrce - currFee);
                 } else {
                     expect(
                         customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
                         "Credits should have been deducted from Buyer's account",
-                    ).toEqual(
-                        100 *
-                            (customerClaimedBalance -
-                                Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)),
-                    );
+                    ).toEqual(customerClaimedBalance - totalPriceCeil);
 
                     expect(
                         sellerResult.seller?.customFields?.accountBalance,
                         "Credits should have been transferred to Seller's account",
-                    ).toEqual(Math.ceil((totalPrce - feeValue) * 100));
+                    ).toEqual(totalPriceCeil - currFee);
                 }
 
                 expect(
