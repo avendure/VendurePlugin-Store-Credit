@@ -176,6 +176,16 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
         const newCreditBalance =
             SCALING_FACTOR *
             (customerCreditBalance - (options.isFraction ? adjustedAmount : Math.ceil(adjustedAmount)));
+
+        console.log('updating customer balance');
+        console.log('amount', amount);
+        console.log('adjustedAmount', adjustedAmount);
+        console.log('newCreditBalance', newCreditBalance);
+        console.log('customerCreditBalance', customerCreditBalance);
+        console.log('conversion_factor', conversion_factor);
+        console.log('SCALING_FACTOR', SCALING_FACTOR);
+        console.log('rounded', Math.round(newCreditBalance));
+
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
