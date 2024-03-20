@@ -149,10 +149,6 @@ export const SEARCH_PRODUCTS = gql`
                 productName
                 productVariantId
                 slug
-                seller {
-                    id
-                    name
-                }
             }
             facetValues {
                 count

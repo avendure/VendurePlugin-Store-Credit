@@ -3074,7 +3074,6 @@ export type SearchResult = {
   productVariantName: Scalars['String']['output'];
   /** A relevance score for the result. Differs between database implementations */
   score: Scalars['Float']['output'];
-  seller?: Maybe<Seller>;
   sku: Scalars['String']['output'];
   slug: Scalars['String']['output'];
 };

@@ -98,7 +98,7 @@ exports.StoreCreditPaymentHandler = new core_1.PaymentMethodHandler({
                 }
             }
             if (shippingLine) {
-                totalShippingCharge = shippingLine.priceWithTax;
+                totalShippingCharge = shippingLine.discountedPriceWithTax;
             }
             const totalPrice = productPriceWithTax + totalShippingCharge;
             const seller = sellerChannel.seller;

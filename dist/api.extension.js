@@ -31,9 +31,6 @@ const commonExtensions = (0, graphql_tag_1.default) `
         storeCredits(options: StoreCreditListOptions): StoreCreditList!
         storeCredit(id: ID!): StoreCredit
     }
-    extend type SearchResult {
-        seller: Seller
-    }
 `;
 exports.shopApiExtensions = (0, graphql_tag_1.default) `
     ${commonExtensions}
