@@ -120,6 +120,7 @@ export class StoreCreditPlugin {
             maxAmount: 999,
             payoutOption: { name: 'Payout', code: 'payout' },
         },
+        isFraction: false,
     };
 
     static init(options: Partial<StoreCreditPluginOptions>) {

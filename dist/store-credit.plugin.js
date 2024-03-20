@@ -44,6 +44,7 @@ StoreCreditPlugin.options = {
         maxAmount: 999,
         payoutOption: { name: 'Payout', code: 'payout' },
     },
+    isFraction: false,
 };
 StoreCreditPlugin.uiExtensions = {
     id: 'store-credit',

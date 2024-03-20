@@ -16,4 +16,5 @@ export type StoreCreditPluginOptions = {
         maxAmount: number;
         payoutOption: { name: string; code: string };
     };
+    isFraction?: boolean;
 };

@@ -111,7 +111,7 @@ let CreditExchangeService = exports.CreditExchangeService = class CreditExchange
             throw new Error(`Payout variant not found. Create a variant with "${payoutCode} productOption under NPP.`);
         const conversionFactor = this.options.creditToCurrencyFactor[payoutVariant.currencyCode] ||
             this.options.creditToCurrencyFactor['default'];
-        const exchangeAmount = Math.floor(exchange.amount / conversionFactor);
+        const exchangeAmount = Math.floor(exchange.amount / conversionFactor / 100);
         const addPaymentResult = await this.orderService.addItemToOrder(ctx, order.id, payoutVariant.id, exchangeAmount);
         if ((0, core_1.isGraphQlErrorResult)(addPaymentResult))
             throw addPaymentResult;

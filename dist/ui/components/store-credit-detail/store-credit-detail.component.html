@@ -102,7 +102,10 @@
                             ></vdr-currency-input>
                         </vdr-form-field>
                         <vdr-form-field label="Value" for="value">
-                            <input id="value" type="number" formControlName="value" />
+                            <vdr-currency-input
+                                [currencyCode]="currencyCode"
+                                formControlName="value"
+                            ></vdr-currency-input>
                         </vdr-form-field>
                         <vdr-form-field label="Per User Limit" for="perUserLimit">
                             <vdr-help-tooltip

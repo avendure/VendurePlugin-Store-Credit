@@ -25,5 +25,6 @@ export type StoreCreditPluginOptions = {
             code: string;
         };
     };
+    isFraction?: boolean;
 };
 export {};

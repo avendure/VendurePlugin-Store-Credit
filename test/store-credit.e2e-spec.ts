@@ -1,5 +1,12 @@
-import { SqljsInitializer, registerInitializer, createTestEnvironment, testConfig } from '@vendure/testing';
-import { it, describe, afterAll, expect, beforeAll, vi } from 'vitest';
+import {
+    SqljsInitializer,
+    registerInitializer,
+    createTestEnvironment,
+    testConfig,
+    TestServer,
+    SimpleGraphQLClient,
+} from '@vendure/testing';
+import { it, describe, afterAll, expect, beforeAll, vi, beforeEach, afterEach } from 'vitest';
 import { StoreCreditPlugin } from '../src/index';
 import { DefaultSearchPlugin, mergeConfig } from '@vendure/core';
 import { DataService } from '@vendure/admin-ui/core';
@@ -42,34 +49,46 @@ import {
 
 registerInitializer('sqljs', new SqljsInitializer('__data__'));
 
-describe('store-credits plugin', () => {
-    const devConfig = mergeConfig(testConfig, {
-        dbConnectionOptions: {
-            synchronize: true,
-        },
-        plugins: [
-            DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: false }),
-            StoreCreditPlugin.init({
-                creditToCurrencyFactor: { default: 1 },
-                npp: { name: 'Store Credits', slug: 'store-credits' },
-                exchange: {
-                    fee: { type: 'fixed', value: 1 },
-                    payoutOption: { code: 'payout', name: 'Payout' },
-                    maxAmount: 900,
-                },
-            }),
-        ],
-    });
-    const { server, adminClient, shopClient } = createTestEnvironment(devConfig);
+describe.each([{ isFraction: false }, { isFraction: true }])('store-credits plugin', ({ isFraction }) => {
+    const feeValue = 100;
+    let customerClaimedBalance = 1650;
+
     let started = false;
     let customers: GetCustomerListQuery['customers']['items'] = [];
     let sellerId: string = '';
     let channelId: string = '';
     let creditKey: string = '';
     let defaultChannelToken: string = '';
-    let customerClaimedBalance = 1600;
+    let server: TestServer;
+    let adminClient: SimpleGraphQLClient;
+    let shopClient: SimpleGraphQLClient;
 
     beforeAll(async () => {
+        const devConfig = mergeConfig(testConfig, {
+            dbConnectionOptions: {
+                synchronize: true,
+            },
+            plugins: [
+                DefaultSearchPlugin.init({ bufferUpdates: false, indexStockStatus: false }),
+                StoreCreditPlugin.init({
+                    creditToCurrencyFactor: { default: 1 },
+                    npp: { name: 'Store Credits', slug: 'store-credits' },
+                    exchange: {
+                        fee: { type: 'fixed', value: feeValue },
+                        payoutOption: { code: 'payout', name: 'Payout' },
+                        maxAmount: 90000,
+                    },
+                    isFraction: isFraction,
+                    platformFee: { type: 'fixed', value: feeValue },
+                }),
+            ],
+        });
+
+        const newTestEnv = createTestEnvironment(devConfig);
+        server = newTestEnv.server;
+        adminClient = newTestEnv.adminClient;
+        shopClient = newTestEnv.shopClient;
+
         await server.init({
             productsCsvPath: path.join(__dirname, 'fixtures/products.csv'),
             initialData: initialData,
@@ -265,7 +284,9 @@ describe('store-credits plugin', () => {
             });
             expect(billingAddressResult.setOrderBillingAddress.__typename).toEqual('Order');
 
-            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, { ids: 'T_1' });
+            const shippingMethodResult = await shopClient.query(SetShippingMethodDocument, {
+                ids: ['T_1'],
+            });
             expect(shippingMethodResult.setOrderShippingMethod.__typename).toEqual('Order');
 
             const transitionResult = await shopClient.query(TransitionToStateDocument, {
@@ -296,6 +317,7 @@ describe('store-credits plugin', () => {
 
         it('Should add payment', async () => {
             await shopClient.asUserWithCredentials(customers[2].emailAddress, 'test');
+
             const addPaymentReuslt = await shopClient.query(AddPaymentToOrderDocument, {
                 input: { method: 'store-credit', metadata: {} },
             });
@@ -317,12 +339,39 @@ describe('store-credits plugin', () => {
                     "Credits should have been transferred to Seller's account",
                 ).toBeGreaterThan(0);
 
-                expect(
-                    customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
-                    "Credits should have been deducted from Buyer's account",
-                ).toEqual(
-                    customerClaimedBalance - Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
-                );
+                const totalPrce = addPaymentReuslt.addPaymentToOrder.totalWithTax / 100;
+
+                if (isFraction) {
+                    expect(
+                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                        "Credits should have been deducted from Buyer's account",
+                    ).toEqual(
+                        Math.round(
+                            100 *
+                                (customerClaimedBalance -
+                                    addPaymentReuslt.addPaymentToOrder.totalWithTax / 100),
+                        ),
+                    );
+
+                    expect(
+                        sellerResult.seller?.customFields?.accountBalance,
+                        "Credits should have been transferred to Seller's account",
+                    ).toEqual((totalPrce - feeValue) * 100);
+                } else {
+                    expect(
+                        customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
+                        "Credits should have been deducted from Buyer's account",
+                    ).toEqual(
+                        100 *
+                            (customerClaimedBalance -
+                                Math.ceil(addPaymentReuslt.addPaymentToOrder.totalWithTax / 100)),
+                    );
+
+                    expect(
+                        sellerResult.seller?.customFields?.accountBalance,
+                        "Credits should have been transferred to Seller's account",
+                    ).toEqual(Math.ceil((totalPrce - feeValue) * 100));
+                }
 
                 expect(
                     customerResult.getSellerANDCustomerStoreCredits.customerAccountBalance,
@@ -344,7 +393,7 @@ describe('store-credits plugin', () => {
     it('Should fail for credit exchange above max amount', async () => {
         adminClient.setChannelToken('seller2ch');
         expect(async () => {
-            await adminClient.query(RequestCreditExchangeDocument, { amount: 1000 });
+            await adminClient.query(RequestCreditExchangeDocument, { amount: 100000 });
         }).rejects.toThrowError();
     });
 
@@ -355,15 +404,17 @@ describe('store-credits plugin', () => {
         const beforeBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
-        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, { amount: 500 });
+        const exchangeResponse = await adminClient.query(RequestCreditExchangeDocument, {
+            amount: 50000,
+        });
         const afterBalance = await adminClient
             .query(GetSellerDocument, { id: sellerId })
             .then(res => res.seller?.customFields?.accountBalance || 0);
 
         expect(exchangeResponse.requestCreditExchange.id).toBeDefined();
         expect(exchangeResponse.requestCreditExchange.status).toBe('Pending');
-        expect(beforeBalance - afterBalance, 'Balance must be deducted').toBe(500);
-        expect(exchangeResponse.requestCreditExchange.amount, 'Should deduct exchange fee').toBe(499);
+        expect(beforeBalance - afterBalance, 'Balance must be deducted').toBe(50000);
+        expect(exchangeResponse.requestCreditExchange.amount, 'Should deduct exchange fee').toBe(49900);
         exchangeId = exchangeResponse.requestCreditExchange.id;
         adminClient.setChannelToken('');
     });
@@ -431,6 +482,6 @@ describe('store-credits plugin', () => {
             .then(res => res.seller?.customFields?.accountBalance || 0);
 
         expect(refundResult.refundCreditExchange.status).toBe('Refunded');
-        expect(afterBalance - beforeBalance, 'Balance must be refunded').toBe(500);
+        expect(afterBalance - beforeBalance, 'Balance must be refunded').toBe(50000);
     });
 });

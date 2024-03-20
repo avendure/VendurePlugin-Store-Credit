@@ -19,7 +19,7 @@ import { initialData } from './fixtures/initial-data';
             },
         },
         dbConnectionOptions: {
-            synchronize: true,
+            synchronize: false,
         },
         apiOptions: {
             adminApiPlayground: true,
@@ -31,6 +31,7 @@ import { initialData } from './fixtures/initial-data';
                 npp: { name: 'Store credits', slug: 'store-credits' },
                 platformFee: { type: 'percent', value: 0.01 },
                 creditToCurrencyFactor: { default: 1, USD: 2, NPR: 1, AMD: 0.5 },
+                isFraction: true,
             }),
             AdminUiPlugin.init({
                 port: 5002,

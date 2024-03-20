@@ -55,7 +55,7 @@ let StoreCreditService = exports.StoreCreditService = class StoreCreditService {
             const pid = await this.nppService.getRootNPPId(ctx);
             const variant = await this.productVariantService.create(ctx, [
                 {
-                    price: 1000,
+                    price: input.price,
                     productId: pid,
                     sku: 'STORE_CREDIT',
                     trackInventory: credits_admin_types_1.GlobalFlag.FALSE,

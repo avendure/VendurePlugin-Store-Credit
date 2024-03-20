@@ -165,22 +165,21 @@ export const StoreCreditPaymentHandler = new PaymentMethodHandler({
             await sellerService.update(ctx, {
                 id: seller.id,
                 customFields: {
-                    accountBalance: Math.ceil(newBalance),
+                    accountBalance: options.isFraction
+                        ? newBalance * SCALING_FACTOR
+                        : Math.ceil(newBalance * SCALING_FACTOR),
                 },
             });
         }
 
-        console.log('customerCreditBalance: ', customerCreditBalance);
-        console.log('amount: ', amount);
-        console.log('rounded amount: ', amount / conversion_factor);
-        console.log('conversion factor: ', conversion_factor);
-
         const adjustedAmount = amount / (SCALING_FACTOR * conversion_factor);
-        console.log('newBalance: ', customerCreditBalance - adjustedAmount);
+        const newCreditBalance =
+            SCALING_FACTOR *
+            (customerCreditBalance - (options.isFraction ? adjustedAmount : Math.ceil(adjustedAmount)));
         await customerService.update(ctx, {
             id: customer.id,
             customFields: {
-                accountBalance: customerCreditBalance - Math.ceil(adjustedAmount),
+                accountBalance: Math.round(newCreditBalance),
             },
         });
 

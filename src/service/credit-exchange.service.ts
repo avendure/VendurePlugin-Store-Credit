@@ -141,7 +141,7 @@ export class CreditExchangeService {
         const conversionFactor =
             this.options.creditToCurrencyFactor[payoutVariant.currencyCode] ||
             this.options.creditToCurrencyFactor['default'];
-        const exchangeAmount = Math.floor(exchange.amount / conversionFactor);
+        const exchangeAmount = Math.floor(exchange.amount / conversionFactor / 100);
 
         const addPaymentResult = await this.orderService.addItemToOrder(
             ctx,
